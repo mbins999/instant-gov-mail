@@ -17,6 +17,7 @@ const navigationItems = [
   { icon: FileText, label: 'مراسلة جديدة', path: '/new' },
   { icon: Search, label: 'البحث', path: '/search' },
   { icon: Archive, label: 'الأرشيف', path: '/archive' },
+  { icon: Settings, label: 'الربط مع النظام', path: '/api-settings' },
   { icon: Settings, label: 'الإعدادات', path: '/settings' },
 ];
 

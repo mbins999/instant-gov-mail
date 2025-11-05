@@ -12,6 +12,7 @@ import CorrespondenceDetail from "./pages/CorrespondenceDetail";
 import SearchPage from "./pages/SearchPage";
 import ArchivePage from "./pages/ArchivePage";
 import SettingsPage from "./pages/SettingsPage";
+import ApiSettings from "./pages/ApiSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
               <Route path="/correspondence/:id" element={<CorrespondenceDetail />} />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/archive" element={<ArchivePage />} />
+              <Route path="/api-settings" element={<ApiSettings />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
