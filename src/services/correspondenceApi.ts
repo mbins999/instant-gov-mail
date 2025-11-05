@@ -1,5 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
-
 interface ApiConfig {
   baseUrl: string;
   username?: string;
@@ -33,14 +31,20 @@ class CorrespondenceApiService {
   }
 
   async login(baseUrl: string, username: string, password: string) {
-    const { data, error } = await supabase.functions.invoke('correspondence-api', {
-      body: {
-        action: 'login',
-        config: { baseUrl, username, password },
-      },
+    const response = await fetch(`${baseUrl}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userName: username,
+        userPassword: password,
+      }),
     });
 
-    if (error) throw error;
+    if (!response.ok) {
+      throw new Error('Login failed');
+    }
+    
+    const data = await response.json();
     
     if (data && data.token) {
       this.setConfig({ baseUrl, token: data.token });
@@ -54,32 +58,45 @@ class CorrespondenceApiService {
     const config = this.getConfig();
     if (!config) throw new Error('Not authenticated');
 
-    const { data, error } = await supabase.functions.invoke('correspondence-api', {
-      body: {
-        action: 'export-correspondence',
-        config,
-        data: { metadata, file },
+    const formData = new FormData();
+    formData.append('metadata', JSON.stringify(metadata));
+    if (file) {
+      formData.append('file', file);
+    }
+
+    const response = await fetch(`${config.baseUrl}/user/correspondence/export`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${config.token}`,
       },
+      body: formData,
     });
 
-    if (error) throw error;
-    return data;
+    if (!response.ok) {
+      throw new Error('Export failed');
+    }
+
+    return await response.json();
   }
 
   async returnCorrespondence(docId: string, messagingHistoryId: number) {
     const config = this.getConfig();
     if (!config) throw new Error('Not authenticated');
 
-    const { data, error } = await supabase.functions.invoke('correspondence-api', {
-      body: {
-        action: 'return-correspondence',
-        config,
-        data: { docId, messagingHistoryId },
+    const response = await fetch(`${config.baseUrl}/user/correspondence/return`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${config.token}`,
+        'Content-Type': 'application/json',
       },
+      body: JSON.stringify({ docId, messagingHistoryId }),
     });
 
-    if (error) throw error;
-    return data;
+    if (!response.ok) {
+      throw new Error('Return failed');
+    }
+
+    return await response.json();
   }
 
   async resendCorrespondence(
@@ -91,16 +108,20 @@ class CorrespondenceApiService {
     const config = this.getConfig();
     if (!config) throw new Error('Not authenticated');
 
-    const { data, error } = await supabase.functions.invoke('correspondence-api', {
-      body: {
-        action: 'resend-correspondence',
-        config,
-        data: { docId, messagingHistoryId, comments, receivedByName },
+    const response = await fetch(`${config.baseUrl}/user/correspondence/resend`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${config.token}`,
+        'Content-Type': 'application/json',
       },
+      body: JSON.stringify({ docId, messagingHistoryId, comments, receivedByName }),
     });
 
-    if (error) throw error;
-    return data;
+    if (!response.ok) {
+      throw new Error('Resend failed');
+    }
+
+    return await response.json();
   }
 
   async receiveCorrespondence(
@@ -113,80 +134,106 @@ class CorrespondenceApiService {
     const config = this.getConfig();
     if (!config) throw new Error('Not authenticated');
 
-    const { data, error } = await supabase.functions.invoke('correspondence-api', {
-      body: {
-        action: 'receive-correspondence',
-        config,
-        data: { docId, messagingHistoryId, comments, receivedByName, receiveByOuName },
+    const response = await fetch(`${config.baseUrl}/user/correspondence/receive`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${config.token}`,
+        'Content-Type': 'application/json',
       },
+      body: JSON.stringify({ docId, messagingHistoryId, comments, receivedByName, receiveByOuName }),
     });
 
-    if (error) throw error;
-    return data;
+    if (!response.ok) {
+      throw new Error('Receive failed');
+    }
+
+    return await response.json();
   }
 
   async addAttachment(metadata: string, content: File) {
     const config = this.getConfig();
     if (!config) throw new Error('Not authenticated');
 
-    const { data, error } = await supabase.functions.invoke('correspondence-api', {
-      body: {
-        action: 'add-attachment',
-        config,
-        data: { metadata, content },
+    const formData = new FormData();
+    formData.append('metadata', metadata);
+    formData.append('content', content);
+
+    const response = await fetch(`${config.baseUrl}/user/correspondence/attachment/add`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.token}`,
       },
+      body: formData,
     });
 
-    if (error) throw error;
-    return data;
+    if (!response.ok) {
+      throw new Error('Add attachment failed');
+    }
+
+    return await response.json();
   }
 
   async getTransactionLog(docId: string) {
     const config = this.getConfig();
     if (!config) throw new Error('Not authenticated');
 
-    const { data, error } = await supabase.functions.invoke('correspondence-api', {
-      body: {
-        action: 'get-transaction-log',
-        config,
-        data: { docId },
-      },
-    });
+    const response = await fetch(
+      `${config.baseUrl}/user/transaction-log/messaging-history/${docId}`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${config.token}`,
+        },
+      }
+    );
 
-    if (error) throw error;
-    return data;
+    if (!response.ok) {
+      throw new Error('Get transaction log failed');
+    }
+
+    return await response.json();
   }
 
   async getIncomingAttachment(docId: string) {
     const config = this.getConfig();
     if (!config) throw new Error('Not authenticated');
 
-    const { data, error } = await supabase.functions.invoke('correspondence-api', {
-      body: {
-        action: 'get-incoming-attachment',
-        config,
-        data: { docId },
-      },
-    });
+    const response = await fetch(
+      `${config.baseUrl}/user/correspondence/incoming/docId/${docId}`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${config.token}`,
+        },
+      }
+    );
 
-    if (error) throw error;
-    return data;
+    if (!response.ok) {
+      throw new Error('Get incoming attachment failed');
+    }
+
+    return await response.json();
   }
 
   async getAttachmentContent(docId: string) {
     const config = this.getConfig();
     if (!config) throw new Error('Not authenticated');
 
-    const { data, error } = await supabase.functions.invoke('correspondence-api', {
-      body: {
-        action: 'get-attachment-content',
-        config,
-        data: { docId },
-      },
-    });
+    const response = await fetch(
+      `${config.baseUrl}/user/correspondence/attachment/docId/content/${docId}`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${config.token}`,
+        },
+      }
+    );
 
-    if (error) throw error;
-    return data;
+    if (!response.ok) {
+      throw new Error('Get attachment content failed');
+    }
+
+    return await response.json();
   }
 
   logout() {
