@@ -1,4 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { 
   Mail, 
   Send, 
@@ -24,6 +25,26 @@ export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+        
+        if (data) {
+          setUserName(data.full_name);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -41,8 +62,7 @@ export default function Sidebar() {
   return (
     <aside className="w-64 bg-card border-l border-border h-screen sticky top-0 flex flex-col">
       <div className="p-6 border-b border-border">
-        <h1 className="text-xl font-bold text-primary">نظام المراسلات</h1>
-        <p className="text-sm text-muted-foreground mt-1">الحكومي الإلكتروني</p>
+        <h1 className="text-xl font-bold text-primary">{userName || 'مستخدم'}</h1>
       </div>
       
       <nav className="p-4 space-y-2 flex-1">

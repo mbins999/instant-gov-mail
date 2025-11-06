@@ -35,6 +35,9 @@ const App = () => (
                 <div className="flex min-h-screen" dir="rtl">
                   <Sidebar />
                   <div className="flex-1 flex flex-col">
+                    <div className="sticky top-0 z-40 bg-card border-b border-border py-4">
+                      <h1 className="text-2xl font-bold text-center text-primary">مراسلات</h1>
+                    </div>
                     <NotificationBar />
                     <AdvancedSearchBar />
                     <main className="flex-1 p-8 overflow-auto bg-background">
