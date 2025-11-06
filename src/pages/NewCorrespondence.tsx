@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,14 +6,17 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Save } from 'lucide-react';
+import { Save, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 export default function NewCorrespondence() {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditMode = !!id;
   const [loading, setLoading] = useState(false);
+  const [fetchingData, setFetchingData] = useState(isEditMode);
   const [formData, setFormData] = useState({
     type: 'outgoing',
     number: '',
@@ -26,6 +29,50 @@ export default function NewCorrespondence() {
   });
   const [signatureFile, setSignatureFile] = useState<File | null>(null);
   const [signaturePreview, setSignaturePreview] = useState<string>('');
+
+  useEffect(() => {
+    if (isEditMode && id) {
+      const fetchCorrespondence = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('correspondences')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+          if (error) throw error;
+
+          if (data) {
+            setFormData({
+              type: data.type,
+              number: data.number,
+              date: data.date.split('T')[0],
+              to: data.from_entity,
+              subject: data.subject,
+              greeting: data.greeting,
+              content: data.content,
+              responsiblePerson: data.responsible_person || '',
+            });
+            
+            if (data.signature_url) {
+              setSignaturePreview(data.signature_url);
+            }
+          }
+        } catch (err) {
+          toast({
+            title: "خطأ",
+            description: "فشل تحميل بيانات المراسلة",
+            variant: "destructive",
+          });
+          navigate('/');
+        } finally {
+          setFetchingData(false);
+        }
+      };
+
+      fetchCorrespondence();
+    }
+  }, [id, isEditMode, navigate, toast]);
 
   const hijriDate = useMemo(() => {
     const date = new Date(formData.date);
@@ -59,9 +106,9 @@ export default function NewCorrespondence() {
     setLoading(true);
     
     try {
-      let signatureUrl = '';
+      let signatureUrl = signaturePreview;
       
-      // Upload signature if provided
+      // Upload new signature if provided
       if (signatureFile) {
         const fileExt = 'png';
         const fileName = `${Math.random()}.${fileExt}`;
@@ -80,28 +127,46 @@ export default function NewCorrespondence() {
         signatureUrl = publicUrl;
       }
 
-      const { error } = await supabase
-        .from('correspondences')
-        .insert([{
-          number: formData.number,
-          type: formData.type,
-          date: formData.date,
-          from_entity: formData.to,
-          subject: formData.subject,
-          greeting: formData.greeting,
-          content: formData.content,
-          responsible_person: formData.responsiblePerson,
-          signature_url: signatureUrl,
-        }]);
+      const correspondenceData = {
+        number: formData.number,
+        type: formData.type,
+        date: formData.date,
+        from_entity: formData.to,
+        subject: formData.subject,
+        greeting: formData.greeting,
+        content: formData.content,
+        responsible_person: formData.responsiblePerson,
+        signature_url: signatureUrl,
+      };
 
-      if (error) throw error;
+      if (isEditMode && id) {
+        const { error } = await supabase
+          .from('correspondences')
+          .update(correspondenceData)
+          .eq('id', id);
 
-      toast({
-        title: "تم الحفظ بنجاح",
-        description: "تم حفظ المراسلة الجديدة",
-      });
-      
-      navigate('/');
+        if (error) throw error;
+
+        toast({
+          title: "تم التحديث بنجاح",
+          description: "تم تحديث المراسلة",
+        });
+        
+        navigate(`/correspondence/${id}`);
+      } else {
+        const { error } = await supabase
+          .from('correspondences')
+          .insert([correspondenceData]);
+
+        if (error) throw error;
+
+        toast({
+          title: "تم الحفظ بنجاح",
+          description: "تم حفظ المراسلة الجديدة",
+        });
+        
+        navigate('/');
+      }
     } catch (error) {
       toast({
         title: "خطأ",
@@ -113,11 +178,23 @@ export default function NewCorrespondence() {
     }
   };
 
+  if (fetchingData) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">مراسلة جديدة</h1>
-        <p className="text-muted-foreground mt-2">إنشاء مراسلة واردة أو صادرة جديدة</p>
+        <h1 className="text-3xl font-bold">
+          {isEditMode ? 'تعديل المراسلة' : 'مراسلة جديدة'}
+        </h1>
+        <p className="text-muted-foreground mt-2">
+          {isEditMode ? 'تعديل بيانات المراسلة' : 'إنشاء مراسلة واردة أو صادرة جديدة'}
+        </p>
       </div>
 
       <Card>
@@ -230,9 +307,14 @@ export default function NewCorrespondence() {
             <div className="flex gap-4">
               <Button type="submit" className="gap-2" disabled={loading}>
                 <Save className="h-4 w-4" />
-                {loading ? 'جاري الحفظ...' : 'حفظ المراسلة'}
+                {loading ? (isEditMode ? 'جاري التحديث...' : 'جاري الحفظ...') : (isEditMode ? 'تحديث المراسلة' : 'حفظ المراسلة')}
               </Button>
-              <Button type="button" variant="outline" onClick={() => navigate('/')} disabled={loading}>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => isEditMode ? navigate(`/correspondence/${id}`) : navigate('/')} 
+                disabled={loading}
+              >
                 إلغاء
               </Button>
             </div>

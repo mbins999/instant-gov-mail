@@ -43,6 +43,7 @@ const App = () => (
                         <Route path="/incoming" element={<Incoming />} />
                         <Route path="/outgoing" element={<Outgoing />} />
                         <Route path="/new" element={<NewCorrespondence />} />
+                        <Route path="/edit/:id" element={<NewCorrespondence />} />
                         <Route path="/correspondence/:id" element={<CorrespondenceDetail />} />
                         <Route path="/search" element={<SearchPage />} />
                         <Route path="/archive" element={<ArchivePage />} />
