@@ -17,7 +17,7 @@ import ArchivePage from "./pages/ArchivePage";
 import SettingsPage from "./pages/SettingsPage";
 import ImportCorrespondence from "./pages/ImportCorrespondence";
 import NotFound from "./pages/NotFound";
-import UsersManagement from "./pages/UsersManagement";
+import UsersManagement from "@/pages/UsersManagement";
 
 const queryClient = new QueryClient();
 
