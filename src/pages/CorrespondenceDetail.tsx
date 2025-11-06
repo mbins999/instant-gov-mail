@@ -265,7 +265,7 @@ export default function CorrespondenceDetail() {
               <div className="flex justify-between items-start border-b-2 border-border pb-6">
                 <div className="text-right space-y-2">
                   <div className="flex items-center gap-3">
-                    <span className="text-muted-foreground font-semibold">رقم الكتاب:</span>
+                    <span className="text-muted-foreground font-semibold">الإشارة:</span>
                     <span className="font-bold text-primary text-lg">{correspondence.number}</span>
                   </div>
                   <div className="flex items-center gap-3">
@@ -275,23 +275,19 @@ export default function CorrespondenceDetail() {
                 </div>
                 <div className="text-left space-y-2">
                   <div className="text-sm">
-                    <div className="font-semibold text-muted-foreground">التاريخ الهجري:</div>
+                    <div className="font-semibold text-muted-foreground">التاريخ:</div>
                     <div className="font-bold">
                       {new Date(correspondence.date).toLocaleDateString('ar-SA-u-ca-islamic', {
                         year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
+                        month: '2-digit',
+                        day: '2-digit'
                       })}
                     </div>
                   </div>
                   <div className="text-sm">
-                    <div className="font-semibold text-muted-foreground">التاريخ الميلادي:</div>
+                    <div className="font-semibold text-muted-foreground">الموافق:</div>
                     <div className="font-bold">
-                      {new Date(correspondence.date).toLocaleDateString('ar-SA', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
+                      {new Date(correspondence.date).toLocaleDateString('en-GB')}
                     </div>
                   </div>
                 </div>
@@ -322,7 +318,7 @@ export default function CorrespondenceDetail() {
               <div className="flex justify-between items-start border-b-2 border-border pb-6">
                 <div className="text-right space-y-2">
                   <div className="flex items-center gap-3">
-                    <span className="text-muted-foreground font-semibold">رقم الكتاب:</span>
+                    <span className="text-muted-foreground font-semibold">الإشارة:</span>
                     <span className="font-bold text-primary text-lg">{correspondence.number}</span>
                   </div>
                   <div className="flex items-center gap-3">
@@ -332,23 +328,19 @@ export default function CorrespondenceDetail() {
                 </div>
                 <div className="text-left space-y-2">
                   <div className="text-sm">
-                    <div className="font-semibold text-muted-foreground">التاريخ الهجري:</div>
+                    <div className="font-semibold text-muted-foreground">التاريخ:</div>
                     <div className="font-bold">
                       {new Date(correspondence.date).toLocaleDateString('ar-SA-u-ca-islamic', {
                         year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
+                        month: '2-digit',
+                        day: '2-digit'
                       })}
                     </div>
                   </div>
                   <div className="text-sm">
-                    <div className="font-semibold text-muted-foreground">التاريخ الميلادي:</div>
+                    <div className="font-semibold text-muted-foreground">الموافق:</div>
                     <div className="font-bold">
-                      {new Date(correspondence.date).toLocaleDateString('ar-SA', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
+                      {new Date(correspondence.date).toLocaleDateString('en-GB')}
                     </div>
                   </div>
                 </div>
