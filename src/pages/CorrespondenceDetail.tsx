@@ -93,33 +93,46 @@ export default function CorrespondenceDetail() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
-          <CardContent className="pt-6">
-            <div className="space-y-4 text-lg leading-relaxed whitespace-pre-wrap">
-              <div>{correspondence.greeting}</div>
-              
-              <div className="font-semibold text-center my-4">
-                الموضوع: {correspondence.subject}
+      <Card className="max-w-4xl mx-auto">
+        <CardContent className="pt-6">
+          <div className="space-y-4 text-lg leading-relaxed">
+            <div className="text-right mb-6">
+              <div className="font-semibold">{correspondence.number}</div>
+              <div className="mt-2">{correspondence.from}</div>
+              <div className="mt-2 text-muted-foreground">
+                {new Date(correspondence.date).toLocaleDateString('ar-SA-u-ca-islamic', {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit'
+                })}
               </div>
-              
-              <div>{correspondence.content}</div>
-              
-              {correspondence.responsible_person && (
-                <div className="mt-8 text-center">
-                  {correspondence.signature_url && (
-                    <div className="flex justify-center mb-2">
-                      <img 
-                        src={correspondence.signature_url} 
-                        alt="توقيع المسؤول" 
-                        className="max-h-32"
-                      />
-                    </div>
-                  )}
-                  <div className="font-semibold">{correspondence.responsible_person}</div>
-                </div>
-              )}
+              <div className="text-muted-foreground">
+                الموافق: {new Date(correspondence.date).toLocaleDateString('en-GB')}
+              </div>
             </div>
+            
+            <div className="whitespace-pre-wrap">{correspondence.greeting}</div>
+            
+            <div className="font-semibold text-center my-4">
+              الموضوع: {correspondence.subject}
+            </div>
+            
+            <div className="whitespace-pre-wrap">{correspondence.content}</div>
+            
+            {correspondence.responsible_person && (
+              <div className="mt-8 text-center">
+                {correspondence.signature_url && (
+                  <div className="flex justify-center mb-2">
+                    <img 
+                      src={correspondence.signature_url} 
+                      alt="توقيع المسؤول" 
+                      className="max-h-32"
+                    />
+                  </div>
+                )}
+                <div className="font-semibold">{correspondence.responsible_person}</div>
+              </div>
+            )}
             
             {correspondence.attachments && correspondence.attachments.length > 0 && (
               <div className="mt-8 pt-6 border-t">
@@ -133,49 +146,9 @@ export default function CorrespondenceDetail() {
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>معلومات المراسلة</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <p className="text-sm text-muted-foreground">الرقم</p>
-                <p className="font-semibold">{correspondence.number}</p>
-              </div>
-              
-              <div>
-                <p className="text-sm text-muted-foreground">النوع</p>
-                <p className="font-semibold">
-                  {correspondence.type === 'incoming' ? 'واردة' : 'صادرة'}
-                </p>
-              </div>
-              
-              <div>
-                <p className="text-sm text-muted-foreground">من</p>
-                <p className="font-semibold">{correspondence.from}</p>
-              </div>
-              
-              <div>
-                <p className="text-sm text-muted-foreground">استلام بواسطة</p>
-                <p className="font-semibold">
-                  {correspondence.received_by_profile?.full_name || '-'}
-                </p>
-              </div>
-              
-              <div>
-                <p className="text-sm text-muted-foreground">التاريخ</p>
-                <p className="font-semibold">
-                  {new Date(correspondence.date).toLocaleDateString('en-GB')}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
