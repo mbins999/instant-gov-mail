@@ -11,15 +11,11 @@ import { correspondenceApi } from '@/services/correspondenceApi';
 export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isSignUp, setIsSignUp] = useState(false);
   const [username, setUsername] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [entityName, setEntityName] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   
   // بيانات النظام الخارجي
-  const [externalBaseUrl, setExternalBaseUrl] = useState('');
   const [externalUsername, setExternalUsername] = useState('');
   const [externalPassword, setExternalPassword] = useState('');
 
@@ -72,9 +68,9 @@ export default function Auth() {
         await supabase.auth.setSession(data.session);
         
         // الربط بالنظام الخارجي إذا تم إدخال البيانات
-        if (externalBaseUrl && externalUsername && externalPassword) {
+        if (externalUsername && externalPassword) {
           try {
-            await correspondenceApi.login(externalBaseUrl, externalUsername, externalPassword);
+            await correspondenceApi.login('', externalUsername, externalPassword);
           } catch (error) {
             console.error('External system connection failed:', error);
           }
@@ -96,51 +92,6 @@ export default function Auth() {
     }
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!username || !password || !fullName || !entityName) {
-      toast({
-        title: "خطأ",
-        description: "يرجى إدخال جميع البيانات",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const { data, error } = await supabase.functions.invoke('signup-with-username', {
-        body: { username, password, fullName, entityName }
-      });
-
-      if (error || data.error) {
-        toast({
-          title: "خطأ في إنشاء الحساب",
-          description: data.error || "اسم المستخدم موجود بالفعل",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (data.session) {
-        await supabase.auth.setSession(data.session);
-        toast({
-          title: "تم إنشاء الحساب بنجاح",
-          description: "مرحباً بك في نظام المراسلات",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ في الاتصال",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4" dir="rtl">
@@ -153,47 +104,18 @@ export default function Auth() {
           </div>
         </CardHeader>
         <CardContent className="pt-6">
-          <form onSubmit={isSignUp ? handleSignUp : handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder={isSignUp ? "اسم المستخدم (بالإنجليزية)" : "اسم المستخدم"}
+                placeholder="اسم المستخدم"
                 required
                 disabled={loading}
                 className="text-center"
-                pattern={isSignUp ? "[a-zA-Z0-9_]+" : undefined}
-                title={isSignUp ? "يجب استخدام أحرف إنجليزية وأرقام فقط" : undefined}
               />
             </div>
-
-            {isSignUp && (
-              <>
-                <div className="space-y-2">
-                  <Input
-                    type="text"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="الاسم الكامل (بالعربي)"
-                    required
-                    disabled={loading}
-                    className="text-center"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Input
-                    type="text"
-                    value={entityName}
-                    onChange={(e) => setEntityName(e.target.value)}
-                    placeholder="اسم الجهة"
-                    required
-                    disabled={loading}
-                    className="text-center"
-                  />
-                </div>
-              </>
-            )}
 
             <div className="space-y-2">
               <Input
@@ -210,26 +132,15 @@ export default function Auth() {
 
             <div className="pt-4 border-t border-border">
               <p className="text-sm text-muted-foreground text-center mb-3">
-                الربط مع النظام الخارجي (اختياري)
+                الربط مع وزارة الصحة (اختياري)
               </p>
-              
-              <div className="space-y-2">
-                <Input
-                  type="url"
-                  value={externalBaseUrl}
-                  onChange={(e) => setExternalBaseUrl(e.target.value)}
-                  placeholder="رابط النظام الخارجي"
-                  disabled={loading}
-                  className="text-center text-sm"
-                />
-              </div>
 
               <div className="space-y-2 mt-2">
                 <Input
                   type="text"
                   value={externalUsername}
                   onChange={(e) => setExternalUsername(e.target.value)}
-                  placeholder="اسم المستخدم للنظام الخارجي"
+                  placeholder="اسم المستخدم في وزارة الصحة"
                   disabled={loading}
                   className="text-center text-sm"
                 />
@@ -240,7 +151,7 @@ export default function Auth() {
                   type="password"
                   value={externalPassword}
                   onChange={(e) => setExternalPassword(e.target.value)}
-                  placeholder="كلمة المرور للنظام الخارجي"
+                  placeholder="كلمة المرور في وزارة الصحة"
                   disabled={loading}
                   className="text-center text-sm"
                 />
@@ -248,20 +159,7 @@ export default function Auth() {
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading 
-                ? (isSignUp ? "جاري إنشاء الحساب..." : "جاري تسجيل الدخول...") 
-                : (isSignUp ? "إنشاء حساب" : "تسجيل الدخول")
-              }
-            </Button>
-
-            <Button 
-              type="button" 
-              variant="ghost" 
-              className="w-full" 
-              onClick={() => setIsSignUp(!isSignUp)}
-              disabled={loading}
-            >
-              {isSignUp ? "لديك حساب؟ تسجيل الدخول" : "إنشاء حساب جديد"}
+              {loading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
             </Button>
           </form>
         </CardContent>

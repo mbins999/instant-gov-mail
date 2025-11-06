@@ -17,6 +17,7 @@ import ArchivePage from "./pages/ArchivePage";
 import SettingsPage from "./pages/SettingsPage";
 import ImportCorrespondence from "./pages/ImportCorrespondence";
 import NotFound from "./pages/NotFound";
+import UsersManagement from "./pages/UsersManagement";
 
 const queryClient = new QueryClient();
 
@@ -49,10 +50,11 @@ const App = () => (
                         <Route path="/edit/:id" element={<NewCorrespondence />} />
                         <Route path="/correspondence/:id" element={<CorrespondenceDetail />} />
                         <Route path="/search" element={<SearchPage />} />
-                        <Route path="/archive" element={<ArchivePage />} />
-                        <Route path="/import" element={<ImportCorrespondence />} />
-                        <Route path="/settings" element={<SettingsPage />} />
-                        <Route path="*" element={<NotFound />} />
+                  <Route path="/archive" element={<ArchivePage />} />
+                  <Route path="/import" element={<ImportCorrespondence />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/users" element={<UsersManagement />} />
+                  <Route path="*" element={<NotFound />} />
                       </Routes>
                     </main>
                   </div>

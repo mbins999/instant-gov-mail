@@ -13,6 +13,8 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useUserRole } from '@/hooks/useUserRole';
+import { Users } from 'lucide-react';
 
 const navigationItems = [
   { icon: Mail, label: 'البريد', path: '/incoming' },
@@ -22,10 +24,15 @@ const navigationItems = [
   { icon: Settings, label: 'الإعدادات', path: '/settings' },
 ];
 
+const adminNavigationItems = [
+  { icon: Users, label: 'إدارة المستخدمين', path: '/users' },
+];
+
 export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAdmin } = useUserRole();
   const [userName, setUserName] = useState('');
 
   useEffect(() => {
@@ -91,6 +98,32 @@ export default function Sidebar() {
             </Link>
           );
         })}
+        
+        {isAdmin && (
+          <>
+            <div className="my-4 border-t border-border" />
+            {adminNavigationItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+              
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
+                    isActive 
+                      ? "bg-primary text-primary-foreground" 
+                      : "hover:bg-secondary text-foreground"
+                  )}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span className="font-medium">{item.label}</span>
+                </Link>
+              );
+            })}
+          </>
+        )}
       </nav>
 
       <div className="p-4 border-t border-border">
