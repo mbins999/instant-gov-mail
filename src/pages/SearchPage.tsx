@@ -10,26 +10,55 @@ export default function SearchPage() {
   const [results, setResults] = useState(correspondences);
 
   useEffect(() => {
-    const searchText = searchParams.get('q') || '';
+    const number = searchParams.get('number') || '';
+    const entity = searchParams.get('entity') || '';
     const type = searchParams.get('type') || 'all';
+    const subject = searchParams.get('subject') || '';
+    const content = searchParams.get('content') || '';
+    const responsible = searchParams.get('responsible') || '';
     const dateFrom = searchParams.get('from') || '';
     const dateTo = searchParams.get('to') || '';
 
     let filtered = [...correspondences];
 
-    // فلتر النص
-    if (searchText) {
+    // فلتر رقم الكتاب
+    if (number) {
       filtered = filtered.filter(c => 
-        c.subject.toLowerCase().includes(searchText.toLowerCase()) ||
-        c.from.toLowerCase().includes(searchText.toLowerCase()) ||
-        c.number.toLowerCase().includes(searchText.toLowerCase()) ||
-        c.content.toLowerCase().includes(searchText.toLowerCase())
+        c.number.toLowerCase().includes(number.toLowerCase())
+      );
+    }
+
+    // فلتر الجهة
+    if (entity) {
+      filtered = filtered.filter(c => 
+        c.from.toLowerCase().includes(entity.toLowerCase())
       );
     }
 
     // فلتر النوع
     if (type !== 'all') {
       filtered = filtered.filter(c => c.type === type);
+    }
+
+    // فلتر الموضوع
+    if (subject) {
+      filtered = filtered.filter(c => 
+        c.subject.toLowerCase().includes(subject.toLowerCase())
+      );
+    }
+
+    // فلتر المحتوى
+    if (content) {
+      filtered = filtered.filter(c => 
+        c.content.toLowerCase().includes(content.toLowerCase())
+      );
+    }
+
+    // فلتر المسؤول
+    if (responsible) {
+      filtered = filtered.filter(c => 
+        c.responsible_person && c.responsible_person.toLowerCase().includes(responsible.toLowerCase())
+      );
     }
 
     // فلتر التاريخ
@@ -51,13 +80,37 @@ export default function SearchPage() {
     );
   }
 
+  const getSearchCriteria = () => {
+    const criteria = [];
+    if (searchParams.get('number')) criteria.push(`رقم: ${searchParams.get('number')}`);
+    if (searchParams.get('entity')) criteria.push(`جهة: ${searchParams.get('entity')}`);
+    if (searchParams.get('type') && searchParams.get('type') !== 'all') {
+      criteria.push(`نوع: ${searchParams.get('type') === 'incoming' ? 'واردة' : 'صادرة'}`);
+    }
+    if (searchParams.get('subject')) criteria.push(`موضوع: ${searchParams.get('subject')}`);
+    if (searchParams.get('content')) criteria.push(`محتوى: ${searchParams.get('content')}`);
+    if (searchParams.get('responsible')) criteria.push(`مسؤول: ${searchParams.get('responsible')}`);
+    if (searchParams.get('from')) criteria.push(`من: ${searchParams.get('from')}`);
+    if (searchParams.get('to')) criteria.push(`إلى: ${searchParams.get('to')}`);
+    return criteria;
+  };
+
+  const searchCriteria = getSearchCriteria();
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">نتائج البحث</h1>
-        <p className="text-muted-foreground mt-2">
-          {searchParams.get('q') && `نتائج البحث عن: "${searchParams.get('q')}"`}
-        </p>
+        {searchCriteria.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            <span className="text-muted-foreground">معايير البحث:</span>
+            {searchCriteria.map((criterion, index) => (
+              <span key={index} className="px-2 py-1 bg-secondary rounded-md text-sm">
+                {criterion}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       <Card>
