@@ -142,17 +142,33 @@ export default function CorrespondenceDetail() {
           display: none !important;
         }
         
-        /* Ensure attachments are visible */
-        #printable-content a,
-        #printable-content a * {
-          visibility: visible;
-        }
-        
         /* Better text rendering for print */
         #printable-content {
           color: black !important;
           font-size: 12pt !important;
           line-height: 1.6 !important;
+        }
+        
+        /* Page breaks for attachments */
+        .attachment-page {
+          page-break-before: always;
+          page-break-after: always;
+          page-break-inside: avoid;
+          height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .attachment-page img {
+          max-width: 100%;
+          max-height: 100%;
+          object-fit: contain;
+        }
+        
+        /* Hide attachment links in main content */
+        .attachment-links {
+          display: none !important;
         }
       }
     `;
@@ -244,7 +260,7 @@ export default function CorrespondenceDetail() {
               </div>
               
               {correspondence.attachments && correspondence.attachments.length > 0 && (
-                <div>
+                <div className="attachment-links">
                   <h3 className="font-semibold mb-3 text-xl">المرفقات:</h3>
                   <div className="space-y-3">
                     {correspondence.attachments.map((attachment, index) => (
@@ -303,7 +319,7 @@ export default function CorrespondenceDetail() {
             )}
             
             {correspondence.attachments && correspondence.attachments.length > 0 && (
-              <div className="mt-8 pt-6 border-t">
+              <div className="mt-8 pt-6 border-t attachment-links">
                 <h3 className="font-semibold mb-3">المرفقات:</h3>
                 <div className="space-y-2">
                   {correspondence.attachments.map((attachment, index) => (
@@ -320,6 +336,28 @@ export default function CorrespondenceDetail() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+        
+        {/* Print attachments on separate pages */}
+        {correspondence.attachments && correspondence.attachments.length > 0 && (
+          <div className="hidden print:block">
+            {correspondence.attachments.map((attachment, index) => (
+              <div key={index} className="attachment-page">
+                <img 
+                  src={attachment} 
+                  alt={`مرفق ${index + 1}`}
+                  onError={(e) => {
+                    // If image fails to load, show iframe for PDF
+                    const img = e.target as HTMLImageElement;
+                    const container = img.parentElement;
+                    if (container) {
+                      container.innerHTML = `<iframe src="${attachment}" width="100%" height="100%" style="border: none;"></iframe>`;
+                    }
+                  }}
+                />
+              </div>
+            ))}
           </div>
         )}
         </CardContent>
