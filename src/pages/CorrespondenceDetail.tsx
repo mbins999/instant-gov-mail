@@ -94,7 +94,13 @@ export default function CorrespondenceDetail() {
   };
 
   const handlePrint = () => {
-    window.print();
+    if (correspondence?.pdf_url) {
+      // Open PDF in new window for printing
+      window.open(correspondence.pdf_url, '_blank');
+    } else {
+      // Fallback to regular print
+      window.print();
+    }
   };
 
   useEffect(() => {

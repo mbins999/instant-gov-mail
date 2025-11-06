@@ -229,6 +229,19 @@ export default function NewCorrespondence() {
 
         if (error) throw error;
 
+        // Generate PDF for the correspondence
+        if (insertedData?.id) {
+          try {
+            await supabase.functions.invoke('generate-correspondence-pdf', {
+              body: { correspondenceId: insertedData.id }
+            });
+            console.log('PDF generation started for correspondence:', insertedData.id);
+          } catch (pdfError) {
+            console.error('Error generating PDF:', pdfError);
+            // Don't block the user flow if PDF generation fails
+          }
+        }
+
         // إرسال خارجي إذا طُلب ذلك
         if (shouldSendExternal && insertedData) {
           if (!correspondenceApi.isAuthenticated()) {

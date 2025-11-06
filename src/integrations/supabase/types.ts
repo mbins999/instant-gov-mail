@@ -26,6 +26,7 @@ export type Database = {
           id: string
           notes: string | null
           number: string
+          pdf_url: string | null
           received_at: string | null
           received_by: string | null
           received_by_entity: string | null
@@ -46,6 +47,7 @@ export type Database = {
           id?: string
           notes?: string | null
           number: string
+          pdf_url?: string | null
           received_at?: string | null
           received_by?: string | null
           received_by_entity?: string | null
@@ -66,6 +68,7 @@ export type Database = {
           id?: string
           notes?: string | null
           number?: string
+          pdf_url?: string | null
           received_at?: string | null
           received_by?: string | null
           received_by_entity?: string | null

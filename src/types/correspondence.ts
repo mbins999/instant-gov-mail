@@ -16,6 +16,7 @@ export interface Correspondence {
   notes?: string;
   received_by?: string;
   received_at?: string;
+  pdf_url?: string;
   received_by_profile?: {
     full_name: string;
     email: string;
