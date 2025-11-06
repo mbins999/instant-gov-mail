@@ -262,21 +262,21 @@ export default function CorrespondenceDetail() {
           {correspondence.display_type === 'attachment_only' ? (
             <div className="p-12 space-y-6">
               {/* Document Info */}
-              <div className="flex justify-between items-start border-b-2 border-border pb-6">
+              <div className="flex justify-between items-start border-b-2 border-foreground/20 pb-6">
                 <div className="text-right space-y-2">
                   <div className="flex items-center gap-3">
-                    <span className="text-muted-foreground font-semibold">الإشارة:</span>
-                    <span className="font-bold text-primary text-lg">{correspondence.number}</span>
+                    <span className="text-foreground/70 font-semibold">الإشارة:</span>
+                    <span className="font-bold text-foreground text-lg">{correspondence.number}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-muted-foreground font-semibold">من:</span>
-                    <span className="font-semibold">{correspondence.from}</span>
+                    <span className="text-foreground/70 font-semibold">من:</span>
+                    <span className="font-semibold text-foreground">{correspondence.from}</span>
                   </div>
                 </div>
                 <div className="text-left space-y-2">
                   <div className="text-sm">
-                    <div className="font-semibold text-muted-foreground">التاريخ:</div>
-                    <div className="font-bold">
+                    <div className="font-semibold text-foreground/70">التاريخ:</div>
+                    <div className="font-bold text-foreground">
                       {new Date(correspondence.date).toLocaleDateString('ar-SA-u-ca-islamic', {
                         year: 'numeric',
                         month: '2-digit',
@@ -285,8 +285,8 @@ export default function CorrespondenceDetail() {
                     </div>
                   </div>
                   <div className="text-sm">
-                    <div className="font-semibold text-muted-foreground">الموافق:</div>
-                    <div className="font-bold">
+                    <div className="font-semibold text-foreground/70">الموافق:</div>
+                    <div className="font-bold text-foreground">
                       {new Date(correspondence.date).toLocaleDateString('en-GB')}
                     </div>
                   </div>
@@ -295,7 +295,7 @@ export default function CorrespondenceDetail() {
               
               {correspondence.attachments && correspondence.attachments.length > 0 && (
                 <div className="attachment-links">
-                  <h3 className="font-bold text-xl mb-4 text-primary">المرفقات:</h3>
+                  <h3 className="font-bold text-xl mb-4 text-foreground">المرفقات:</h3>
                   <div className="space-y-3">
                     {correspondence.attachments.map((attachment, index) => (
                       <a
@@ -303,9 +303,9 @@ export default function CorrespondenceDetail() {
                         href={attachment}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-4 bg-secondary hover:bg-secondary/80 rounded-lg transition-all border-r-4 border-primary"
+                        className="flex items-center gap-3 p-4 bg-secondary hover:bg-secondary/80 rounded-lg transition-all border-r-4 border-foreground"
                       >
-                        <span className="text-base font-semibold">📎 مرفق رقم {index + 1}</span>
+                        <span className="text-base font-semibold text-foreground">📎 مرفق رقم {index + 1}</span>
                       </a>
                     ))}
                   </div>
@@ -315,21 +315,21 @@ export default function CorrespondenceDetail() {
           ) : (
             <div className="p-12 space-y-6">
               {/* Document Info */}
-              <div className="flex justify-between items-start border-b-2 border-border pb-6">
+              <div className="flex justify-between items-start border-b-2 border-foreground/20 pb-6">
                 <div className="text-right space-y-2">
                   <div className="flex items-center gap-3">
-                    <span className="text-muted-foreground font-semibold">الإشارة:</span>
-                    <span className="font-bold text-primary text-lg">{correspondence.number}</span>
+                    <span className="text-foreground/70 font-semibold">الإشارة:</span>
+                    <span className="font-bold text-foreground text-lg">{correspondence.number}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-muted-foreground font-semibold">من:</span>
-                    <span className="font-semibold">{correspondence.from}</span>
+                    <span className="text-foreground/70 font-semibold">من:</span>
+                    <span className="font-semibold text-foreground">{correspondence.from}</span>
                   </div>
                 </div>
                 <div className="text-left space-y-2">
                   <div className="text-sm">
-                    <div className="font-semibold text-muted-foreground">التاريخ:</div>
-                    <div className="font-bold">
+                    <div className="font-semibold text-foreground/70">التاريخ:</div>
+                    <div className="font-bold text-foreground">
                       {new Date(correspondence.date).toLocaleDateString('ar-SA-u-ca-islamic', {
                         year: 'numeric',
                         month: '2-digit',
@@ -338,8 +338,8 @@ export default function CorrespondenceDetail() {
                     </div>
                   </div>
                   <div className="text-sm">
-                    <div className="font-semibold text-muted-foreground">الموافق:</div>
-                    <div className="font-bold">
+                    <div className="font-semibold text-foreground/70">الموافق:</div>
+                    <div className="font-bold text-foreground">
                       {new Date(correspondence.date).toLocaleDateString('en-GB')}
                     </div>
                   </div>
@@ -347,29 +347,29 @@ export default function CorrespondenceDetail() {
               </div>
             
               {/* Greeting */}
-              <div className="text-right text-lg leading-loose">
+              <div className="text-right text-lg leading-loose text-foreground">
                 {correspondence.greeting}
               </div>
             
               {/* Subject */}
-              <div className="bg-primary/5 border-r-4 border-primary p-4 my-6">
+              <div className="bg-foreground/5 border-r-4 border-foreground p-4 my-6">
                 <div className="flex items-center gap-3">
-                  <span className="font-bold text-primary text-lg">الموضوع:</span>
-                  <span className="font-bold text-lg">{correspondence.subject}</span>
+                  <span className="font-bold text-foreground text-lg">الموضوع:</span>
+                  <span className="font-bold text-lg text-foreground">{correspondence.subject}</span>
                 </div>
               </div>
             
               {/* Content */}
-              <div className="text-right text-lg leading-loose whitespace-pre-wrap min-h-[200px] py-4">
+              <div className="text-right text-lg leading-loose whitespace-pre-wrap min-h-[200px] py-4 text-foreground">
                 {correspondence.content}
               </div>
             
               {/* Signature */}
               {correspondence.responsible_person && (
-                <div className="mt-12 pt-8 border-t-2 border-border">
+                <div className="mt-12 pt-8 border-t-2 border-foreground/20">
                   <div className="flex justify-between items-end">
                     <div className="text-right">
-                      <div className="text-muted-foreground text-sm mb-2">وتقبلوا فائق التقدير والاحترام،،</div>
+                      <div className="text-foreground/70 text-sm mb-2">وتقبلوا فائق التقدير والاحترام،،</div>
                     </div>
                     <div className="text-center">
                       {correspondence.signature_url && (
@@ -377,11 +377,11 @@ export default function CorrespondenceDetail() {
                           <img 
                             src={correspondence.signature_url} 
                             alt="توقيع المسؤول" 
-                            className="max-h-24 border-b-2 border-primary pb-2"
+                            className="max-h-24 border-b-2 border-foreground pb-2"
                           />
                         </div>
                       )}
-                      <div className="font-bold text-lg">{correspondence.responsible_person}</div>
+                      <div className="font-bold text-lg text-foreground">{correspondence.responsible_person}</div>
                     </div>
                   </div>
                 </div>
@@ -389,8 +389,8 @@ export default function CorrespondenceDetail() {
             
               {/* Attachments List */}
               {correspondence.attachments && correspondence.attachments.length > 0 && (
-                <div className="mt-8 pt-6 border-t-2 border-border attachment-links">
-                  <h3 className="font-bold text-xl mb-4 text-primary">المرفقات:</h3>
+                <div className="mt-8 pt-6 border-t-2 border-foreground/20 attachment-links">
+                  <h3 className="font-bold text-xl mb-4 text-foreground">المرفقات:</h3>
                   <div className="space-y-3">
                     {correspondence.attachments.map((attachment, index) => (
                       <a
@@ -398,9 +398,9 @@ export default function CorrespondenceDetail() {
                         href={attachment}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-4 bg-secondary hover:bg-secondary/80 rounded-lg transition-all border-r-4 border-primary"
+                        className="flex items-center gap-3 p-4 bg-secondary hover:bg-secondary/80 rounded-lg transition-all border-r-4 border-foreground"
                       >
-                        <span className="font-semibold">📎 مرفق رقم {index + 1}</span>
+                        <span className="font-semibold text-foreground">📎 مرفق رقم {index + 1}</span>
                       </a>
                     ))}
                   </div>
