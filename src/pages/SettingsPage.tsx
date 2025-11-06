@@ -1,72 +1,173 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Save } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { UserPlus, Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useUserRole } from '@/hooks/useUserRole';
+import { Navigate } from 'react-router-dom';
 
 export default function SettingsPage() {
+  const { isAdmin, loading: roleLoading } = useUserRole();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+    fullName: '',
+    entityName: 'وزارة الصحة',
+    role: 'user' as 'admin' | 'user'
+  });
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: 'خطأ',
+          description: 'يجب تسجيل الدخول أولاً',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('create-user', {
+        body: {
+          username: formData.username,
+          password: formData.password,
+          fullName: formData.fullName,
+          entityName: formData.entityName,
+          role: formData.role
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      toast({
+        title: 'تم بنجاح',
+        description: 'تم إنشاء المستخدم بنجاح',
+      });
+
+      setFormData({
+        username: '',
+        password: '',
+        fullName: '',
+        entityName: 'وزارة الصحة',
+        role: 'user'
+      });
+    } catch (error: any) {
+      toast({
+        title: 'خطأ',
+        description: error.message || 'فشل إنشاء المستخدم',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (roleLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">الإعدادات</h1>
-        <p className="text-muted-foreground mt-2">إعدادات النظام والحساب</p>
-      </div>
+    <div className="container mx-auto p-6 max-w-2xl">
+      <h1 className="text-3xl font-bold mb-6">إنشاء حساب جديد</h1>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>معلومات الجهة</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="org-name">اسم الجهة</Label>
-              <Input id="org-name" placeholder="اسم الجهة الحكومية" />
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <UserPlus className="h-5 w-5" />
+            إضافة مستخدم جديد
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleCreateUser} className="space-y-4">
+            <div>
+              <Label htmlFor="username">اسم المستخدم</Label>
+              <Input
+                id="username"
+                value={formData.username}
+                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                required
+              />
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="org-code">رمز الجهة</Label>
-              <Input id="org-code" placeholder="رمز الجهة" />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="org-address">العنوان</Label>
-              <Input id="org-address" placeholder="عنوان الجهة" />
-            </div>
-            
-            <Button className="gap-2">
-              <Save className="h-4 w-4" />
-              حفظ التغييرات
-            </Button>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>إعدادات المراسلات</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="incoming-prefix">بادئة الوارد</Label>
-              <Input id="incoming-prefix" placeholder="IN" defaultValue="IN" />
+            <div>
+              <Label htmlFor="password">كلمة المرور</Label>
+              <Input
+                id="password"
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                required
+              />
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="outgoing-prefix">بادئة الصادر</Label>
-              <Input id="outgoing-prefix" placeholder="OUT" defaultValue="OUT" />
+
+            <div>
+              <Label htmlFor="fullName">الاسم الكامل</Label>
+              <Input
+                id="fullName"
+                value={formData.fullName}
+                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                required
+              />
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="current-year">السنة الحالية</Label>
-              <Input id="current-year" placeholder="2024" defaultValue="2024" />
+
+            <div>
+              <Label htmlFor="entityName">اسم الجهة</Label>
+              <Input
+                id="entityName"
+                value={formData.entityName}
+                onChange={(e) => setFormData({ ...formData, entityName: e.target.value })}
+                required
+              />
             </div>
-            
-            <Button className="gap-2">
-              <Save className="h-4 w-4" />
-              حفظ التغييرات
+
+            <div>
+              <Label htmlFor="role">الصلاحية</Label>
+              <Select
+                value={formData.role}
+                onValueChange={(value: 'admin' | 'user') => setFormData({ ...formData, role: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">مستخدم</SelectItem>
+                  <SelectItem value="admin">مدير</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'إنشاء المستخدم'}
             </Button>
-          </CardContent>
-        </Card>
-      </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

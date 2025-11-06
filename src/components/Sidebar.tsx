@@ -21,10 +21,10 @@ const navigationItems = [
   { icon: Send, label: 'المرسل', path: '/outgoing' },
   { icon: Download, label: 'الوارد', path: '/import' },
   { icon: Archive, label: 'الأرشيف', path: '/archive' },
-  { icon: Settings, label: 'الإعدادات', path: '/settings' },
 ];
 
 const adminNavigationItems = [
+  { icon: Settings, label: 'إنشاء حساب', path: '/settings' },
   { icon: Users, label: 'إدارة المستخدمين', path: '/users' },
 ];
 
