@@ -25,7 +25,7 @@ export default function Incoming() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">المرسل</h1>
+        <h1 className="text-3xl font-bold">البريد</h1>
         <p className="text-muted-foreground mt-2">جميع المراسلات الواردة</p>
       </div>
 

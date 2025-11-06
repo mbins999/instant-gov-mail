@@ -14,8 +14,8 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
 const navigationItems = [
-  { icon: Mail, label: 'المرسل', path: '/incoming' },
-  { icon: Send, label: 'البريد', path: '/outgoing' },
+  { icon: Mail, label: 'البريد', path: '/incoming' },
+  { icon: Send, label: 'المرسل', path: '/outgoing' },
   { icon: Archive, label: 'الأرشيف', path: '/archive' },
   { icon: Settings, label: 'الربط مع النظام', path: '/api-settings' },
   { icon: Settings, label: 'الإعدادات', path: '/settings' },
