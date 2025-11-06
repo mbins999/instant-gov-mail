@@ -352,7 +352,7 @@ export default function CorrespondenceDetail() {
               </div>
             
               {/* Subject */}
-              <div className="bg-foreground/5 border-r-4 border-foreground p-4 my-6">
+              <div className="p-4 my-6">
                 <div className="flex items-center gap-3">
                   <span className="font-bold text-foreground text-lg">الموضوع:</span>
                   <span className="font-bold text-lg text-foreground">{correspondence.subject}</span>
