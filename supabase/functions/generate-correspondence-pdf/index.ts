@@ -22,8 +22,118 @@ interface CorrespondenceData {
 
 function generateHTMLContent(correspondence: CorrespondenceData): string {
   const isContentType = correspondence.display_type === 'content';
+  const isAttachmentOnly = correspondence.display_type === 'attachment_only';
   const hasAttachments = correspondence.attachments && correspondence.attachments.length > 0;
   
+  // If attachment only, generate simple attachments list
+  if (isAttachmentOnly && hasAttachments) {
+    return `
+      <!DOCTYPE html>
+      <html dir="rtl" lang="ar">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>المرفقات - ${correspondence.number}</title>
+        <style>
+          @page {
+            margin: 20mm;
+            size: A4;
+          }
+          
+          body {
+            font-family: 'Arial', 'Tahoma', sans-serif;
+            background: white;
+            color: #000;
+            margin: 0;
+            padding: 40px;
+          }
+          
+          .attachments-container {
+            max-width: 800px;
+            margin: 0 auto;
+          }
+          
+          .attachment-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            page-break-inside: avoid;
+          }
+          
+          .attachment-number {
+            flex: 0 0 60px;
+            height: 60px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+          }
+          
+          .attachment-icon {
+            font-size: 40px;
+            flex: 0 0 50px;
+            text-align: center;
+          }
+          
+          .attachment-info {
+            flex: 1;
+          }
+          
+          .attachment-name {
+            font-weight: 700;
+            font-size: 18px;
+            color: #111827;
+            margin-bottom: 4px;
+          }
+          
+          .attachment-type {
+            font-size: 14px;
+            color: #6b7280;
+          }
+          
+          @media print {
+            body {
+              print-color-adjust: exact;
+              -webkit-print-color-adjust: exact;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="attachments-container">
+          ${correspondence.attachments.map((url, index) => {
+            const fileName = url.split('/').pop() || `مرفق ${index + 1}`;
+            const fileExt = fileName.split('.').pop()?.toLowerCase();
+            const isPDF = fileExt === 'pdf';
+            
+            return `
+              <div class="attachment-item">
+                <div class="attachment-number">${index + 1}</div>
+                <div class="attachment-icon">${isPDF ? '📄' : '📎'}</div>
+                <div class="attachment-info">
+                  <div class="attachment-name">مرفق ${index + 1}</div>
+                  <div class="attachment-type">${fileName}</div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </body>
+      </html>
+    `;
+  }
+  
+  // For content type, generate full attachments section
   let attachmentsHTML = '';
   if (hasAttachments) {
     attachmentsHTML = `
