@@ -21,6 +21,7 @@ export type Database = {
           created_at: string | null
           date: string
           from_entity: string
+          greeting: string
           id: string
           notes: string | null
           number: string
@@ -36,6 +37,7 @@ export type Database = {
           created_at?: string | null
           date?: string
           from_entity: string
+          greeting?: string
           id?: string
           notes?: string | null
           number: string
@@ -51,6 +53,7 @@ export type Database = {
           created_at?: string | null
           date?: string
           from_entity?: string
+          greeting?: string
           id?: string
           notes?: string | null
           number?: string

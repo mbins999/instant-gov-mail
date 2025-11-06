@@ -20,6 +20,7 @@ export default function NewCorrespondence() {
     date: new Date().toISOString().split('T')[0],
     to: '',
     subject: '',
+    greeting: 'السيد/',
     content: '',
   });
 
@@ -45,6 +46,7 @@ export default function NewCorrespondence() {
           date: formData.date,
           from_entity: formData.to,
           subject: formData.subject,
+          greeting: formData.greeting,
           content: formData.content,
         }]);
 
@@ -133,6 +135,18 @@ export default function NewCorrespondence() {
                   disabled={loading}
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="greeting">التحية *</Label>
+              <Input
+                id="greeting"
+                value={formData.greeting}
+                onChange={(e) => setFormData({ ...formData, greeting: e.target.value })}
+                placeholder="السيد/محمد خالد علي        المحترم"
+                required
+                disabled={loading}
+              />
             </div>
 
             <div className="space-y-2">
