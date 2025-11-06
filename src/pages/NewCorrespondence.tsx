@@ -82,13 +82,24 @@ export default function NewCorrespondence() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="number">رقم الكتاب *</Label>
                 <Input
                   id="number"
                   value={formData.number}
                   onChange={(e) => setFormData({ ...formData, number: e.target.value })}
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="to">الجهة المستلمة *</Label>
+                <Input
+                  id="to"
+                  value={formData.to}
+                  onChange={(e) => setFormData({ ...formData, to: e.target.value })}
                   required
                   disabled={loading}
                 />
@@ -109,17 +120,6 @@ export default function NewCorrespondence() {
                   <div className="text-muted-foreground">الموافق: {new Date(formData.date).toLocaleDateString('en-GB')}</div>
                 </div>
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="to">الجهة المستلمة *</Label>
-              <Input
-                id="to"
-                value={formData.to}
-                onChange={(e) => setFormData({ ...formData, to: e.target.value })}
-                required
-                disabled={loading}
-              />
             </div>
 
             <div className="space-y-2">
