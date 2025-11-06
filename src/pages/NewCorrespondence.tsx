@@ -22,7 +22,10 @@ export default function NewCorrespondence() {
     subject: '',
     greeting: 'السيد/   المحترم\nالسلام عليكم ورحمة الله وبركاته ,,,',
     content: '\nوتفضلوا بقبول فائق الاحترام ,,,',
+    responsiblePerson: '',
   });
+  const [signatureFile, setSignatureFile] = useState<File | null>(null);
+  const [signaturePreview, setSignaturePreview] = useState<string>('');
 
   const hijriDate = useMemo(() => {
     const date = new Date(formData.date);
@@ -33,11 +36,50 @@ export default function NewCorrespondence() {
     }).format(date);
   }, [formData.date]);
 
+  const handleSignatureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type === 'image/png') {
+      setSignatureFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSignaturePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      toast({
+        title: "خطأ",
+        description: "يرجى اختيار صورة بصيغة PNG فقط",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
     try {
+      let signatureUrl = '';
+      
+      // Upload signature if provided
+      if (signatureFile) {
+        const fileExt = 'png';
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('signatures')
+          .upload(filePath, signatureFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('signatures')
+          .getPublicUrl(filePath);
+        
+        signatureUrl = publicUrl;
+      }
+
       const { error } = await supabase
         .from('correspondences')
         .insert([{
@@ -48,6 +90,8 @@ export default function NewCorrespondence() {
           subject: formData.subject,
           greeting: formData.greeting,
           content: formData.content,
+          responsible_person: formData.responsiblePerson,
+          signature_url: signatureUrl,
         }]);
 
       if (error) throw error;
@@ -155,6 +199,32 @@ export default function NewCorrespondence() {
                 required
                 disabled={loading}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="responsiblePerson">المسؤول</Label>
+              <Input
+                id="responsiblePerson"
+                value={formData.responsiblePerson}
+                onChange={(e) => setFormData({ ...formData, responsiblePerson: e.target.value })}
+                disabled={loading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="signature">توقيع المسؤول (PNG فقط)</Label>
+              <Input
+                id="signature"
+                type="file"
+                accept="image/png"
+                onChange={handleSignatureChange}
+                disabled={loading}
+              />
+              {signaturePreview && (
+                <div className="mt-2">
+                  <img src={signaturePreview} alt="معاينة التوقيع" className="max-h-32 border rounded" />
+                </div>
+              )}
             </div>
 
             <div className="flex gap-4">

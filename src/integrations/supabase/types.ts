@@ -27,6 +27,8 @@ export type Database = {
           number: string
           received_at: string | null
           received_by: string | null
+          responsible_person: string | null
+          signature_url: string | null
           subject: string
           type: string
           updated_at: string | null
@@ -43,6 +45,8 @@ export type Database = {
           number: string
           received_at?: string | null
           received_by?: string | null
+          responsible_person?: string | null
+          signature_url?: string | null
           subject: string
           type: string
           updated_at?: string | null
@@ -59,6 +63,8 @@ export type Database = {
           number?: string
           received_at?: string | null
           received_by?: string | null
+          responsible_person?: string | null
+          signature_url?: string | null
           subject?: string
           type?: string
           updated_at?: string | null
