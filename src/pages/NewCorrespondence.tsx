@@ -14,7 +14,7 @@ export default function NewCorrespondence() {
     type: '',
     subject: '',
     from: '',
-    to: '',
+    recipient: '',
     content: '',
   });
 
@@ -30,7 +30,7 @@ export default function NewCorrespondence() {
       type: '',
       subject: '',
       from: '',
-      to: '',
+      recipient: '',
       content: '',
     });
   };
@@ -78,12 +78,12 @@ export default function NewCorrespondence() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="to">إلى *</Label>
+                <Label htmlFor="recipient">مستلم الكتاب *</Label>
                 <Input
-                  id="to"
-                  value={formData.to}
-                  onChange={(e) => setFormData({ ...formData, to: e.target.value })}
-                  placeholder="الجهة المستقبلة"
+                  id="recipient"
+                  value={formData.recipient}
+                  onChange={(e) => setFormData({ ...formData, recipient: e.target.value })}
+                  placeholder="اسم مستلم الكتاب"
                   required
                 />
               </div>

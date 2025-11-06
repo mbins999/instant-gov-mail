@@ -3,7 +3,7 @@ import CorrespondenceTable from '@/components/CorrespondenceTable';
 import { mockCorrespondences } from '@/data/correspondenceData';
 
 export default function ArchivePage() {
-  const archivedCorrespondences = mockCorrespondences.filter(c => c.status === 'archived');
+  const archivedCorrespondences = mockCorrespondences;
 
   return (
     <div className="space-y-6">

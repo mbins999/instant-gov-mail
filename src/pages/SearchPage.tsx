@@ -19,7 +19,7 @@ export default function SearchPage() {
     const filtered = mockCorrespondences.filter(c => 
       c.subject.includes(searchTerm) ||
       c.from.includes(searchTerm) ||
-      c.to.includes(searchTerm) ||
+      c.recipient.includes(searchTerm) ||
       c.number.includes(searchTerm) ||
       c.content.includes(searchTerm)
     );

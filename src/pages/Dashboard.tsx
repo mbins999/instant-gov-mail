@@ -8,7 +8,6 @@ export default function Dashboard() {
   const recentCorrespondences = mockCorrespondences.slice(0, 5);
   const incomingCount = mockCorrespondences.filter(c => c.type === 'incoming').length;
   const outgoingCount = mockCorrespondences.filter(c => c.type === 'outgoing').length;
-  const pendingCount = mockCorrespondences.filter(c => c.status === 'pending').length;
   const totalCount = mockCorrespondences.length;
 
   return (
@@ -18,7 +17,7 @@ export default function Dashboard() {
         <p className="text-muted-foreground mt-2">نظرة عامة على المراسلات</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
           title="إجمالي المراسلات"
           value={totalCount}
@@ -36,12 +35,6 @@ export default function Dashboard() {
           value={outgoingCount}
           icon={Send}
           variant="default"
-        />
-        <StatCard
-          title="قيد الانتظار"
-          value={pendingCount}
-          icon={Clock}
-          variant="warning"
         />
       </div>
 

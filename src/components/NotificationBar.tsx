@@ -4,14 +4,12 @@ import { mockCorrespondences } from '@/data/correspondenceData';
 export default function NotificationBar() {
   const incomingCount = mockCorrespondences.filter(c => c.type === 'incoming').length;
   const outgoingCount = mockCorrespondences.filter(c => c.type === 'outgoing').length;
-  const pendingCount = mockCorrespondences.filter(c => c.status === 'pending').length;
   const totalCount = mockCorrespondences.length;
 
   const stats = [
     { label: 'الإجمالي', value: totalCount, icon: Archive, color: 'text-primary' },
     { label: 'الواردة', value: incomingCount, icon: Mail, color: 'text-success' },
     { label: 'الصادرة', value: outgoingCount, icon: Send, color: 'text-foreground' },
-    { label: 'قيد الانتظار', value: pendingCount, icon: Clock, color: 'text-warning' },
   ];
 
   return (

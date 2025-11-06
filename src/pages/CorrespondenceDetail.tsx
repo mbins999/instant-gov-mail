@@ -1,7 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Edit, Printer, Archive } from 'lucide-react';
 import { mockCorrespondences } from '@/data/correspondenceData';
 
@@ -21,12 +20,6 @@ export default function CorrespondenceDetail() {
     );
   }
 
-  const statusLabels = {
-    'pending': 'قيد الانتظار',
-    'in-progress': 'قيد المعالجة',
-    'completed': 'مكتمل',
-    'archived': 'مؤرشف',
-  };
 
   return (
     <div className="space-y-6">
@@ -98,22 +91,15 @@ export default function CorrespondenceDetail() {
               </div>
               
               <div>
-                <p className="text-sm text-muted-foreground">إلى</p>
-                <p className="font-semibold">{correspondence.to}</p>
+                <p className="text-sm text-muted-foreground">مستلم الكتاب</p>
+                <p className="font-semibold">{correspondence.recipient}</p>
               </div>
               
               <div>
                 <p className="text-sm text-muted-foreground">التاريخ</p>
                 <p className="font-semibold">
-                  {correspondence.date.toLocaleDateString('ar-SA')}
+                  {correspondence.date.toLocaleDateString('en-GB')}
                 </p>
-              </div>
-              
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">الحالة</p>
-                <Badge variant="outline">
-                  {statusLabels[correspondence.status]}
-                </Badge>
               </div>
             </CardContent>
           </Card>

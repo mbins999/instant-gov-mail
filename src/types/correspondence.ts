@@ -1,5 +1,4 @@
 export type CorrespondenceType = 'incoming' | 'outgoing';
-export type CorrespondenceStatus = 'pending' | 'in-progress' | 'completed' | 'archived';
 
 export interface Correspondence {
   id: string;
@@ -7,9 +6,8 @@ export interface Correspondence {
   type: CorrespondenceType;
   subject: string;
   from: string;
-  to: string;
+  recipient: string;
   date: Date;
-  status: CorrespondenceStatus;
   content: string;
   attachments?: string[];
   notes?: string;
