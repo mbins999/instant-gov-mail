@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import NotificationBar from "./components/NotificationBar";
 import AdvancedSearchBar from "./components/AdvancedSearchBar";
@@ -14,7 +14,6 @@ import NewCorrespondence from "./pages/NewCorrespondence";
 import CorrespondenceDetail from "./pages/CorrespondenceDetail";
 import SearchPage from "./pages/SearchPage";
 import ArchivePage from "./pages/ArchivePage";
-import SettingsPage from "./pages/SettingsPage";
 import ImportCorrespondence from "./pages/ImportCorrespondence";
 import NotFound from "./pages/NotFound";
 import UsersManagement from "@/pages/UsersManagement";
@@ -56,7 +55,7 @@ const App = () => (
                         <Route path="/search" element={<SearchPage />} />
                   <Route path="/archive" element={<ArchivePage />} />
                   <Route path="/import" element={<ImportCorrespondence />} />
-                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/settings" element={<Navigate to="/users" replace />} />
                   <Route path="/users" element={<UsersManagement />} />
                   <Route path="*" element={<NotFound />} />
                       </Routes>

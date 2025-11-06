@@ -4,7 +4,6 @@ import {
   Mail, 
   Send, 
   Archive, 
-  Settings,
   Plus,
   LogOut,
   Download
@@ -24,7 +23,6 @@ const navigationItems = [
 ];
 
 const adminNavigationItems = [
-  { icon: Settings, label: 'إنشاء حساب', path: '/settings' },
   { icon: Users, label: 'إدارة المستخدمين', path: '/users' },
 ];
 
