@@ -173,6 +173,29 @@ class CorrespondenceApiService {
     return await response.json();
   }
 
+  async updateAttachment(metadata: string, content: File) {
+    const config = this.getConfig();
+    if (!config) throw new Error('Not authenticated');
+
+    const formData = new FormData();
+    formData.append('metadata', metadata);
+    formData.append('content', content);
+
+    const response = await fetch(`${config.baseUrl}/user/correspondence/attachment/update`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error('Update attachment failed');
+    }
+
+    return await response.json();
+  }
+
   async getTransactionLog(docId: string) {
     const config = this.getConfig();
     if (!config) throw new Error('Not authenticated');
