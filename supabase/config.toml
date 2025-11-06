@@ -2,3 +2,6 @@ project_id = "rwsclxynczuimgnjmicp"
 
 [functions.login-with-username]
 verify_jwt = false
+
+[functions.signup-with-username]
+verify_jwt = false

@@ -10,7 +10,9 @@ import { Lock } from 'lucide-react';
 export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isSignUp, setIsSignUp] = useState(false);
   const [username, setUsername] = useState('');
+  const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -77,6 +79,52 @@ export default function Auth() {
     }
   };
 
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!username || !password || !fullName) {
+      toast({
+        title: "خطأ",
+        description: "يرجى إدخال جميع البيانات",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('signup-with-username', {
+        body: { username, password, fullName }
+      });
+
+      if (error || data.error) {
+        toast({
+          title: "خطأ في إنشاء الحساب",
+          description: data.error || "اسم المستخدم موجود بالفعل",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data.session) {
+        await supabase.auth.setSession(data.session);
+        toast({
+          title: "تم إنشاء الحساب بنجاح",
+          description: "مرحباً بك في نظام المراسلات",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ في الاتصال",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4" dir="rtl">
       <Card className="w-full max-w-md">
@@ -88,7 +136,7 @@ export default function Auth() {
           </div>
         </CardHeader>
         <CardContent className="pt-6">
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={isSignUp ? handleSignUp : handleLogin} className="space-y-4">
             <Input
               type="text"
               value={username}
@@ -98,6 +146,18 @@ export default function Auth() {
               disabled={loading}
               className="text-center"
             />
+
+            {isSignUp && (
+              <Input
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="الاسم الكامل"
+                required
+                disabled={loading}
+                className="text-center"
+              />
+            )}
 
             <Input
               type="password"
@@ -110,7 +170,20 @@ export default function Auth() {
             />
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
+              {loading 
+                ? (isSignUp ? "جاري إنشاء الحساب..." : "جاري تسجيل الدخول...") 
+                : (isSignUp ? "إنشاء حساب" : "تسجيل الدخول")
+              }
+            </Button>
+
+            <Button 
+              type="button" 
+              variant="ghost" 
+              className="w-full" 
+              onClick={() => setIsSignUp(!isSignUp)}
+              disabled={loading}
+            >
+              {isSignUp ? "لديك حساب؟ تسجيل الدخول" : "إنشاء حساب جديد"}
             </Button>
           </form>
         </CardContent>
