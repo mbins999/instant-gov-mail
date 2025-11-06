@@ -165,6 +165,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_by_username: { Args: { username_input: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -172,13 +173,9 @@ export type Database = {
         }
         Returns: boolean
       }
-      update_user_password: {
-        Args: { new_password: string; user_id_input: string }
+      set_password_hash: {
+        Args: { password_hash_input: string; user_id_input: string }
         Returns: boolean
-      }
-      verify_password: {
-        Args: { password_input: string; username_input: string }
-        Returns: Json
       }
     }
     Enums: {

@@ -6,6 +6,17 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// دالة لتشفير كلمة المرور باستخدام SHA-256
+async function hashPassword(password: string): Promise<string> {
+  const salt = crypto.randomUUID();
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password + salt);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return `${salt}:${hash}`;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -43,6 +54,9 @@ serve(async (req) => {
     const email = `${username}@correspondence.local`;
     const userId = crypto.randomUUID();
 
+    // تشفير كلمة المرور
+    const passwordHash = await hashPassword(password);
+
     // إنشاء ملف المستخدم
     const { error: profileError } = await supabase
       .from('profiles')
@@ -52,28 +66,13 @@ serve(async (req) => {
         full_name: fullName,
         email: email,
         entity_name: entityName,
+        password_hash: passwordHash,
       });
 
     if (profileError) {
       console.error('Profile error:', profileError);
       return new Response(
         JSON.stringify({ error: 'فشل إنشاء المستخدم' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // تحديث كلمة المرور
-    const { data: passwordUpdated, error: passwordError } = await supabase.rpc('update_user_password', {
-      user_id_input: userId,
-      new_password: password
-    });
-
-    if (passwordError || !passwordUpdated) {
-      console.error('Password error:', passwordError);
-      // حذف الملف الشخصي إذا فشل تعيين كلمة المرور
-      await supabase.from('profiles').delete().eq('id', userId);
-      return new Response(
-        JSON.stringify({ error: 'فشل تعيين كلمة المرور' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
