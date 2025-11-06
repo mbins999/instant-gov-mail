@@ -34,14 +34,18 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <div className="flex min-h-screen" dir="rtl">
-                  <Sidebar />
+                  <div className="print:hidden">
+                    <Sidebar />
+                  </div>
                   <div className="flex-1 flex flex-col">
-                    <div className="sticky top-0 z-40 bg-card border-b border-border py-4">
+                    <div className="sticky top-0 z-40 bg-card border-b border-border py-4 print:hidden">
                       <h1 className="text-2xl font-bold text-center text-primary">مراسلات</h1>
                     </div>
-                    <NotificationBar />
-                    <AdvancedSearchBar />
-                    <main className="flex-1 p-8 overflow-auto bg-background">
+                    <div className="print:hidden">
+                      <NotificationBar />
+                      <AdvancedSearchBar />
+                    </div>
+                    <main className="flex-1 p-8 overflow-auto bg-background print:p-0 print:overflow-visible">
                       <Routes>
                         <Route path="/" element={<Incoming />} />
                         <Route path="/incoming" element={<Incoming />} />

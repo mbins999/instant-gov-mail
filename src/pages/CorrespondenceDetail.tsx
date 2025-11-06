@@ -103,21 +103,56 @@ export default function CorrespondenceDetail() {
     style.id = 'print-styles';
     style.textContent = `
       @media print {
+        /* Hide everything by default */
         body * {
           visibility: hidden;
         }
+        
+        /* Show only the printable content */
         #printable-content,
         #printable-content * {
           visibility: visible;
         }
+        
+        /* Position printable content at top */
         #printable-content {
           position: absolute;
           left: 0;
           top: 0;
           width: 100%;
         }
+        
+        /* Remove Card styling for print */
+        #printable-content {
+          border: none !important;
+          box-shadow: none !important;
+          background: white !important;
+        }
+        
+        /* Page margins */
         @page {
           margin: 2cm;
+          size: A4;
+        }
+        
+        /* Hide buttons and navigation */
+        button,
+        nav,
+        .print\\:hidden {
+          display: none !important;
+        }
+        
+        /* Ensure attachments are visible */
+        #printable-content a,
+        #printable-content a * {
+          visibility: visible;
+        }
+        
+        /* Better text rendering for print */
+        #printable-content {
+          color: black !important;
+          font-size: 12pt !important;
+          line-height: 1.6 !important;
         }
       }
     `;
@@ -153,7 +188,7 @@ export default function CorrespondenceDetail() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between print:hidden">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowRight className="h-5 w-5" />
