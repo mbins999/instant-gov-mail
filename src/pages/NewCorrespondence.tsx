@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Save, Loader2, Send } from 'lucide-react';
+import { Save, Loader2, Send, Scan } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useParams } from 'react-router-dom';
 import { correspondenceApi } from '@/services/correspondenceApi';
@@ -124,6 +124,26 @@ export default function NewCorrespondence() {
 
   const removeExistingAttachment = (url: string) => {
     setExistingAttachments(prev => prev.filter(a => a !== url));
+  };
+
+  const handleScanDocument = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.capture = 'environment';
+    input.multiple = true;
+    input.onchange = (e) => {
+      const files = (e.target as HTMLInputElement).files;
+      if (files) {
+        const newFiles = Array.from(files);
+        setAttachmentFiles(prev => [...prev, ...newFiles]);
+        toast({
+          title: "تم المسح بنجاح",
+          description: `تم إضافة ${newFiles.length} ملف`,
+        });
+      }
+    };
+    input.click();
   };
 
   const handleSubmit = async (e: React.FormEvent, shouldSendExternal = false) => {
@@ -429,14 +449,26 @@ export default function NewCorrespondence() {
 
             <div className="space-y-2">
               <Label htmlFor="attachments">المرفقات {formData.displayType === 'attachment_only' && '*'}</Label>
-              <Input
-                id="attachments"
-                type="file"
-                multiple
-                onChange={handleAttachmentChange}
-                disabled={loading}
-                required={formData.displayType === 'attachment_only' && attachmentFiles.length === 0 && existingAttachments.length === 0}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="attachments"
+                  type="file"
+                  multiple
+                  onChange={handleAttachmentChange}
+                  disabled={loading}
+                  required={formData.displayType === 'attachment_only' && attachmentFiles.length === 0 && existingAttachments.length === 0}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleScanDocument}
+                  disabled={loading}
+                  title="مسح ضوئي من الكاميرا"
+                >
+                  <Scan className="h-4 w-4" />
+                </Button>
+              </div>
               {attachmentFiles.length > 0 && (
                 <div className="mt-2 space-y-2">
                   {attachmentFiles.map((file, index) => (

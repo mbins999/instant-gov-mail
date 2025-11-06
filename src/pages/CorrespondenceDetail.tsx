@@ -93,6 +93,10 @@ export default function CorrespondenceDetail() {
     }
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -142,7 +146,7 @@ export default function CorrespondenceDetail() {
           <Button variant="outline" size="icon" onClick={() => navigate(`/edit/${id}`)}>
             <Edit className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" onClick={handlePrint} title="طباعة">
             <Printer className="h-4 w-4" />
           </Button>
           <Button variant="outline" size="icon">
