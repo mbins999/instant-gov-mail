@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 const navigationItems = [
   { icon: Mail, label: 'البريد', path: '/incoming' },
   { icon: Send, label: 'المرسل', path: '/outgoing' },
-  { icon: Download, label: 'استيراد', path: '/import' },
+  { icon: Download, label: 'الوارد', path: '/import' },
   { icon: Archive, label: 'الأرشيف', path: '/archive' },
   { icon: Settings, label: 'الإعدادات', path: '/settings' },
 ];

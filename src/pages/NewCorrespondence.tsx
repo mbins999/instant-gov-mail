@@ -228,6 +228,24 @@ export default function NewCorrespondence() {
 
               await correspondenceApi.exportCorrespondence(metadata);
               
+              // البحث عن المستخدم المستلم بناءً على اسم الجهة
+              const { data: receiverProfile } = await supabase
+                .from('profiles')
+                .select('id, entity_name')
+                .eq('entity_name', formData.to)
+                .single();
+
+              // إذا وُجدت الجهة المستلمة، إنشاء نسخة من المراسلة في حسابها
+              if (receiverProfile) {
+                await supabase
+                  .from('correspondences')
+                  .insert([{
+                    ...correspondenceData,
+                    type: 'incoming',
+                    received_by_entity: receiverProfile.entity_name,
+                  }]);
+              }
+              
               toast({
                 title: "تم الإرسال بنجاح",
                 description: "تم حفظ وإرسال المراسلة للنظام الخارجي",

@@ -14,6 +14,7 @@ export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [username, setUsername] = useState('');
   const [fullName, setFullName] = useState('');
+  const [entityName, setEntityName] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   
@@ -98,7 +99,7 @@ export default function Auth() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!username || !password || !fullName) {
+    if (!username || !password || !fullName || !entityName) {
       toast({
         title: "خطأ",
         description: "يرجى إدخال جميع البيانات",
@@ -111,7 +112,7 @@ export default function Auth() {
 
     try {
       const { data, error } = await supabase.functions.invoke('signup-with-username', {
-        body: { username, password, fullName }
+        body: { username, password, fullName, entityName }
       });
 
       if (error || data.error) {
@@ -168,17 +169,30 @@ export default function Auth() {
             </div>
 
             {isSignUp && (
-              <div className="space-y-2">
-                <Input
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="الاسم الكامل (بالعربي)"
-                  required
-                  disabled={loading}
-                  className="text-center"
-                />
-              </div>
+              <>
+                <div className="space-y-2">
+                  <Input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="الاسم الكامل (بالعربي)"
+                    required
+                    disabled={loading}
+                    className="text-center"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Input
+                    type="text"
+                    value={entityName}
+                    onChange={(e) => setEntityName(e.target.value)}
+                    placeholder="اسم الجهة"
+                    required
+                    disabled={loading}
+                    className="text-center"
+                  />
+                </div>
+              </>
             )}
 
             <div className="space-y-2">

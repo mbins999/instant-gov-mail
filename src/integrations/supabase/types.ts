@@ -28,6 +28,7 @@ export type Database = {
           number: string
           received_at: string | null
           received_by: string | null
+          received_by_entity: string | null
           responsible_person: string | null
           signature_url: string | null
           subject: string
@@ -47,6 +48,7 @@ export type Database = {
           number: string
           received_at?: string | null
           received_by?: string | null
+          received_by_entity?: string | null
           responsible_person?: string | null
           signature_url?: string | null
           subject: string
@@ -66,6 +68,7 @@ export type Database = {
           number?: string
           received_at?: string | null
           received_by?: string | null
+          received_by_entity?: string | null
           responsible_person?: string | null
           signature_url?: string | null
           subject?: string
@@ -86,6 +89,7 @@ export type Database = {
         Row: {
           created_at: string | null
           email: string
+          entity_name: string | null
           full_name: string
           id: string
           username: string | null
@@ -93,6 +97,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           email: string
+          entity_name?: string | null
           full_name: string
           id: string
           username?: string | null
@@ -100,6 +105,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           email?: string
+          entity_name?: string | null
           full_name?: string
           id?: string
           username?: string | null

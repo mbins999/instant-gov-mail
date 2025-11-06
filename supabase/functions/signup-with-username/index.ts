@@ -12,11 +12,11 @@ serve(async (req) => {
   }
 
   try {
-    const { username, password, fullName } = await req.json();
+    const { username, password, fullName, entityName } = await req.json();
 
-    if (!username || !password || !fullName) {
+    if (!username || !password || !fullName || !entityName) {
       return new Response(
-        JSON.stringify({ error: 'Username, password, and full name are required' }),
+        JSON.stringify({ error: 'Username, password, full name, and entity name are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -70,6 +70,7 @@ serve(async (req) => {
         username: username,
         full_name: fullName,
         email: email,
+        entity_name: entityName,
       });
 
     if (profileError) {
