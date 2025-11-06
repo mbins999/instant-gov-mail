@@ -97,6 +97,40 @@ export default function CorrespondenceDetail() {
     window.print();
   };
 
+  useEffect(() => {
+    // Add print styles
+    const style = document.createElement('style');
+    style.id = 'print-styles';
+    style.textContent = `
+      @media print {
+        body * {
+          visibility: hidden;
+        }
+        #printable-content,
+        #printable-content * {
+          visibility: visible;
+        }
+        #printable-content {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+        }
+        @page {
+          margin: 2cm;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      const existingStyle = document.getElementById('print-styles');
+      if (existingStyle) {
+        existingStyle.remove();
+      }
+    };
+  }, []);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -156,7 +190,7 @@ export default function CorrespondenceDetail() {
       </div>
 
       <Card className="max-w-4xl mx-auto">
-        <CardContent className="pt-6">
+        <CardContent className="pt-6" id="printable-content">
           {correspondence.display_type === 'attachment_only' ? (
             <div className="space-y-4">
               <div className="text-right mb-6">
