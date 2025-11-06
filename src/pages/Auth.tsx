@@ -21,19 +21,12 @@ export default function Auth() {
 
   useEffect(() => {
     // التحقق من تسجيل الدخول
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate('/');
-      }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        navigate('/');
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    const token = localStorage.getItem('auth_token');
+    const user = localStorage.getItem('auth_user');
+    
+    if (token && user) {
+      navigate('/');
+    }
   }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -51,21 +44,23 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('login-with-username', {
+      const { data, error } = await supabase.functions.invoke('simple-login', {
         body: { username, password }
       });
 
-      if (error || data.error) {
+      if (error || data?.error) {
         toast({
           title: "خطأ في تسجيل الدخول",
-          description: "اسم المستخدم أو كلمة المرور غير صحيحة",
+          description: data?.error || "اسم المستخدم أو كلمة المرور غير صحيحة",
           variant: "destructive",
         });
         return;
       }
 
-      if (data.session) {
-        await supabase.auth.setSession(data.session);
+      if (data?.success && data?.user && data?.token) {
+        // تخزين التوكن والمستخدم في localStorage
+        localStorage.setItem('auth_token', data.token);
+        localStorage.setItem('auth_user', JSON.stringify(data.user));
         
         // الربط بالنظام الخارجي إذا تم إدخال البيانات
         if (externalUsername && externalPassword) {
@@ -78,10 +73,13 @@ export default function Auth() {
         
         toast({
           title: "تم تسجيل الدخول بنجاح",
-          description: "مرحباً بك في نظام المراسلات",
+          description: `مرحباً ${data.user.full_name}`,
         });
+        
+        navigate('/');
       }
     } catch (error) {
+      console.error('Login error:', error);
       toast({
         title: "خطأ",
         description: "حدث خطأ في الاتصال",

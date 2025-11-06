@@ -34,17 +34,14 @@ export default function Sidebar() {
   const [userName, setUserName] = useState('');
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase
-          .from('profiles')
-          .select('full_name')
-          .eq('id', user.id)
-          .single();
-        
-        if (data) {
-          setUserName(data.full_name);
+    const fetchUserProfile = () => {
+      const userData = localStorage.getItem('auth_user');
+      if (userData) {
+        try {
+          const user = JSON.parse(userData);
+          setUserName(user.full_name || user.username);
+        } catch (error) {
+          console.error('Error parsing user data:', error);
         }
       }
     };
@@ -53,16 +50,13 @@ export default function Sidebar() {
   }, []);
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({
-        title: "خطأ",
-        description: "فشل تسجيل الخروج",
-        variant: "destructive",
-      });
-    } else {
-      navigate('/auth');
-    }
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_user');
+    toast({
+      title: "تم تسجيل الخروج",
+      description: "تم تسجيل الخروج بنجاح",
+    });
+    navigate('/auth');
   };
 
   return (

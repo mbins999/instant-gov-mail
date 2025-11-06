@@ -12,19 +12,30 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // إعداد مستمع حالة المصادقة أولاً
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    // ثم التحقق من الجلسة الحالية
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    // التحقق من التوكن في localStorage
+    const token = localStorage.getItem('auth_token');
+    const userData = localStorage.getItem('auth_user');
+    
+    if (token && userData) {
+      try {
+        const parsedUser = JSON.parse(userData);
+        // إنشاء كائن user متوافق مع النوع المتوقع
+        setUser({
+          id: parsedUser.id,
+          email: parsedUser.username + '@correspondence.local',
+          user_metadata: parsedUser
+        } as User);
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_user');
+        setUser(null);
+      }
+    } else {
+      setUser(null);
+    }
+    
+    setLoading(false);
   }, []);
 
   if (loading) {
