@@ -3,6 +3,9 @@ project_id = "rwsclxynczuimgnjmicp"
 [functions.create-user]
 verify_jwt = true
 
+[functions.create-initial-user]
+verify_jwt = false
+
 [functions.login-with-username]
 verify_jwt = false
 
