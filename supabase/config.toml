@@ -11,3 +11,9 @@ verify_jwt = false
 
 [functions.signup-with-username]
 verify_jwt = false
+
+[functions.simple-login]
+verify_jwt = false
+
+[functions.simple-signup]
+verify_jwt = false

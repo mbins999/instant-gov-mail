@@ -1,0 +1,120 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { username, password, fullName, entityName, role } = await req.json();
+
+    if (!username || !password || !fullName || !entityName) {
+      return new Response(
+        JSON.stringify({ error: 'جميع الحقول مطلوبة' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // التحقق من أن اسم المستخدم غير موجود
+    const { data: existingUser } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('username', username)
+      .maybeSingle();
+
+    if (existingUser) {
+      return new Response(
+        JSON.stringify({ error: 'اسم المستخدم موجود مسبقاً' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // إنشاء البريد الإلكتروني الوهمي (للنظام الداخلي فقط)
+    const email = `${username}@correspondence.local`;
+    const userId = crypto.randomUUID();
+
+    // إنشاء ملف المستخدم
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert({
+        id: userId,
+        username: username,
+        full_name: fullName,
+        email: email,
+        entity_name: entityName,
+      });
+
+    if (profileError) {
+      console.error('Profile error:', profileError);
+      return new Response(
+        JSON.stringify({ error: 'فشل إنشاء المستخدم' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // تحديث كلمة المرور
+    const { data: passwordUpdated, error: passwordError } = await supabase.rpc('update_user_password', {
+      user_id_input: userId,
+      new_password: password
+    });
+
+    if (passwordError || !passwordUpdated) {
+      console.error('Password error:', passwordError);
+      // حذف الملف الشخصي إذا فشل تعيين كلمة المرور
+      await supabase.from('profiles').delete().eq('id', userId);
+      return new Response(
+        JSON.stringify({ error: 'فشل تعيين كلمة المرور' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // إضافة الدور
+    const userRole = role || 'user';
+    const { error: roleError } = await supabase
+      .from('user_roles')
+      .insert({
+        user_id: userId,
+        role: userRole,
+      });
+
+    if (roleError) {
+      console.error('Role error:', roleError);
+      await supabase.from('profiles').delete().eq('id', userId);
+      return new Response(
+        JSON.stringify({ error: 'فشل تعيين الصلاحية' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ 
+        success: true,
+        user: {
+          id: userId,
+          username,
+          fullName,
+          entityName,
+          role: userRole
+        }
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error:', errorMessage);
+    return new Response(
+      JSON.stringify({ error: errorMessage }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+});

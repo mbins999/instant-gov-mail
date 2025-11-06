@@ -116,6 +116,7 @@ export type Database = {
           entity_name: string | null
           full_name: string
           id: string
+          password_hash: string | null
           username: string | null
         }
         Insert: {
@@ -124,6 +125,7 @@ export type Database = {
           entity_name?: string | null
           full_name: string
           id: string
+          password_hash?: string | null
           username?: string | null
         }
         Update: {
@@ -132,6 +134,7 @@ export type Database = {
           entity_name?: string | null
           full_name?: string
           id?: string
+          password_hash?: string | null
           username?: string | null
         }
         Relationships: []
@@ -168,6 +171,14 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      update_user_password: {
+        Args: { new_password: string; user_id_input: string }
+        Returns: boolean
+      }
+      verify_password: {
+        Args: { password_input: string; username_input: string }
+        Returns: Json
       }
     }
     Enums: {
