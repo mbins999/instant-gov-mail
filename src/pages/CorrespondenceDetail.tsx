@@ -91,14 +91,16 @@ export default function CorrespondenceDetail() {
               </div>
               
               <div>
-                <p className="text-sm text-muted-foreground">مستلم الكتاب</p>
-                <p className="font-semibold">{correspondence.recipient}</p>
+                <p className="text-sm text-muted-foreground">استلام بواسطة</p>
+                <p className="font-semibold">
+                  {correspondence.received_by_profile?.full_name || '-'}
+                </p>
               </div>
               
               <div>
                 <p className="text-sm text-muted-foreground">التاريخ</p>
                 <p className="font-semibold">
-                  {correspondence.date.toLocaleDateString('en-GB')}
+                  {new Date(correspondence.date).toLocaleDateString('en-GB')}
                 </p>
               </div>
             </CardContent>

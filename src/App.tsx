@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import NotificationBar from "./components/NotificationBar";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Auth from "./pages/Auth";
 import Incoming from "./pages/Incoming";
 import Outgoing from "./pages/Outgoing";
 import NewCorrespondence from "./pages/NewCorrespondence";
@@ -23,26 +25,36 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <div className="flex min-h-screen" dir="rtl">
-          <Sidebar />
-          <div className="flex-1 flex flex-col">
-            <NotificationBar />
-            <main className="flex-1 p-8 overflow-auto">
-              <Routes>
-                <Route path="/" element={<Incoming />} />
-                <Route path="/incoming" element={<Incoming />} />
-                <Route path="/outgoing" element={<Outgoing />} />
-                <Route path="/new" element={<NewCorrespondence />} />
-                <Route path="/correspondence/:id" element={<CorrespondenceDetail />} />
-                <Route path="/search" element={<SearchPage />} />
-                <Route path="/archive" element={<ArchivePage />} />
-                <Route path="/api-settings" element={<ApiSettings />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </main>
-          </div>
-        </div>
+        <Routes>
+          <Route path="/auth" element={<Auth />} />
+          <Route
+            path="/*"
+            element={
+              <ProtectedRoute>
+                <div className="flex min-h-screen" dir="rtl">
+                  <Sidebar />
+                  <div className="flex-1 flex flex-col">
+                    <NotificationBar />
+                    <main className="flex-1 p-8 overflow-auto">
+                      <Routes>
+                        <Route path="/" element={<Incoming />} />
+                        <Route path="/incoming" element={<Incoming />} />
+                        <Route path="/outgoing" element={<Outgoing />} />
+                        <Route path="/new" element={<NewCorrespondence />} />
+                        <Route path="/correspondence/:id" element={<CorrespondenceDetail />} />
+                        <Route path="/search" element={<SearchPage />} />
+                        <Route path="/archive" element={<ArchivePage />} />
+                        <Route path="/api-settings" element={<ApiSettings />} />
+                        <Route path="/settings" element={<SettingsPage />} />
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </main>
+                  </div>
+                </div>
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

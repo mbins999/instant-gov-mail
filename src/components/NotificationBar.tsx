@@ -1,10 +1,11 @@
-import { Mail, Send, Archive, Clock } from 'lucide-react';
-import { mockCorrespondences } from '@/data/correspondenceData';
+import { Mail, Send, Archive } from 'lucide-react';
+import { useCorrespondences } from '@/hooks/useCorrespondences';
 
 export default function NotificationBar() {
-  const incomingCount = mockCorrespondences.filter(c => c.type === 'incoming').length;
-  const outgoingCount = mockCorrespondences.filter(c => c.type === 'outgoing').length;
-  const totalCount = mockCorrespondences.length;
+  const { correspondences } = useCorrespondences();
+  const incomingCount = correspondences.filter(c => c.type === 'incoming').length;
+  const outgoingCount = correspondences.filter(c => c.type === 'outgoing').length;
+  const totalCount = correspondences.length;
 
   const stats = [
     { label: 'الإجمالي', value: totalCount, icon: Archive, color: 'text-primary' },
