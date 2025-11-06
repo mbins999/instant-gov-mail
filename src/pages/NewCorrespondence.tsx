@@ -118,7 +118,6 @@ export default function NewCorrespondence() {
                   id="subject"
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  placeholder="موضوع المراسلة"
                   required
                   disabled={loading}
                 />
@@ -130,7 +129,6 @@ export default function NewCorrespondence() {
                   id="to"
                   value={formData.to}
                   onChange={(e) => setFormData({ ...formData, to: e.target.value })}
-                  placeholder="الجهة المستلمة"
                   required
                   disabled={loading}
                 />
@@ -155,7 +153,6 @@ export default function NewCorrespondence() {
                 id="content"
                 value={formData.content}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                placeholder="محتوى المراسلة"
                 rows={8}
                 required
                 disabled={loading}
