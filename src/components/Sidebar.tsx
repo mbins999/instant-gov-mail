@@ -6,14 +6,13 @@ import {
   Archive, 
   Plus,
   LogOut,
-  Download
+  Download,
+  Users
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useUserRole } from '@/hooks/useUserRole';
-import { Users } from 'lucide-react';
 
 const navigationItems = [
   { icon: Mail, label: 'البريد', path: '/incoming' },
