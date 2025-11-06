@@ -103,8 +103,8 @@ export default function NewCorrespondence() {
                   disabled={loading}
                 />
                 <div className="text-sm space-y-1 mt-2">
-                  <div className="text-muted-foreground">الهجري: {hijriDate}</div>
-                  <div className="text-muted-foreground">الميلادي: {new Date(formData.date).toLocaleDateString('ar-SA')}</div>
+                  <div className="text-muted-foreground">التاريخ: {hijriDate}</div>
+                  <div className="text-muted-foreground">الموافق: {new Date(formData.date).toLocaleDateString('ar-SA')}</div>
                 </div>
               </div>
             </div>
