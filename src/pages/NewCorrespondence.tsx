@@ -15,7 +15,7 @@ export default function NewCorrespondence() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    type: '',
+    type: 'outgoing',
     number: '',
     date: new Date().toISOString().split('T')[0],
     to: '',
@@ -71,24 +71,6 @@ export default function NewCorrespondence() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="type">نوع المراسلة *</Label>
-              <Select
-                value={formData.type}
-                onValueChange={(value) => setFormData({ ...formData, type: value })}
-                required
-                disabled={loading}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="اختر نوع المراسلة" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="incoming">واردة</SelectItem>
-                  <SelectItem value="outgoing">صادرة</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="number">رقم الكتاب *</Label>
               <Input
