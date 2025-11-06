@@ -16,10 +16,11 @@ export default function NewCorrespondence() {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     type: '',
-    subject: '',
-    from: '',
-    content: '',
     number: '',
+    date: new Date().toISOString().split('T')[0],
+    to: '',
+    subject: '',
+    content: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,8 +33,9 @@ export default function NewCorrespondence() {
         .insert([{
           number: formData.number,
           type: formData.type,
+          date: formData.date,
+          from_entity: formData.to,
           subject: formData.subject,
-          from_entity: formData.from,
           content: formData.content,
         }]);
 
@@ -69,48 +71,58 @@ export default function NewCorrespondence() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="number">رقم الكتاب *</Label>
-                <Input
-                  id="number"
-                  value={formData.number}
-                  onChange={(e) => setFormData({ ...formData, number: e.target.value })}
-                  placeholder="IN-2024-001"
-                  required
-                  disabled={loading}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="type">نوع المراسلة *</Label>
+              <Select
+                value={formData.type}
+                onValueChange={(value) => setFormData({ ...formData, type: value })}
+                required
+                disabled={loading}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="اختر نوع المراسلة" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="incoming">واردة</SelectItem>
+                  <SelectItem value="outgoing">صادرة</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="type">نوع المراسلة *</Label>
-                <Select
-                  value={formData.type}
-                  onValueChange={(value) => setFormData({ ...formData, type: value })}
-                  required
-                  disabled={loading}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="اختر نوع المراسلة" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="incoming">واردة</SelectItem>
-                    <SelectItem value="outgoing">صادرة</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="number">رقم الكتاب *</Label>
+              <Input
+                id="number"
+                value={formData.number}
+                onChange={(e) => setFormData({ ...formData, number: e.target.value })}
+                placeholder="IN-2024-001"
+                required
+                disabled={loading}
+              />
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="from">من *</Label>
-                <Input
-                  id="from"
-                  value={formData.from}
-                  onChange={(e) => setFormData({ ...formData, from: e.target.value })}
-                  placeholder="الجهة المرسلة"
-                  required
-                  disabled={loading}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="date">التاريخ *</Label>
+              <Input
+                id="date"
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                required
+                disabled={loading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="to">الجهة المستلمة *</Label>
+              <Input
+                id="to"
+                value={formData.to}
+                onChange={(e) => setFormData({ ...formData, to: e.target.value })}
+                placeholder="الجهة المستلمة"
+                required
+                disabled={loading}
+              />
             </div>
 
             <div className="space-y-2">
