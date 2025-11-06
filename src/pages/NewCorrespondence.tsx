@@ -11,6 +11,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useParams } from 'react-router-dom';
 import { correspondenceApi } from '@/services/correspondenceApi';
 
+interface Entity {
+  id: string;
+  name: string;
+  type: 'sender' | 'receiver' | 'both';
+}
+
 export default function NewCorrespondence() {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -18,6 +24,7 @@ export default function NewCorrespondence() {
   const isEditMode = !!id;
   const [loading, setLoading] = useState(false);
   const [fetchingData, setFetchingData] = useState(isEditMode);
+  const [entities, setEntities] = useState<Entity[]>([]);
   const [formData, setFormData] = useState({
     type: 'outgoing',
     number: '',
@@ -33,6 +40,25 @@ export default function NewCorrespondence() {
   const [signaturePreview, setSignaturePreview] = useState<string>('');
   const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
   const [existingAttachments, setExistingAttachments] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Fetch entities for dropdown
+    const fetchEntities = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('entities')
+          .select('*')
+          .order('name');
+
+        if (error) throw error;
+        setEntities((data || []) as Entity[]);
+      } catch (error) {
+        console.error('Error fetching entities:', error);
+      }
+    };
+
+    fetchEntities();
+  }, []);
 
   useEffect(() => {
     if (isEditMode && id) {
@@ -369,13 +395,24 @@ export default function NewCorrespondence() {
 
               <div className="space-y-2">
                 <Label htmlFor="to">الجهة المستلمة *</Label>
-                <Input
-                  id="to"
+                <Select
                   value={formData.to}
-                  onChange={(e) => setFormData({ ...formData, to: e.target.value })}
-                  required
+                  onValueChange={(value) => setFormData({ ...formData, to: value })}
                   disabled={loading}
-                />
+                >
+                  <SelectTrigger className="bg-background">
+                    <SelectValue placeholder="اختر الجهة المستلمة" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border shadow-lg z-50">
+                    {entities
+                      .filter(e => e.type === 'receiver' || e.type === 'both')
+                      .map((entity) => (
+                        <SelectItem key={entity.id} value={entity.name}>
+                          {entity.name}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">

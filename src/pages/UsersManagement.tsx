@@ -4,11 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Navigate } from 'react-router-dom';
-import { UserPlus, Loader2 } from 'lucide-react';
+import { UserPlus, Loader2, Building2, Trash2, Plus } from 'lucide-react';
 
 interface User {
   id: string;
@@ -18,22 +19,32 @@ interface User {
   role: string;
 }
 
+interface Entity {
+  id: string;
+  name: string;
+  type: 'sender' | 'receiver' | 'both';
+}
+
 export default function UsersManagement() {
   const { isAdmin, loading: roleLoading } = useUserRole();
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
+  const [entities, setEntities] = useState<Entity[]>([]);
   const [loading, setLoading] = useState(false);
+  const [newEntityName, setNewEntityName] = useState('');
+  const [newEntityType, setNewEntityType] = useState<'sender' | 'receiver' | 'both'>('both');
   const [formData, setFormData] = useState({
     username: '',
     password: '',
     fullName: '',
-    entityName: 'وزارة الصحة',
+    entityName: '',
     role: 'user' as 'admin' | 'user'
   });
 
   useEffect(() => {
     if (isAdmin) {
       fetchUsers();
+      fetchEntities();
     }
   }, [isAdmin]);
 
@@ -63,6 +74,20 @@ export default function UsersManagement() {
       }
     } catch (error) {
       console.error('Error fetching users:', error);
+    }
+  };
+
+  const fetchEntities = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('entities')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      setEntities((data || []) as Entity[]);
+    } catch (error) {
+      console.error('Error fetching entities:', error);
     }
   };
 
@@ -110,7 +135,7 @@ export default function UsersManagement() {
         username: '',
         password: '',
         fullName: '',
-        entityName: 'وزارة الصحة',
+        entityName: '',
         role: 'user'
       });
 
@@ -123,6 +148,64 @@ export default function UsersManagement() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddEntity = async () => {
+    if (!newEntityName.trim()) {
+      toast({
+        title: 'خطأ',
+        description: 'يرجى إدخال اسم الجهة',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('entities')
+        .insert({ name: newEntityName, type: newEntityType });
+
+      if (error) throw error;
+
+      toast({
+        title: 'تم بنجاح',
+        description: 'تم إضافة الجهة بنجاح',
+      });
+
+      setNewEntityName('');
+      setNewEntityType('both');
+      fetchEntities();
+    } catch (error: any) {
+      toast({
+        title: 'خطأ',
+        description: error.message || 'فشل إضافة الجهة',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleDeleteEntity = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('entities')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'تم بنجاح',
+        description: 'تم حذف الجهة بنجاح',
+      });
+
+      fetchEntities();
+    } catch (error: any) {
+      toast({
+        title: 'خطأ',
+        description: error.message || 'فشل حذف الجهة',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -139,105 +222,199 @@ export default function UsersManagement() {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
-      <h1 className="text-3xl font-bold mb-6">إدارة المستخدمين</h1>
+    <div className="container mx-auto p-6 max-w-7xl">
+      <h1 className="text-3xl font-bold mb-6">إدارة</h1>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserPlus className="h-5 w-5" />
-              إضافة مستخدم جديد
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleCreateUser} className="space-y-4">
-              <div>
-                <Label htmlFor="username">اسم المستخدم</Label>
-                <Input
-                  id="username"
-                  value={formData.username}
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  required
-                />
-              </div>
+      <Tabs defaultValue="users" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsTrigger value="users">المستخدمين</TabsTrigger>
+          <TabsTrigger value="entities">الجهات</TabsTrigger>
+        </TabsList>
 
-              <div>
-                <Label htmlFor="password">كلمة المرور</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="fullName">الاسم الكامل</Label>
-                <Input
-                  id="fullName"
-                  value={formData.fullName}
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="entityName">اسم الجهة</Label>
-                <Input
-                  id="entityName"
-                  value={formData.entityName}
-                  onChange={(e) => setFormData({ ...formData, entityName: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="role">الصلاحية</Label>
-                <Select
-                  value={formData.role}
-                  onValueChange={(value: 'admin' | 'user') => setFormData({ ...formData, role: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="user">مستخدم</SelectItem>
-                    <SelectItem value="admin">مدير</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'إنشاء المستخدم'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>المستخدمون الحاليون</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {users.map((user) => (
-                <div key={user.id} className="p-3 border rounded-lg">
-                  <div className="font-semibold">{user.full_name}</div>
-                  <div className="text-sm text-muted-foreground">@{user.username}</div>
-                  <div className="text-sm text-muted-foreground">{user.entity_name}</div>
-                  <div className="text-xs mt-1">
-                    <span className={`px-2 py-1 rounded ${user.role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-secondary/10'}`}>
-                      {user.role === 'admin' ? 'مدير' : 'مستخدم'}
-                    </span>
+        <TabsContent value="users">
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <UserPlus className="h-5 w-5" />
+                  إضافة مستخدم جديد
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleCreateUser} className="space-y-4">
+                  <div>
+                    <Label htmlFor="username">اسم المستخدم</Label>
+                    <Input
+                      id="username"
+                      value={formData.username}
+                      onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                      required
+                    />
                   </div>
+
+                  <div>
+                    <Label htmlFor="password">كلمة المرور</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="fullName">الاسم الكامل</Label>
+                    <Input
+                      id="fullName"
+                      value={formData.fullName}
+                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="entityName">اسم الجهة</Label>
+                    <Select
+                      value={formData.entityName}
+                      onValueChange={(value) => setFormData({ ...formData, entityName: value })}
+                    >
+                      <SelectTrigger className="bg-background">
+                        <SelectValue placeholder="اختر الجهة" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border shadow-lg z-50">
+                        {entities.map((entity) => (
+                          <SelectItem key={entity.id} value={entity.name}>
+                            {entity.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="role">الصلاحية</Label>
+                    <Select
+                      value={formData.role}
+                      onValueChange={(value: 'admin' | 'user') => setFormData({ ...formData, role: value })}
+                    >
+                      <SelectTrigger className="bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border shadow-lg z-50">
+                        <SelectItem value="user">مستخدم</SelectItem>
+                        <SelectItem value="admin">مدير</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'إنشاء المستخدم'}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>المستخدمون الحاليون</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                  {users.map((user) => (
+                    <div key={user.id} className="p-3 border rounded-lg">
+                      <div className="font-semibold">{user.full_name}</div>
+                      <div className="text-sm text-muted-foreground">@{user.username}</div>
+                      <div className="text-sm text-muted-foreground">{user.entity_name}</div>
+                      <div className="text-xs mt-1">
+                        <span className={`px-2 py-1 rounded ${user.role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-secondary/10'}`}>
+                          {user.role === 'admin' ? 'مدير' : 'مستخدم'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="entities">
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  إضافة جهة جديدة
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="entityName">اسم الجهة</Label>
+                    <Input
+                      id="entityName"
+                      value={newEntityName}
+                      onChange={(e) => setNewEntityName(e.target.value)}
+                      placeholder="أدخل اسم الجهة"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="entityType">نوع الجهة</Label>
+                    <Select
+                      value={newEntityType}
+                      onValueChange={(value: 'sender' | 'receiver' | 'both') => setNewEntityType(value)}
+                    >
+                      <SelectTrigger className="bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border shadow-lg z-50">
+                        <SelectItem value="both">مرسل ومستقبل</SelectItem>
+                        <SelectItem value="sender">مرسل فقط</SelectItem>
+                        <SelectItem value="receiver">مستقبل فقط</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button onClick={handleAddEntity} className="w-full gap-2">
+                    <Plus className="h-4 w-4" />
+                    إضافة الجهة
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>الجهات الحالية</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                  {entities.map((entity) => (
+                    <div key={entity.id} className="p-3 border rounded-lg flex justify-between items-center">
+                      <div>
+                        <div className="font-semibold">{entity.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {entity.type === 'both' ? 'مرسل ومستقبل' : entity.type === 'sender' ? 'مرسل فقط' : 'مستقبل فقط'}
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteEntity(entity.id)}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

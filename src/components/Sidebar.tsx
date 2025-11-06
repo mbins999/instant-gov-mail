@@ -23,7 +23,7 @@ const navigationItems = [
 ];
 
 const adminNavigationItems = [
-  { icon: Users, label: 'إدارة المستخدمين', path: '/users' },
+  { icon: Users, label: 'إدارة', path: '/users' },
 ];
 
 export default function Sidebar() {
