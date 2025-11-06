@@ -36,6 +36,7 @@ export default function CorrespondenceDetail() {
             greeting: data.greeting,
             responsible_person: data.responsible_person,
             signature_url: data.signature_url,
+            display_type: data.display_type,
           } as any);
         }
       } catch (err) {
@@ -95,7 +96,44 @@ export default function CorrespondenceDetail() {
 
       <Card className="max-w-4xl mx-auto">
         <CardContent className="pt-6">
-          <div className="space-y-4 text-lg leading-relaxed">
+          {correspondence.display_type === 'attachment_only' ? (
+            <div className="space-y-4">
+              <div className="text-right mb-6">
+                <div className="font-semibold">{correspondence.number}</div>
+                <div className="mt-2">{correspondence.from}</div>
+                <div className="mt-2 text-muted-foreground">
+                  {new Date(correspondence.date).toLocaleDateString('ar-SA-u-ca-islamic', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                  })}
+                </div>
+                <div className="text-muted-foreground">
+                  الموافق: {new Date(correspondence.date).toLocaleDateString('en-GB')}
+                </div>
+              </div>
+              
+              {correspondence.attachments && correspondence.attachments.length > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-3 text-xl">المرفقات:</h3>
+                  <div className="space-y-3">
+                    {correspondence.attachments.map((attachment, index) => (
+                      <a
+                        key={index}
+                        href={attachment}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 p-4 bg-muted hover:bg-muted/80 rounded-lg transition-colors"
+                      >
+                        <span className="text-base">📎 مرفق {index + 1}</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4 text-lg leading-relaxed">
             <div className="text-right mb-6">
               <div className="font-semibold">{correspondence.number}</div>
               <div className="mt-2">{correspondence.from}</div>
@@ -139,14 +177,21 @@ export default function CorrespondenceDetail() {
                 <h3 className="font-semibold mb-3">المرفقات:</h3>
                 <div className="space-y-2">
                   {correspondence.attachments.map((attachment, index) => (
-                    <div key={index} className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                      <span className="text-sm">{attachment}</span>
-                    </div>
+                    <a
+                      key={index}
+                      href={attachment}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 p-3 bg-muted hover:bg-muted/80 rounded-lg transition-colors"
+                    >
+                      <span className="text-sm">📎 مرفق {index + 1}</span>
+                    </a>
                   ))}
                 </div>
               </div>
             )}
           </div>
+        )}
         </CardContent>
       </Card>
     </div>

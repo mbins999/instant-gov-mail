@@ -11,6 +11,7 @@ export interface Correspondence {
   greeting?: string;
   responsible_person?: string;
   signature_url?: string;
+  display_type?: 'content' | 'attachment_only';
   attachments?: string[];
   notes?: string;
   received_by?: string;

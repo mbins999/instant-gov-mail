@@ -26,9 +26,12 @@ export default function NewCorrespondence() {
     greeting: 'السيد/   المحترم\nالسلام عليكم ورحمة الله وبركاته ,,,',
     content: '\nوتفضلوا بقبول فائق الاحترام ,,,',
     responsiblePerson: '',
+    displayType: 'content' as 'content' | 'attachment_only',
   });
   const [signatureFile, setSignatureFile] = useState<File | null>(null);
   const [signaturePreview, setSignaturePreview] = useState<string>('');
+  const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
+  const [existingAttachments, setExistingAttachments] = useState<string[]>([]);
 
   useEffect(() => {
     if (isEditMode && id) {
@@ -52,10 +55,15 @@ export default function NewCorrespondence() {
               greeting: data.greeting,
               content: data.content,
               responsiblePerson: data.responsible_person || '',
+              displayType: (data.display_type || 'content') as 'content' | 'attachment_only',
             });
             
             if (data.signature_url) {
               setSignaturePreview(data.signature_url);
+            }
+            
+            if (data.attachments && data.attachments.length > 0) {
+              setExistingAttachments(data.attachments);
             }
           }
         } catch (err) {
@@ -101,12 +109,29 @@ export default function NewCorrespondence() {
     }
   };
 
+  const handleAttachmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const newFiles = Array.from(files);
+      setAttachmentFiles(prev => [...prev, ...newFiles]);
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachmentFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeExistingAttachment = (url: string) => {
+    setExistingAttachments(prev => prev.filter(a => a !== url));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
     try {
       let signatureUrl = signaturePreview;
+      const uploadedAttachments: string[] = [...existingAttachments];
       
       // Upload new signature if provided
       if (signatureFile) {
@@ -127,16 +152,37 @@ export default function NewCorrespondence() {
         signatureUrl = publicUrl;
       }
 
+      // Upload attachments
+      for (const file of attachmentFiles) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('attachments')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('attachments')
+          .getPublicUrl(filePath);
+        
+        uploadedAttachments.push(publicUrl);
+      }
+
       const correspondenceData = {
         number: formData.number,
         type: formData.type,
         date: formData.date,
         from_entity: formData.to,
-        subject: formData.subject,
-        greeting: formData.greeting,
-        content: formData.content,
-        responsible_person: formData.responsiblePerson,
-        signature_url: signatureUrl,
+        subject: formData.displayType === 'content' ? formData.subject : 'مرفق',
+        greeting: formData.displayType === 'content' ? formData.greeting : '',
+        content: formData.displayType === 'content' ? formData.content : '',
+        responsible_person: formData.displayType === 'content' ? formData.responsiblePerson : '',
+        signature_url: formData.displayType === 'content' ? signatureUrl : '',
+        display_type: formData.displayType,
+        attachments: uploadedAttachments,
       };
 
       if (isEditMode && id) {
@@ -203,6 +249,25 @@ export default function NewCorrespondence() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="displayType">نوع عرض الكتاب *</Label>
+              <Select
+                value={formData.displayType}
+                onValueChange={(value: 'content' | 'attachment_only') => 
+                  setFormData({ ...formData, displayType: value })
+                }
+                disabled={loading}
+              >
+                <SelectTrigger id="displayType">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="content">كتابة المحتوى</SelectItem>
+                  <SelectItem value="attachment_only">مرفق فقط</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="number">رقم الكتاب *</Label>
@@ -243,63 +308,118 @@ export default function NewCorrespondence() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="greeting">التحية *</Label>
-              <Textarea
-                id="greeting"
-                value={formData.greeting}
-                onChange={(e) => setFormData({ ...formData, greeting: e.target.value })}
-                rows={3}
-                required
-                disabled={loading}
-              />
-            </div>
+            {formData.displayType === 'content' && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="greeting">التحية *</Label>
+                  <Textarea
+                    id="greeting"
+                    value={formData.greeting}
+                    onChange={(e) => setFormData({ ...formData, greeting: e.target.value })}
+                    rows={3}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="subject">الموضوع *</Label>
+                  <Input
+                    id="subject"
+                    value={formData.subject}
+                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="content">المحتوى *</Label>
+                  <Textarea
+                    id="content"
+                    value={formData.content}
+                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                    rows={8}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="responsiblePerson">المسؤول</Label>
+                  <Input
+                    id="responsiblePerson"
+                    value={formData.responsiblePerson}
+                    onChange={(e) => setFormData({ ...formData, responsiblePerson: e.target.value })}
+                    disabled={loading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="signature">توقيع المسؤول (PNG فقط)</Label>
+                  <Input
+                    id="signature"
+                    type="file"
+                    accept="image/png"
+                    onChange={handleSignatureChange}
+                    disabled={loading}
+                  />
+                  {signaturePreview && (
+                    <div className="mt-2">
+                      <img src={signaturePreview} alt="معاينة التوقيع" className="max-h-32 border rounded" />
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
 
             <div className="space-y-2">
-              <Label htmlFor="subject">الموضوع *</Label>
+              <Label htmlFor="attachments">المرفقات {formData.displayType === 'attachment_only' && '*'}</Label>
               <Input
-                id="subject"
-                value={formData.subject}
-                onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="content">المحتوى *</Label>
-              <Textarea
-                id="content"
-                value={formData.content}
-                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                rows={8}
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="responsiblePerson">المسؤول</Label>
-              <Input
-                id="responsiblePerson"
-                value={formData.responsiblePerson}
-                onChange={(e) => setFormData({ ...formData, responsiblePerson: e.target.value })}
-                disabled={loading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="signature">توقيع المسؤول (PNG فقط)</Label>
-              <Input
-                id="signature"
+                id="attachments"
                 type="file"
-                accept="image/png"
-                onChange={handleSignatureChange}
+                multiple
+                onChange={handleAttachmentChange}
                 disabled={loading}
+                required={formData.displayType === 'attachment_only' && attachmentFiles.length === 0 && existingAttachments.length === 0}
               />
-              {signaturePreview && (
-                <div className="mt-2">
-                  <img src={signaturePreview} alt="معاينة التوقيع" className="max-h-32 border rounded" />
+              {attachmentFiles.length > 0 && (
+                <div className="mt-2 space-y-2">
+                  {attachmentFiles.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 bg-muted rounded">
+                      <span className="text-sm">{file.name}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeAttachment(index)}
+                        disabled={loading}
+                      >
+                        حذف
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {existingAttachments.length > 0 && (
+                <div className="mt-2 space-y-2">
+                  <p className="text-sm font-semibold">المرفقات الحالية:</p>
+                  {existingAttachments.map((url, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 bg-muted rounded">
+                      <a href={url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
+                        مرفق {index + 1}
+                      </a>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeExistingAttachment(url)}
+                        disabled={loading}
+                      >
+                        حذف
+                      </Button>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

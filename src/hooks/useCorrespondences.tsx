@@ -30,6 +30,7 @@ export function useCorrespondences() {
         greeting: item.greeting,
         responsible_person: item.responsible_person,
         signature_url: item.signature_url,
+        display_type: item.display_type,
       }));
 
       setCorrespondences(transformedData as any);
