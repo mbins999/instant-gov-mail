@@ -21,7 +21,7 @@ export default function NewCorrespondence() {
     to: '',
     subject: '',
     greeting: 'السيد/   المحترم\nالسلام عليكم ورحمة الله وبركاته ,,,',
-    content: '',
+    content: '\nوتفضلوا بقبول فائق الاحترام ,,,',
   });
 
   const hijriDate = useMemo(() => {
