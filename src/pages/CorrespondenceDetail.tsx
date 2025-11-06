@@ -105,13 +105,8 @@ export default function CorrespondenceDetail() {
       return;
     }
     
-    // For content type, use PDF if available
-    if (correspondence?.pdf_url) {
-      window.open(correspondence.pdf_url, '_blank');
-    } else {
-      // Fallback to regular print
-      window.print();
-    }
+    // For content type, use the browser's print dialog with the current page
+    window.print();
   };
 
   useEffect(() => {
