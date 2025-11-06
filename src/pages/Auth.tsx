@@ -137,37 +137,46 @@ export default function Auth() {
         </CardHeader>
         <CardContent className="pt-6">
           <form onSubmit={isSignUp ? handleSignUp : handleLogin} className="space-y-4">
-            <Input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="اسم المستخدم"
-              required
-              disabled={loading}
-              className="text-center"
-            />
-
-            {isSignUp && (
+            <div className="space-y-2">
               <Input
                 type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="الاسم الكامل"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder={isSignUp ? "اسم المستخدم (بالإنجليزية)" : "اسم المستخدم"}
                 required
                 disabled={loading}
                 className="text-center"
+                pattern={isSignUp ? "[a-zA-Z0-9_]+" : undefined}
+                title={isSignUp ? "يجب استخدام أحرف إنجليزية وأرقام فقط" : undefined}
               />
+            </div>
+
+            {isSignUp && (
+              <div className="space-y-2">
+                <Input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="الاسم الكامل (بالعربي)"
+                  required
+                  disabled={loading}
+                  className="text-center"
+                />
+              </div>
             )}
 
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="كلمة المرور"
-              required
-              disabled={loading}
-              className="text-center"
-            />
+            <div className="space-y-2">
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="كلمة المرور"
+                required
+                disabled={loading}
+                className="text-center"
+                minLength={6}
+              />
+            </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
               {loading 
