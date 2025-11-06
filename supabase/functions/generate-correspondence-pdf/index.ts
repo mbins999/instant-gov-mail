@@ -489,18 +489,18 @@ Deno.serve(async (req) => {
     // Generate HTML content
     const htmlContent = generateHTMLContent(correspondence);
 
-    // Use a simple approach: convert HTML to PDF using chrome-aws-lambda
-    // For now, we'll store the HTML and return a message
-    // In production, you would use puppeteer or a PDF generation service
-    
-    const fileName = `correspondence-${correspondence.number}-${Date.now()}.html`;
+    // Clean the number for filename (remove special characters)
+    const cleanNumber = correspondence.number.replace(/[^a-zA-Z0-9]/g, '-');
+    const fileName = `correspondence-${cleanNumber}-${Date.now()}.html`;
     const filePath = `${correspondenceId}/${fileName}`;
 
-    // Upload HTML to storage (temporary solution until we implement proper PDF generation)
+    // Upload HTML to storage with proper content type
+    const htmlBlob = new Blob([htmlContent], { type: 'text/html; charset=utf-8' });
+    
     const { error: uploadError } = await supabaseClient.storage
       .from('correspondence-pdfs')
-      .upload(filePath, new Blob([htmlContent], { type: 'text/html' }), {
-        contentType: 'text/html',
+      .upload(filePath, htmlBlob, {
+        contentType: 'text/html; charset=utf-8',
         upsert: true,
       });
 
