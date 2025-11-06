@@ -262,7 +262,7 @@ export default function CorrespondenceDetail() {
           {correspondence.display_type === 'attachment_only' ? (
             <div className="p-12 space-y-6">
               {/* Document Info */}
-              <div className="flex justify-between items-start border-b-2 border-foreground/20 pb-6">
+              <div className="flex justify-between items-start pb-6">
                 <div className="text-right space-y-2">
                   <div className="flex items-center gap-3">
                     <span className="text-foreground/70 font-semibold">الإشارة:</span>
@@ -315,7 +315,7 @@ export default function CorrespondenceDetail() {
           ) : (
             <div className="p-12 space-y-6">
               {/* Document Info */}
-              <div className="flex justify-between items-start border-b-2 border-foreground/20 pb-6">
+              <div className="flex justify-between items-start pb-6">
                 <div className="text-right space-y-2">
                   <div className="flex items-center gap-3">
                     <span className="text-foreground/70 font-semibold">الإشارة:</span>
@@ -366,7 +366,7 @@ export default function CorrespondenceDetail() {
             
               {/* Signature */}
               {correspondence.responsible_person && (
-                <div className="mt-12 pt-8 border-t-2 border-foreground/20">
+                <div className="mt-12 pt-8">
                   <div className="flex justify-between items-end">
                     <div className="text-right">
                       <div className="text-foreground/70 text-sm mb-2">وتقبلوا فائق التقدير والاحترام،،</div>
@@ -377,7 +377,7 @@ export default function CorrespondenceDetail() {
                           <img 
                             src={correspondence.signature_url} 
                             alt="توقيع المسؤول" 
-                            className="max-h-24 border-b-2 border-foreground pb-2"
+                            className="max-h-24"
                           />
                         </div>
                       )}
