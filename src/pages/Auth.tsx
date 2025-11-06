@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Lock } from 'lucide-react';
+import { correspondenceApi } from '@/services/correspondenceApi';
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -15,6 +16,11 @@ export default function Auth() {
   const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // بيانات النظام الخارجي
+  const [externalBaseUrl, setExternalBaseUrl] = useState('');
+  const [externalUsername, setExternalUsername] = useState('');
+  const [externalPassword, setExternalPassword] = useState('');
 
   useEffect(() => {
     // التحقق من تسجيل الدخول
@@ -63,6 +69,16 @@ export default function Auth() {
 
       if (data.session) {
         await supabase.auth.setSession(data.session);
+        
+        // الربط بالنظام الخارجي إذا تم إدخال البيانات
+        if (externalBaseUrl && externalUsername && externalPassword) {
+          try {
+            await correspondenceApi.login(externalBaseUrl, externalUsername, externalPassword);
+          } catch (error) {
+            console.error('External system connection failed:', error);
+          }
+        }
+        
         toast({
           title: "تم تسجيل الدخول بنجاح",
           description: "مرحباً بك في نظام المراسلات",
@@ -176,6 +192,45 @@ export default function Auth() {
                 className="text-center"
                 minLength={6}
               />
+            </div>
+
+            <div className="pt-4 border-t border-border">
+              <p className="text-sm text-muted-foreground text-center mb-3">
+                الربط مع النظام الخارجي (اختياري)
+              </p>
+              
+              <div className="space-y-2">
+                <Input
+                  type="url"
+                  value={externalBaseUrl}
+                  onChange={(e) => setExternalBaseUrl(e.target.value)}
+                  placeholder="رابط النظام الخارجي"
+                  disabled={loading}
+                  className="text-center text-sm"
+                />
+              </div>
+
+              <div className="space-y-2 mt-2">
+                <Input
+                  type="text"
+                  value={externalUsername}
+                  onChange={(e) => setExternalUsername(e.target.value)}
+                  placeholder="اسم المستخدم للنظام الخارجي"
+                  disabled={loading}
+                  className="text-center text-sm"
+                />
+              </div>
+
+              <div className="space-y-2 mt-2">
+                <Input
+                  type="password"
+                  value={externalPassword}
+                  onChange={(e) => setExternalPassword(e.target.value)}
+                  placeholder="كلمة المرور للنظام الخارجي"
+                  disabled={loading}
+                  className="text-center text-sm"
+                />
+              </div>
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>

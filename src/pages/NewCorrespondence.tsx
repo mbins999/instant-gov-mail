@@ -6,9 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Save, Loader2 } from 'lucide-react';
+import { Save, Loader2, Send } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useParams } from 'react-router-dom';
+import { correspondenceApi } from '@/services/correspondenceApi';
 
 export default function NewCorrespondence() {
   const { toast } = useToast();
@@ -125,7 +126,7 @@ export default function NewCorrespondence() {
     setExistingAttachments(prev => prev.filter(a => a !== url));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, shouldSendExternal = false) => {
     e.preventDefault();
     setLoading(true);
     
@@ -200,16 +201,51 @@ export default function NewCorrespondence() {
         
         navigate(`/correspondence/${id}`);
       } else {
-        const { error } = await supabase
+        const { error, data: insertedData } = await supabase
           .from('correspondences')
-          .insert([correspondenceData]);
+          .insert([correspondenceData])
+          .select()
+          .single();
 
         if (error) throw error;
 
-        toast({
-          title: "تم الحفظ بنجاح",
-          description: "تم حفظ المراسلة الجديدة",
-        });
+        // إرسال خارجي إذا طُلب ذلك
+        if (shouldSendExternal && insertedData) {
+          if (!correspondenceApi.isAuthenticated()) {
+            toast({
+              title: "تحذير",
+              description: "لم يتم الربط مع النظام الخارجي. تم حفظ المراسلة محلياً فقط.",
+              variant: "default",
+            });
+          } else {
+            try {
+              const metadata = {
+                docId: insertedData.number,
+                subject: correspondenceData.subject,
+                sender: correspondenceData.from_entity,
+                date: correspondenceData.date,
+              };
+
+              await correspondenceApi.exportCorrespondence(metadata);
+              
+              toast({
+                title: "تم الإرسال بنجاح",
+                description: "تم حفظ وإرسال المراسلة للنظام الخارجي",
+              });
+            } catch (error) {
+              toast({
+                title: "تحذير",
+                description: "تم حفظ المراسلة ولكن فشل الإرسال للنظام الخارجي",
+                variant: "default",
+              });
+            }
+          }
+        } else {
+          toast({
+            title: "تم الحفظ بنجاح",
+            description: "تم حفظ المراسلة الجديدة",
+          });
+        }
         
         navigate('/');
       }
@@ -425,10 +461,29 @@ export default function NewCorrespondence() {
             </div>
 
             <div className="flex gap-4">
-              <Button type="submit" className="gap-2" disabled={loading}>
+              <Button 
+                type="submit" 
+                className="gap-2" 
+                disabled={loading}
+                onClick={(e) => handleSubmit(e, false)}
+              >
                 <Save className="h-4 w-4" />
                 {loading ? (isEditMode ? 'جاري التحديث...' : 'جاري الحفظ...') : (isEditMode ? 'تحديث المراسلة' : 'حفظ المراسلة')}
               </Button>
+              
+              {!isEditMode && (
+                <Button 
+                  type="button" 
+                  variant="default"
+                  className="gap-2" 
+                  disabled={loading}
+                  onClick={(e) => handleSubmit(e as any, true)}
+                >
+                  <Send className="h-4 w-4" />
+                  {loading ? 'جاري الإرسال...' : 'إرسال خارجي'}
+                </Button>
+              )}
+              
               <Button 
                 type="button" 
                 variant="outline" 
