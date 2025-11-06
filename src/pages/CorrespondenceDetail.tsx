@@ -94,8 +94,19 @@ export default function CorrespondenceDetail() {
   };
 
   const handlePrint = () => {
+    // If attachment-only type with attachments, open them directly
+    if (correspondence?.display_type === 'attachment_only' && correspondence?.attachments && correspondence.attachments.length > 0) {
+      // Open each attachment in a new window for printing
+      correspondence.attachments.forEach((url, index) => {
+        setTimeout(() => {
+          window.open(url, '_blank');
+        }, index * 300); // Delay between opening windows
+      });
+      return;
+    }
+    
+    // For content type, use PDF if available
     if (correspondence?.pdf_url) {
-      // Open PDF in new window for printing
       window.open(correspondence.pdf_url, '_blank');
     } else {
       // Fallback to regular print
