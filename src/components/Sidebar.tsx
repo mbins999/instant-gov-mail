@@ -3,16 +3,16 @@ import {
   Mail, 
   Send, 
   Archive, 
-  Search, 
-  FileText,
-  Settings 
+  Search,
+  Settings,
+  Plus
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 const navigationItems = [
   { icon: Mail, label: 'الواردة', path: '/incoming' },
   { icon: Send, label: 'الصادرة', path: '/outgoing' },
-  { icon: FileText, label: 'مراسلة جديدة', path: '/new' },
   { icon: Search, label: 'البحث', path: '/search' },
   { icon: Archive, label: 'الأرشيف', path: '/archive' },
   { icon: Settings, label: 'الربط مع النظام', path: '/api-settings' },
@@ -30,6 +30,15 @@ export default function Sidebar() {
       </div>
       
       <nav className="p-4 space-y-2">
+        <Link to="/new" className="block mb-4">
+          <Button 
+            size="icon"
+            className="w-full h-12 rounded-full"
+          >
+            <Plus className="h-6 w-6" />
+          </Button>
+        </Link>
+        
         {navigationItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;

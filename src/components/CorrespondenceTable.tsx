@@ -1,4 +1,4 @@
-import { Correspondence, CorrespondencePriority, CorrespondenceStatus } from '@/types/correspondence';
+import { Correspondence, CorrespondenceStatus } from '@/types/correspondence';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye } from 'lucide-react';
@@ -7,18 +7,6 @@ import { useNavigate } from 'react-router-dom';
 interface CorrespondenceTableProps {
   correspondences: Correspondence[];
 }
-
-const priorityLabels: Record<CorrespondencePriority, string> = {
-  'normal': 'عادي',
-  'urgent': 'مستعجل',
-  'very-urgent': 'عاجل جداً',
-};
-
-const priorityVariants: Record<CorrespondencePriority, 'default' | 'secondary' | 'destructive'> = {
-  'normal': 'secondary',
-  'urgent': 'default',
-  'very-urgent': 'destructive',
-};
 
 const statusLabels: Record<CorrespondenceStatus, string> = {
   'pending': 'قيد الانتظار',
@@ -47,7 +35,6 @@ export default function CorrespondenceTable({ correspondences }: CorrespondenceT
             <th className="text-right p-4 font-semibold">من</th>
             <th className="text-right p-4 font-semibold">إلى</th>
             <th className="text-right p-4 font-semibold">التاريخ</th>
-            <th className="text-right p-4 font-semibold">الأولوية</th>
             <th className="text-right p-4 font-semibold">الحالة</th>
             <th className="text-right p-4 font-semibold">الإجراءات</th>
           </tr>
@@ -63,11 +50,6 @@ export default function CorrespondenceTable({ correspondences }: CorrespondenceT
               <td className="p-4 text-sm">{item.from}</td>
               <td className="p-4 text-sm">{item.to}</td>
               <td className="p-4 text-sm">{item.date.toLocaleDateString('ar-SA')}</td>
-              <td className="p-4">
-                <Badge variant={priorityVariants[item.priority]}>
-                  {priorityLabels[item.priority]}
-                </Badge>
-              </td>
               <td className="p-4">
                 <Badge variant={statusVariants[item.status]}>
                   {statusLabels[item.status]}

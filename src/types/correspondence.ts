@@ -1,5 +1,4 @@
 export type CorrespondenceType = 'incoming' | 'outgoing';
-export type CorrespondencePriority = 'normal' | 'urgent' | 'very-urgent';
 export type CorrespondenceStatus = 'pending' | 'in-progress' | 'completed' | 'archived';
 
 export interface Correspondence {
@@ -10,7 +9,6 @@ export interface Correspondence {
   from: string;
   to: string;
   date: Date;
-  priority: CorrespondencePriority;
   status: CorrespondenceStatus;
   content: string;
   attachments?: string[];

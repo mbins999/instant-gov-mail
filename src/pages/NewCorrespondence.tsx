@@ -15,7 +15,6 @@ export default function NewCorrespondence() {
     subject: '',
     from: '',
     to: '',
-    priority: '',
     content: '',
   });
 
@@ -32,7 +31,6 @@ export default function NewCorrespondence() {
       subject: '',
       from: '',
       to: '',
-      priority: '',
       content: '',
     });
   };
@@ -64,24 +62,6 @@ export default function NewCorrespondence() {
                   <SelectContent>
                     <SelectItem value="incoming">واردة</SelectItem>
                     <SelectItem value="outgoing">صادرة</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="priority">الأولوية *</Label>
-                <Select
-                  value={formData.priority}
-                  onValueChange={(value) => setFormData({ ...formData, priority: value })}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="اختر الأولوية" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="normal">عادي</SelectItem>
-                    <SelectItem value="urgent">مستعجل</SelectItem>
-                    <SelectItem value="very-urgent">عاجل جداً</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

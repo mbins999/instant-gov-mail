@@ -21,12 +21,6 @@ export default function CorrespondenceDetail() {
     );
   }
 
-  const priorityLabels = {
-    'normal': 'عادي',
-    'urgent': 'مستعجل',
-    'very-urgent': 'عاجل جداً',
-  };
-
   const statusLabels = {
     'pending': 'قيد الانتظار',
     'in-progress': 'قيد المعالجة',
@@ -113,16 +107,6 @@ export default function CorrespondenceDetail() {
                 <p className="font-semibold">
                   {correspondence.date.toLocaleDateString('ar-SA')}
                 </p>
-              </div>
-              
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">الأولوية</p>
-                <Badge variant={
-                  correspondence.priority === 'very-urgent' ? 'destructive' :
-                  correspondence.priority === 'urgent' ? 'default' : 'secondary'
-                }>
-                  {priorityLabels[correspondence.priority]}
-                </Badge>
               </div>
               
               <div>
