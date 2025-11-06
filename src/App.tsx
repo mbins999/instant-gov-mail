@@ -20,55 +20,57 @@ import UsersManagement from "@/pages/UsersManagement";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <Routes>
-          <Route path="/auth" element={<Auth />} />
-          <Route
-            path="/*"
-            element={
-              <ProtectedRoute>
-                <div className="flex min-h-screen" dir="rtl">
-                  <div className="print:hidden">
-                    <Sidebar />
-                  </div>
-                  <div className="flex-1 flex flex-col">
-                    <div className="sticky top-0 z-40 bg-card border-b border-border py-4 print:hidden">
-                      <h1 className="text-2xl font-bold text-center text-primary">مراسلات</h1>
-                    </div>
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <Routes>
+            <Route path="/auth" element={<Auth />} />
+            <Route
+              path="/*"
+              element={
+                <ProtectedRoute>
+                  <div className="flex min-h-screen" dir="rtl">
                     <div className="print:hidden">
-                      <NotificationBar />
-                      <AdvancedSearchBar />
+                      <Sidebar />
                     </div>
-                    <main className="flex-1 p-8 overflow-auto bg-background print:p-0 print:overflow-visible">
-                      <Routes>
-                        <Route path="/" element={<Incoming />} />
-                        <Route path="/incoming" element={<Incoming />} />
-                        <Route path="/outgoing" element={<Outgoing />} />
-                        <Route path="/new" element={<NewCorrespondence />} />
-                        <Route path="/edit/:id" element={<NewCorrespondence />} />
-                        <Route path="/correspondence/:id" element={<CorrespondenceDetail />} />
-                        <Route path="/search" element={<SearchPage />} />
-                        <Route path="/archive" element={<ArchivePage />} />
-                        <Route path="/import" element={<ImportCorrespondence />} />
-                        <Route path="/settings" element={<Navigate to="/users" replace />} />
-                        <Route path="/users" element={<UsersManagement />} />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </main>
+                    <div className="flex-1 flex flex-col">
+                      <div className="sticky top-0 z-40 bg-card border-b border-border py-4 print:hidden">
+                        <h1 className="text-2xl font-bold text-center text-primary">مراسلات</h1>
+                      </div>
+                      <div className="print:hidden">
+                        <NotificationBar />
+                        <AdvancedSearchBar />
+                      </div>
+                      <main className="flex-1 p-8 overflow-auto bg-background print:p-0 print:overflow-visible">
+                        <Routes>
+                          <Route path="/" element={<Incoming />} />
+                          <Route path="/incoming" element={<Incoming />} />
+                          <Route path="/outgoing" element={<Outgoing />} />
+                          <Route path="/new" element={<NewCorrespondence />} />
+                          <Route path="/edit/:id" element={<NewCorrespondence />} />
+                          <Route path="/correspondence/:id" element={<CorrespondenceDetail />} />
+                          <Route path="/search" element={<SearchPage />} />
+                          <Route path="/archive" element={<ArchivePage />} />
+                          <Route path="/import" element={<ImportCorrespondence />} />
+                          <Route path="/settings" element={<Navigate to="/users" replace />} />
+                          <Route path="/users" element={<UsersManagement />} />
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
+                      </main>
+                    </div>
                   </div>
-                </div>
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </TooltipProvider>
-    </BrowserRouter>
-  </QueryClientProvider>
-);
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </TooltipProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
