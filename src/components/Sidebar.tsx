@@ -8,7 +8,6 @@ import {
   Plus
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 
 const navigationItems = [
   { icon: Mail, label: 'الواردة', path: '/incoming' },
@@ -30,13 +29,8 @@ export default function Sidebar() {
       </div>
       
       <nav className="p-4 space-y-2">
-        <Link to="/new" className="block mb-4">
-          <Button 
-            size="icon"
-            className="w-full h-12 rounded-full"
-          >
-            <Plus className="h-6 w-6" />
-          </Button>
+        <Link to="/new" className="flex justify-center mb-6">
+          <Plus className="h-12 w-12 text-primary hover:opacity-80 transition-opacity cursor-pointer" />
         </Link>
         
         {navigationItems.map((item) => {
