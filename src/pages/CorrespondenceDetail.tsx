@@ -127,11 +127,12 @@ export default function CorrespondenceDetail() {
           border: none !important;
           box-shadow: none !important;
           background: white !important;
+          padding: 0 !important;
         }
         
         /* Page margins */
         @page {
-          margin: 2cm;
+          margin: 1.5cm;
           size: A4;
         }
         
@@ -145,8 +146,14 @@ export default function CorrespondenceDetail() {
         /* Better text rendering for print */
         #printable-content {
           color: black !important;
-          font-size: 12pt !important;
-          line-height: 1.6 !important;
+          font-size: 13pt !important;
+          line-height: 1.8 !important;
+        }
+        
+        /* Official header styling for print */
+        #printable-content h1,
+        #printable-content h2 {
+          color: #1e40af !important;
         }
         
         /* Page breaks for attachments */
@@ -169,6 +176,16 @@ export default function CorrespondenceDetail() {
         /* Hide attachment links in main content */
         .attachment-links {
           display: none !important;
+        }
+        
+        /* Enhance borders for print */
+        #printable-content {
+          border: 2px solid #1e40af !important;
+        }
+        
+        /* Better spacing for print */
+        #printable-content > div {
+          padding: 1cm !important;
         }
       }
     `;
@@ -240,28 +257,58 @@ export default function CorrespondenceDetail() {
         </div>
       </div>
 
-      <Card className="max-w-4xl mx-auto">
-        <CardContent className="pt-6" id="printable-content">
+      <Card className="max-w-4xl mx-auto shadow-lg border-2">
+        <CardContent className="p-0" id="printable-content">
+          {/* Official Header */}
+          <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border-b-4 border-primary py-8 px-12">
+            <div className="text-center space-y-2">
+              <h1 className="text-2xl font-bold text-primary">المملكة العربية السعودية</h1>
+              <h2 className="text-xl font-semibold text-foreground">وزارة الداخلية</h2>
+              <div className="w-32 h-1 bg-primary mx-auto mt-3"></div>
+            </div>
+          </div>
+
           {correspondence.display_type === 'attachment_only' ? (
-            <div className="space-y-4">
-              <div className="text-right mb-6">
-                <div className="font-semibold">{correspondence.number}</div>
-                <div className="mt-2">{correspondence.from}</div>
-                <div className="mt-2 text-muted-foreground">
-                  {new Date(correspondence.date).toLocaleDateString('ar-SA-u-ca-islamic', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit'
-                  })}
+            <div className="p-12 space-y-6">
+              {/* Document Info */}
+              <div className="flex justify-between items-start border-b-2 border-border pb-6">
+                <div className="text-right space-y-2">
+                  <div className="flex items-center gap-3">
+                    <span className="text-muted-foreground font-semibold">رقم الكتاب:</span>
+                    <span className="font-bold text-primary text-lg">{correspondence.number}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-muted-foreground font-semibold">من:</span>
+                    <span className="font-semibold">{correspondence.from}</span>
+                  </div>
                 </div>
-                <div className="text-muted-foreground">
-                  الموافق: {new Date(correspondence.date).toLocaleDateString('en-GB')}
+                <div className="text-left space-y-2">
+                  <div className="text-sm">
+                    <div className="font-semibold text-muted-foreground">التاريخ الهجري:</div>
+                    <div className="font-bold">
+                      {new Date(correspondence.date).toLocaleDateString('ar-SA-u-ca-islamic', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </div>
+                  </div>
+                  <div className="text-sm">
+                    <div className="font-semibold text-muted-foreground">التاريخ الميلادي:</div>
+                    <div className="font-bold">
+                      {new Date(correspondence.date).toLocaleDateString('ar-SA', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </div>
+                  </div>
                 </div>
               </div>
               
               {correspondence.attachments && correspondence.attachments.length > 0 && (
                 <div className="attachment-links">
-                  <h3 className="font-semibold mb-3 text-xl">المرفقات:</h3>
+                  <h3 className="font-bold text-xl mb-4 text-primary">المرفقات:</h3>
                   <div className="space-y-3">
                     {correspondence.attachments.map((attachment, index) => (
                       <a
@@ -269,9 +316,9 @@ export default function CorrespondenceDetail() {
                         href={attachment}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-4 bg-muted hover:bg-muted/80 rounded-lg transition-colors"
+                        className="flex items-center gap-3 p-4 bg-secondary hover:bg-secondary/80 rounded-lg transition-all border-r-4 border-primary"
                       >
-                        <span className="text-base">📎 مرفق {index + 1}</span>
+                        <span className="text-base font-semibold">📎 مرفق رقم {index + 1}</span>
                       </a>
                     ))}
                   </div>
@@ -279,87 +326,126 @@ export default function CorrespondenceDetail() {
               )}
             </div>
           ) : (
-            <div className="space-y-4 text-lg leading-relaxed">
-            <div className="text-right mb-6">
-              <div className="font-semibold">{correspondence.number}</div>
-              <div className="mt-2">{correspondence.from}</div>
-              <div className="mt-2 text-muted-foreground">
-                {new Date(correspondence.date).toLocaleDateString('ar-SA-u-ca-islamic', {
-                  year: 'numeric',
-                  month: '2-digit',
-                  day: '2-digit'
-                })}
-              </div>
-              <div className="text-muted-foreground">
-                الموافق: {new Date(correspondence.date).toLocaleDateString('en-GB')}
-              </div>
-            </div>
-            
-            <div className="whitespace-pre-wrap">{correspondence.greeting}</div>
-            
-            <div className="font-semibold text-center my-4">
-              الموضوع: {correspondence.subject}
-            </div>
-            
-            <div className="whitespace-pre-wrap">{correspondence.content}</div>
-            
-            {correspondence.responsible_person && (
-              <div className="mt-8 text-center">
-                {correspondence.signature_url && (
-                  <div className="flex justify-center mb-2">
-                    <img 
-                      src={correspondence.signature_url} 
-                      alt="توقيع المسؤول" 
-                      className="max-h-32"
-                    />
+            <div className="p-12 space-y-6">
+              {/* Document Info */}
+              <div className="flex justify-between items-start border-b-2 border-border pb-6">
+                <div className="text-right space-y-2">
+                  <div className="flex items-center gap-3">
+                    <span className="text-muted-foreground font-semibold">رقم الكتاب:</span>
+                    <span className="font-bold text-primary text-lg">{correspondence.number}</span>
                   </div>
-                )}
-                <div className="font-semibold">{correspondence.responsible_person}</div>
-              </div>
-            )}
-            
-            {correspondence.attachments && correspondence.attachments.length > 0 && (
-              <div className="mt-8 pt-6 border-t attachment-links">
-                <h3 className="font-semibold mb-3">المرفقات:</h3>
-                <div className="space-y-2">
-                  {correspondence.attachments.map((attachment, index) => (
-                    <a
-                      key={index}
-                      href={attachment}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 p-3 bg-muted hover:bg-muted/80 rounded-lg transition-colors"
-                    >
-                      <span className="text-sm">📎 مرفق {index + 1}</span>
-                    </a>
-                  ))}
+                  <div className="flex items-center gap-3">
+                    <span className="text-muted-foreground font-semibold">من:</span>
+                    <span className="font-semibold">{correspondence.from}</span>
+                  </div>
+                </div>
+                <div className="text-left space-y-2">
+                  <div className="text-sm">
+                    <div className="font-semibold text-muted-foreground">التاريخ الهجري:</div>
+                    <div className="font-bold">
+                      {new Date(correspondence.date).toLocaleDateString('ar-SA-u-ca-islamic', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </div>
+                  </div>
+                  <div className="text-sm">
+                    <div className="font-semibold text-muted-foreground">التاريخ الميلادي:</div>
+                    <div className="font-bold">
+                      {new Date(correspondence.date).toLocaleDateString('ar-SA', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
-        )}
-        
-        {/* Print attachments on separate pages */}
-        {correspondence.attachments && correspondence.attachments.length > 0 && (
-          <div className="hidden print:block">
-            {correspondence.attachments.map((attachment, index) => (
-              <div key={index} className="attachment-page">
-                <img 
-                  src={attachment} 
-                  alt={`مرفق ${index + 1}`}
-                  onError={(e) => {
-                    // If image fails to load, show iframe for PDF
-                    const img = e.target as HTMLImageElement;
-                    const container = img.parentElement;
-                    if (container) {
-                      container.innerHTML = `<iframe src="${attachment}" width="100%" height="100%" style="border: none;"></iframe>`;
-                    }
-                  }}
-                />
+            
+              {/* Greeting */}
+              <div className="text-right text-lg leading-loose">
+                {correspondence.greeting}
               </div>
-            ))}
-          </div>
-        )}
+            
+              {/* Subject */}
+              <div className="bg-primary/5 border-r-4 border-primary p-4 my-6">
+                <div className="flex items-center gap-3">
+                  <span className="font-bold text-primary text-lg">الموضوع:</span>
+                  <span className="font-bold text-lg">{correspondence.subject}</span>
+                </div>
+              </div>
+            
+              {/* Content */}
+              <div className="text-right text-lg leading-loose whitespace-pre-wrap min-h-[200px] py-4">
+                {correspondence.content}
+              </div>
+            
+              {/* Signature */}
+              {correspondence.responsible_person && (
+                <div className="mt-12 pt-8 border-t-2 border-border">
+                  <div className="flex justify-between items-end">
+                    <div className="text-right">
+                      <div className="text-muted-foreground text-sm mb-2">وتقبلوا فائق التقدير والاحترام،،</div>
+                    </div>
+                    <div className="text-center">
+                      {correspondence.signature_url && (
+                        <div className="flex justify-center mb-3">
+                          <img 
+                            src={correspondence.signature_url} 
+                            alt="توقيع المسؤول" 
+                            className="max-h-24 border-b-2 border-primary pb-2"
+                          />
+                        </div>
+                      )}
+                      <div className="font-bold text-lg">{correspondence.responsible_person}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            
+              {/* Attachments List */}
+              {correspondence.attachments && correspondence.attachments.length > 0 && (
+                <div className="mt-8 pt-6 border-t-2 border-border attachment-links">
+                  <h3 className="font-bold text-xl mb-4 text-primary">المرفقات:</h3>
+                  <div className="space-y-3">
+                    {correspondence.attachments.map((attachment, index) => (
+                      <a
+                        key={index}
+                        href={attachment}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 p-4 bg-secondary hover:bg-secondary/80 rounded-lg transition-all border-r-4 border-primary"
+                      >
+                        <span className="font-semibold">📎 مرفق رقم {index + 1}</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        
+          {/* Print attachments on separate pages */}
+          {correspondence.attachments && correspondence.attachments.length > 0 && (
+            <div className="hidden print:block">
+              {correspondence.attachments.map((attachment, index) => (
+                <div key={index} className="attachment-page">
+                  <img 
+                    src={attachment} 
+                    alt={`مرفق ${index + 1}`}
+                    onError={(e) => {
+                      const img = e.target as HTMLImageElement;
+                      const container = img.parentElement;
+                      if (container) {
+                        container.innerHTML = `<iframe src="${attachment}" width="100%" height="100%" style="border: none;"></iframe>`;
+                      }
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
