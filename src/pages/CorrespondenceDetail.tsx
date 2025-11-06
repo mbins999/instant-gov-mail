@@ -2,15 +2,19 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Edit, Printer, Archive, Loader2 } from 'lucide-react';
+import { ArrowRight, Edit, Printer, Archive, Loader2, Send } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Correspondence } from '@/types/correspondence';
+import { correspondenceApi } from '@/services/correspondenceApi';
+import { useToast } from '@/hooks/use-toast';
 
 export default function CorrespondenceDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [correspondence, setCorrespondence] = useState<Correspondence | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sendingToExternal, setSendingToExternal] = useState(false);
 
   useEffect(() => {
     const fetchCorrespondence = async () => {
@@ -49,6 +53,46 @@ export default function CorrespondenceDetail() {
     fetchCorrespondence();
   }, [id]);
 
+  const handleSendToExternal = async () => {
+    if (!correspondence) return;
+
+    if (!correspondenceApi.isAuthenticated()) {
+      toast({
+        title: "غير متصل",
+        description: "يرجى الاتصال بالنظام الخارجي أولاً من صفحة الربط مع النظام",
+        variant: "destructive",
+      });
+      navigate('/api-settings');
+      return;
+    }
+
+    setSendingToExternal(true);
+
+    try {
+      const metadata = {
+        number: correspondence.number,
+        subject: correspondence.subject,
+        content: correspondence.content,
+        date: correspondence.date,
+      };
+
+      await correspondenceApi.exportCorrespondence(metadata);
+      
+      toast({
+        title: "تم الإرسال بنجاح",
+        description: "تم إرسال المراسلة للنظام الخارجي",
+      });
+    } catch (error) {
+      toast({
+        title: "خطأ في الإرسال",
+        description: "فشل إرسال المراسلة للنظام الخارجي",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingToExternal(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -82,6 +126,19 @@ export default function CorrespondenceDetail() {
           </div>
         </div>
         <div className="flex gap-2">
+          <Button 
+            variant="default" 
+            size="icon"
+            onClick={handleSendToExternal}
+            disabled={sendingToExternal}
+            title="إرسال للنظام الخارجي"
+          >
+            {sendingToExternal ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+          </Button>
           <Button variant="outline" size="icon" onClick={() => navigate(`/edit/${id}`)}>
             <Edit className="h-4 w-4" />
           </Button>

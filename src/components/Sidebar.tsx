@@ -6,7 +6,8 @@ import {
   Archive, 
   Settings,
   Plus,
-  LogOut
+  LogOut,
+  Download
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 const navigationItems = [
   { icon: Mail, label: 'البريد', path: '/incoming' },
   { icon: Send, label: 'المرسل', path: '/outgoing' },
+  { icon: Download, label: 'استيراد', path: '/import' },
   { icon: Archive, label: 'الأرشيف', path: '/archive' },
   { icon: Settings, label: 'الربط مع النظام', path: '/api-settings' },
   { icon: Settings, label: 'الإعدادات', path: '/settings' },
