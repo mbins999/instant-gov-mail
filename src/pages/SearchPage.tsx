@@ -1,69 +1,75 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Search } from 'lucide-react';
 import CorrespondenceTable from '@/components/CorrespondenceTable';
-import { mockCorrespondences } from '@/data/correspondenceData';
+import { useCorrespondences } from '@/hooks/useCorrespondences';
 
 export default function SearchPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [results, setResults] = useState(mockCorrespondences);
+  const [searchParams] = useSearchParams();
+  const { correspondences, loading } = useCorrespondences();
+  const [results, setResults] = useState(correspondences);
 
-  const handleSearch = () => {
-    if (!searchTerm.trim()) {
-      setResults(mockCorrespondences);
-      return;
+  useEffect(() => {
+    const searchText = searchParams.get('q') || '';
+    const type = searchParams.get('type') || 'all';
+    const dateFrom = searchParams.get('from') || '';
+    const dateTo = searchParams.get('to') || '';
+
+    let filtered = [...correspondences];
+
+    // فلتر النص
+    if (searchText) {
+      filtered = filtered.filter(c => 
+        c.subject.toLowerCase().includes(searchText.toLowerCase()) ||
+        c.from.toLowerCase().includes(searchText.toLowerCase()) ||
+        c.number.toLowerCase().includes(searchText.toLowerCase()) ||
+        c.content.toLowerCase().includes(searchText.toLowerCase())
+      );
     }
 
-    const filtered = mockCorrespondences.filter(c => 
-      c.subject.includes(searchTerm) ||
-      c.from.includes(searchTerm) ||
-      c.number.includes(searchTerm) ||
-      c.content.includes(searchTerm)
-    );
-    
+    // فلتر النوع
+    if (type !== 'all') {
+      filtered = filtered.filter(c => c.type === type);
+    }
+
+    // فلتر التاريخ
+    if (dateFrom) {
+      filtered = filtered.filter(c => new Date(c.date) >= new Date(dateFrom));
+    }
+    if (dateTo) {
+      filtered = filtered.filter(c => new Date(c.date) <= new Date(dateTo));
+    }
+
     setResults(filtered);
-  };
+  }, [searchParams, correspondences]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">البحث في المراسلات</h1>
-        <p className="text-muted-foreground mt-2">ابحث عن المراسلات بالرقم أو الموضوع أو الجهة</p>
+        <h1 className="text-3xl font-bold">نتائج البحث</h1>
+        <p className="text-muted-foreground mt-2">
+          {searchParams.get('q') && `نتائج البحث عن: "${searchParams.get('q')}"`}
+        </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>البحث</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4">
-            <Input
-              placeholder="ابحث بالرقم، الموضوع، الجهة المرسلة أو المستقبلة..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-              className="flex-1"
-            />
-            <Button onClick={handleSearch} className="gap-2">
-              <Search className="h-4 w-4" />
-              بحث
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>نتائج البحث ({results.length})</CardTitle>
+          <CardTitle>النتائج ({results.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {results.length > 0 ? (
             <CorrespondenceTable correspondences={results} />
           ) : (
             <div className="text-center py-12 text-muted-foreground">
-              لا توجد نتائج مطابقة للبحث
+              لا توجد نتائج مطابقة لمعايير البحث
             </div>
           )}
         </CardContent>

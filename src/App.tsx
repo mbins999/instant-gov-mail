@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import NotificationBar from "./components/NotificationBar";
+import AdvancedSearchBar from "./components/AdvancedSearchBar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Auth from "./pages/Auth";
 import Incoming from "./pages/Incoming";
@@ -35,7 +36,8 @@ const App = () => (
                   <Sidebar />
                   <div className="flex-1 flex flex-col">
                     <NotificationBar />
-                    <main className="flex-1 p-8 overflow-auto">
+                    <AdvancedSearchBar />
+                    <main className="flex-1 p-8 overflow-auto bg-background">
                       <Routes>
                         <Route path="/" element={<Incoming />} />
                         <Route path="/incoming" element={<Incoming />} />
