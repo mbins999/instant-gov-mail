@@ -178,9 +178,9 @@ export default function CorrespondenceDetail() {
           display: none !important;
         }
         
-        /* Enhance borders for print */
+        /* Remove borders for print */
         #printable-content {
-          border: 2px solid #1e40af !important;
+          border: none !important;
         }
         
         /* Better spacing for print */
@@ -257,17 +257,8 @@ export default function CorrespondenceDetail() {
         </div>
       </div>
 
-      <Card className="max-w-4xl mx-auto shadow-lg border-2">
+      <Card className="max-w-4xl mx-auto shadow-lg">
         <CardContent className="p-0" id="printable-content">
-          {/* Official Header */}
-          <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border-b-4 border-primary py-8 px-12">
-            <div className="text-center space-y-2">
-              <h1 className="text-2xl font-bold text-primary">المملكة العربية السعودية</h1>
-              <h2 className="text-xl font-semibold text-foreground">وزارة الداخلية</h2>
-              <div className="w-32 h-1 bg-primary mx-auto mt-3"></div>
-            </div>
-          </div>
-
           {correspondence.display_type === 'attachment_only' ? (
             <div className="p-12 space-y-6">
               {/* Document Info */}
