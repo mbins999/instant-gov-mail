@@ -1,6 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  Home, 
   Mail, 
   Send, 
   Archive, 
@@ -11,7 +10,6 @@ import {
 import { cn } from '@/lib/utils';
 
 const navigationItems = [
-  { icon: Home, label: 'لوحة التحكم', path: '/' },
   { icon: Mail, label: 'الواردة', path: '/incoming' },
   { icon: Send, label: 'الصادرة', path: '/outgoing' },
   { icon: FileText, label: 'مراسلة جديدة', path: '/new' },

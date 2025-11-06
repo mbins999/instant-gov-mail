@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
-import Dashboard from "./pages/Dashboard";
+import NotificationBar from "./components/NotificationBar";
 import Incoming from "./pages/Incoming";
 import Outgoing from "./pages/Outgoing";
 import NewCorrespondence from "./pages/NewCorrespondence";
@@ -25,20 +25,23 @@ const App = () => (
       <BrowserRouter>
         <div className="flex min-h-screen" dir="rtl">
           <Sidebar />
-          <main className="flex-1 p-8 overflow-auto">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/incoming" element={<Incoming />} />
-              <Route path="/outgoing" element={<Outgoing />} />
-              <Route path="/new" element={<NewCorrespondence />} />
-              <Route path="/correspondence/:id" element={<CorrespondenceDetail />} />
-              <Route path="/search" element={<SearchPage />} />
-              <Route path="/archive" element={<ArchivePage />} />
-              <Route path="/api-settings" element={<ApiSettings />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
+          <div className="flex-1 flex flex-col">
+            <NotificationBar />
+            <main className="flex-1 p-8 overflow-auto">
+              <Routes>
+                <Route path="/" element={<Incoming />} />
+                <Route path="/incoming" element={<Incoming />} />
+                <Route path="/outgoing" element={<Outgoing />} />
+                <Route path="/new" element={<NewCorrespondence />} />
+                <Route path="/correspondence/:id" element={<CorrespondenceDetail />} />
+                <Route path="/search" element={<SearchPage />} />
+                <Route path="/archive" element={<ArchivePage />} />
+                <Route path="/api-settings" element={<ApiSettings />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </main>
+          </div>
         </div>
       </BrowserRouter>
     </TooltipProvider>
