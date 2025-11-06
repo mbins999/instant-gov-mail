@@ -20,7 +20,7 @@ export default function NewCorrespondence() {
     date: new Date().toISOString().split('T')[0],
     to: '',
     subject: '',
-    greeting: 'السيد/',
+    greeting: 'السيد/   المحترم\nالسلام عليكم ورحمة الله وبركاته ,,,',
     content: '',
   });
 
@@ -139,11 +139,11 @@ export default function NewCorrespondence() {
 
             <div className="space-y-2">
               <Label htmlFor="greeting">التحية *</Label>
-              <Input
+              <Textarea
                 id="greeting"
                 value={formData.greeting}
                 onChange={(e) => setFormData({ ...formData, greeting: e.target.value })}
-                placeholder="السيد/محمد خالد علي        المحترم"
+                rows={3}
                 required
                 disabled={loading}
               />
