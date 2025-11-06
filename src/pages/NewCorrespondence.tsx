@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +22,15 @@ export default function NewCorrespondence() {
     subject: '',
     content: '',
   });
+
+  const hijriDate = useMemo(() => {
+    const date = new Date(formData.date);
+    return new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }).format(date);
+  }, [formData.date]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,28 +80,33 @@ export default function NewCorrespondence() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="number">رقم الكتاب *</Label>
-              <Input
-                id="number"
-                value={formData.number}
-                onChange={(e) => setFormData({ ...formData, number: e.target.value })}
-                placeholder="IN-2024-001"
-                required
-                disabled={loading}
-              />
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="number">رقم الكتاب *</Label>
+                <Input
+                  id="number"
+                  value={formData.number}
+                  onChange={(e) => setFormData({ ...formData, number: e.target.value })}
+                  required
+                  disabled={loading}
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="date">التاريخ *</Label>
-              <Input
-                id="date"
-                type="date"
-                value={formData.date}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                required
-                disabled={loading}
-              />
+              <div className="space-y-2">
+                <Label htmlFor="date">التاريخ *</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                  required
+                  disabled={loading}
+                />
+                <div className="text-sm space-y-1 mt-2">
+                  <div className="text-muted-foreground">الهجري: {hijriDate}</div>
+                  <div className="text-muted-foreground">الميلادي: {new Date(formData.date).toLocaleDateString('ar-SA')}</div>
+                </div>
+              </div>
             </div>
 
             <div className="space-y-2">
