@@ -3,7 +3,6 @@ import {
   Mail, 
   Send, 
   Archive, 
-  Search,
   Settings,
   Plus,
   LogOut
@@ -16,7 +15,6 @@ import { useToast } from '@/hooks/use-toast';
 const navigationItems = [
   { icon: Mail, label: 'الواردة', path: '/incoming' },
   { icon: Send, label: 'الصادرة', path: '/outgoing' },
-  { icon: Search, label: 'البحث', path: '/search' },
   { icon: Archive, label: 'الأرشيف', path: '/archive' },
   { icon: Settings, label: 'الربط مع النظام', path: '/api-settings' },
   { icon: Settings, label: 'الإعدادات', path: '/settings' },
