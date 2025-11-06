@@ -1,13 +1,57 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Edit, Printer, Archive } from 'lucide-react';
-import { mockCorrespondences } from '@/data/correspondenceData';
+import { ArrowRight, Edit, Printer, Archive, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Correspondence } from '@/types/correspondence';
 
 export default function CorrespondenceDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const correspondence = mockCorrespondences.find(c => c.id === id);
+  const [correspondence, setCorrespondence] = useState<Correspondence | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCorrespondence = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('correspondences')
+          .select(`
+            *,
+            received_by_profile:profiles!received_by(
+              full_name,
+              email
+            )
+          `)
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+
+        if (data) {
+          setCorrespondence({
+            ...data,
+            from: data.from_entity,
+          } as any);
+        }
+      } catch (err) {
+        console.error('Error fetching correspondence:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCorrespondence();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   if (!correspondence) {
     return (
