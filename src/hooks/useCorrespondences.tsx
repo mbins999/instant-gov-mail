@@ -27,6 +27,9 @@ export function useCorrespondences() {
       const transformedData = (data || []).map(item => ({
         ...item,
         from: item.from_entity,
+        greeting: item.greeting,
+        responsible_person: item.responsible_person,
+        signature_url: item.signature_url,
       }));
 
       setCorrespondences(transformedData as any);

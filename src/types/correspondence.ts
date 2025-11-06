@@ -8,6 +8,9 @@ export interface Correspondence {
   from: string;
   date: string;
   content: string;
+  greeting?: string;
+  responsible_person?: string;
+  signature_url?: string;
   attachments?: string[];
   notes?: string;
   received_by?: string;

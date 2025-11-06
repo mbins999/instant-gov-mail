@@ -33,6 +33,9 @@ export default function CorrespondenceDetail() {
           setCorrespondence({
             ...data,
             from: data.from_entity,
+            greeting: data.greeting,
+            responsible_person: data.responsible_person,
+            signature_url: data.signature_url,
           } as any);
         }
       } catch (err) {
@@ -92,18 +95,35 @@ export default function CorrespondenceDetail() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>{correspondence.subject}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div>
-              <h3 className="font-semibold mb-2">المحتوى:</h3>
-              <p className="text-foreground/80 leading-relaxed">{correspondence.content}</p>
+          <CardContent className="pt-6">
+            <div className="space-y-4 text-lg leading-relaxed whitespace-pre-wrap">
+              <div>{correspondence.greeting}</div>
+              
+              <div className="font-semibold text-center my-4">
+                الموضوع: {correspondence.subject}
+              </div>
+              
+              <div>{correspondence.content}</div>
+              
+              {correspondence.responsible_person && (
+                <div className="mt-8 text-center">
+                  {correspondence.signature_url && (
+                    <div className="flex justify-center mb-2">
+                      <img 
+                        src={correspondence.signature_url} 
+                        alt="توقيع المسؤول" 
+                        className="max-h-32"
+                      />
+                    </div>
+                  )}
+                  <div className="font-semibold">{correspondence.responsible_person}</div>
+                </div>
+              )}
             </div>
             
             {correspondence.attachments && correspondence.attachments.length > 0 && (
-              <div>
-                <h3 className="font-semibold mb-2">المرفقات:</h3>
+              <div className="mt-8 pt-6 border-t">
+                <h3 className="font-semibold mb-3">المرفقات:</h3>
                 <div className="space-y-2">
                   {correspondence.attachments.map((attachment, index) => (
                     <div key={index} className="flex items-center gap-2 p-3 bg-muted rounded-lg">
@@ -122,6 +142,11 @@ export default function CorrespondenceDetail() {
               <CardTitle>معلومات المراسلة</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div>
+                <p className="text-sm text-muted-foreground">الرقم</p>
+                <p className="font-semibold">{correspondence.number}</p>
+              </div>
+              
               <div>
                 <p className="text-sm text-muted-foreground">النوع</p>
                 <p className="font-semibold">
