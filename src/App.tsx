@@ -22,10 +22,10 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
+    <BrowserRouter>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route
@@ -53,11 +53,11 @@ const App = () => (
                         <Route path="/edit/:id" element={<NewCorrespondence />} />
                         <Route path="/correspondence/:id" element={<CorrespondenceDetail />} />
                         <Route path="/search" element={<SearchPage />} />
-                  <Route path="/archive" element={<ArchivePage />} />
-                  <Route path="/import" element={<ImportCorrespondence />} />
-                  <Route path="/settings" element={<Navigate to="/users" replace />} />
-                  <Route path="/users" element={<UsersManagement />} />
-                  <Route path="*" element={<NotFound />} />
+                        <Route path="/archive" element={<ArchivePage />} />
+                        <Route path="/import" element={<ImportCorrespondence />} />
+                        <Route path="/settings" element={<Navigate to="/users" replace />} />
+                        <Route path="/users" element={<UsersManagement />} />
+                        <Route path="*" element={<NotFound />} />
                       </Routes>
                     </main>
                   </div>
@@ -66,8 +66,8 @@ const App = () => (
             }
           />
         </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+      </TooltipProvider>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 
