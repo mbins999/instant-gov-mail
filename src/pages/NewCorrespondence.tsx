@@ -27,8 +27,8 @@ export default function NewCorrespondence() {
     const date = new Date(formData.date);
     return new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {
       year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+      month: '2-digit',
+      day: '2-digit'
     }).format(date);
   }, [formData.date]);
 
