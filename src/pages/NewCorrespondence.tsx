@@ -111,28 +111,15 @@ export default function NewCorrespondence() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="subject">الموضوع *</Label>
-                <Input
-                  id="subject"
-                  value={formData.subject}
-                  onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  required
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="to">الجهة المستلمة *</Label>
-                <Input
-                  id="to"
-                  value={formData.to}
-                  onChange={(e) => setFormData({ ...formData, to: e.target.value })}
-                  required
-                  disabled={loading}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="to">الجهة المستلمة *</Label>
+              <Input
+                id="to"
+                value={formData.to}
+                onChange={(e) => setFormData({ ...formData, to: e.target.value })}
+                required
+                disabled={loading}
+              />
             </div>
 
             <div className="space-y-2">
@@ -142,6 +129,17 @@ export default function NewCorrespondence() {
                 value={formData.greeting}
                 onChange={(e) => setFormData({ ...formData, greeting: e.target.value })}
                 rows={3}
+                required
+                disabled={loading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="subject">الموضوع *</Label>
+              <Input
+                id="subject"
+                value={formData.subject}
+                onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                 required
                 disabled={loading}
               />
