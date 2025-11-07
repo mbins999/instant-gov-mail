@@ -23,9 +23,11 @@ export default function CorrespondenceDetail() {
           .from('correspondences')
           .select(`
             *,
-            received_by_profile:profiles!received_by(
+            received_by_user:users!received_by(
+              id,
               full_name,
-              email
+              username,
+              entity_name
             )
           `)
           .eq('id', id)
