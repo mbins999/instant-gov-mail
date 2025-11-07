@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { genSalt, hash } from "https://deno.land/x/bcrypt@v0.2.4/mod.ts";
+import bcrypt from "https://esm.sh/bcryptjs@2.4.3";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -78,8 +78,7 @@ serve(async (req) => {
       }
 
       // ===== SECURE PASSWORD HASHING WITH BCRYPT =====
-      const salt = await genSalt(12);
-      updateData.password_hash = await hash(password, salt);
+      updateData.password_hash = await bcrypt.hash(password, 12);
     }
 
     // التحقق من وجود حقول للتحديث
