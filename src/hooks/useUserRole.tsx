@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 
 export type UserRole = 'admin' | 'user' | null;
 
@@ -8,27 +7,21 @@ export function useUserRole() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUserRole = async () => {
+    const fetchUserRole = () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const customSession = localStorage.getItem('custom_session');
         
-        if (!session?.user) {
+        if (!customSession) {
           setRole(null);
           setLoading(false);
           return;
         }
 
-        // Fetch user role from user_roles table
-        const { data: roleData } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', parseInt(session.user.id))
-          .maybeSingle();
-        
-        setRole((roleData?.role as UserRole) || 'user');
+        const sessionData = JSON.parse(customSession);
+        setRole((sessionData.user?.role as UserRole) || 'user');
       } catch (error) {
         console.error('Error fetching user role:', error);
-        setRole('user'); // Default to user role
+        setRole('user');
       } finally {
         setLoading(false);
       }
@@ -36,12 +29,13 @@ export function useUserRole() {
 
     fetchUserRole();
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+    // Listen for storage changes
+    const handleStorageChange = () => {
       fetchUserRole();
-    });
+    };
 
-    return () => subscription.unsubscribe();
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   return { role, loading, isAdmin: role === 'admin' };

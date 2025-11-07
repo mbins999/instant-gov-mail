@@ -140,6 +140,38 @@ export type Database = {
         }
         Relationships: []
       }
+      sessions: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          token: string
+          user_id: number
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          token: string
+          user_id: number
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          token?: string
+          user_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -214,6 +246,7 @@ export type Database = {
     Functions: {
       cleanup_old_rate_limits: { Args: never; Returns: undefined }
       get_user_by_username: { Args: { username_input: string }; Returns: Json }
+      get_user_id_from_session: { Args: never; Returns: number }
       has_role:
         | {
             Args: {

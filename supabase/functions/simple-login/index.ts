@@ -92,13 +92,36 @@ serve(async (req) => {
     // إنشاء جلسة مخصصة
     const sessionToken = crypto.randomUUID();
     
+    // حفظ الجلسة في قاعدة البيانات
+    const { error: sessionError } = await supabase
+      .from('sessions')
+      .insert({
+        user_id: userData.id,
+        token: sessionToken,
+      });
+
+    if (sessionError) {
+      console.error('Error creating session:', sessionError);
+      return new Response(
+        JSON.stringify({ error: 'خطأ في إنشاء الجلسة' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Get user role from user_roles table
+    const { data: roleData } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userData.id)
+      .maybeSingle();
+    
     // حذف password_hash من الاستجابة
     const userResponse = {
       id: userData.id,
       username: userData.username,
       full_name: userData.full_name,
       entity_name: userData.entity_name,
-      role: userData.role || 'user'
+      role: roleData?.role || 'user'
     };
 
     return new Response(
