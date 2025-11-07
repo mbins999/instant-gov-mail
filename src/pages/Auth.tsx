@@ -15,12 +15,11 @@ export default function Auth() {
   const { toast } = useToast();
   
   // Login states
-  const [loginEmail, setLoginEmail] = useState('');
+  const [loginUsername, setLoginUsername] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   
   // Signup states
   const [signupUsername, setSignupUsername] = useState('');
-  const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupFullName, setSignupFullName] = useState('');
   const [signupEntityName, setSignupEntityName] = useState('');
@@ -29,34 +28,26 @@ export default function Auth() {
   const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    // Setup auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-        if (session) {
-          navigate('/');
-        }
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session) {
+    // Check for existing custom session in localStorage
+    const existingSession = localStorage.getItem('custom_session');
+    if (existingSession) {
+      try {
+        const sessionData = JSON.parse(existingSession);
+        setSession(sessionData);
         navigate('/');
+      } catch (e) {
+        localStorage.removeItem('custom_session');
       }
-    });
-
-    return () => subscription.unsubscribe();
+    }
   }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!loginEmail || !loginPassword) {
+    if (!loginUsername || !loginPassword) {
       toast({
         title: "خطأ",
-        description: "يرجى إدخال البريد الإلكتروني وكلمة المرور",
+        description: "يرجى إدخال اسم المستخدم وكلمة المرور",
         variant: "destructive",
       });
       return;
@@ -65,26 +56,31 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: loginEmail,
-        password: loginPassword,
+      const { data, error } = await supabase.functions.invoke('simple-login', {
+        body: { username: loginUsername, password: loginPassword }
       });
 
-      if (error) {
+      if (error || data?.error) {
         toast({
           title: "خطأ في تسجيل الدخول",
-          description: error.message === 'Invalid login credentials'
-            ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة'
-            : error.message,
+          description: data?.error || "اسم المستخدم أو كلمة المرور غير صحيحة",
           variant: "destructive",
         });
         return;
       }
 
-      if (data.session) {
+      if (data?.session) {
+        // Store custom session
+        const sessionData = {
+          access_token: data.session.access_token,
+          user: data.session.user
+        };
+        localStorage.setItem('custom_session', JSON.stringify(sessionData));
+        setSession(sessionData as any);
+        
         toast({
           title: "تم تسجيل الدخول بنجاح",
-          description: "مرحباً بك",
+          description: `مرحباً ${data.session.user.full_name}`,
         });
         navigate('/');
       }
@@ -103,7 +99,7 @@ export default function Auth() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!signupEmail || !signupPassword || !signupUsername || !signupFullName || !signupEntityName) {
+    if (!signupPassword || !signupUsername || !signupFullName || !signupEntityName) {
       toast({
         title: "خطأ",
         description: "يرجى ملء جميع الحقول المطلوبة",
@@ -132,43 +128,33 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: signupEmail,
-        password: signupPassword,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            username: signupUsername,
-            full_name: signupFullName,
-            entity_name: signupEntityName,
-            role: 'user' // Always assign 'user' role by default
-          }
+      const { data, error } = await supabase.functions.invoke('simple-signup', {
+        body: {
+          username: signupUsername,
+          password: signupPassword,
+          fullName: signupFullName,
+          entityName: signupEntityName,
+          role: 'user'
         }
       });
 
-      if (error) {
+      if (error || data?.error) {
         toast({
           title: "خطأ في التسجيل",
-          description: error.message === 'User already registered'
-            ? 'هذا البريد مسجل مسبقاً'
-            : error.message,
+          description: data?.error || "حدث خطأ أثناء إنشاء الحساب",
           variant: "destructive",
         });
         return;
       }
 
-      if (data.session) {
-        toast({
-          title: "تم التسجيل بنجاح",
-          description: "مرحباً بك في النظام",
-        });
-        navigate('/');
-      } else {
-        toast({
-          title: "تم إنشاء الحساب",
-          description: "يمكنك الآن تسجيل الدخول",
-        });
-      }
+      toast({
+        title: "تم إنشاء الحساب بنجاح",
+        description: "يمكنك الآن تسجيل الدخول",
+      });
+      
+      // Switch to login tab
+      const loginTab = document.querySelector('[value="login"]') as HTMLElement;
+      loginTab?.click();
     } catch (error) {
       console.error('Signup error:', error);
       toast({
@@ -204,13 +190,14 @@ export default function Auth() {
               <form onSubmit={handleLogin} className="space-y-4 mt-4">
                 <div className="space-y-2">
                   <Input
-                    type="email"
-                    value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
-                    placeholder="البريد الإلكتروني"
+                    type="text"
+                    value={loginUsername}
+                    onChange={(e) => setLoginUsername(e.target.value)}
+                    placeholder="اسم المستخدم"
                     required
                     disabled={loading}
                     className="text-right"
+                    autoComplete="username"
                   />
                 </div>
 
@@ -223,6 +210,7 @@ export default function Auth() {
                     required
                     disabled={loading}
                     className="text-right"
+                    autoComplete="current-password"
                   />
                 </div>
 
@@ -239,10 +227,12 @@ export default function Auth() {
                     type="text"
                     value={signupUsername}
                     onChange={(e) => setSignupUsername(e.target.value)}
-                    placeholder="اسم المستخدم"
+                    placeholder="اسم المستخدم (أحرف وأرقام فقط)"
                     required
                     disabled={loading}
                     className="text-right"
+                    autoComplete="username"
+                    pattern="[a-zA-Z0-9_]+"
                   />
                 </div>
 
@@ -260,29 +250,18 @@ export default function Auth() {
 
                 <div className="space-y-2">
                   <Input
-                    type="email"
-                    value={signupEmail}
-                    onChange={(e) => setSignupEmail(e.target.value)}
-                    placeholder="البريد الإلكتروني"
-                    required
-                    disabled={loading}
-                    className="text-right"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Input
                     type="password"
                     value={signupPassword}
                     onChange={(e) => setSignupPassword(e.target.value)}
-                    placeholder="كلمة المرور (8 أحرف، حرف كبير، حرف صغير، رقم)"
+                    placeholder="كلمة المرور"
                     required
                     disabled={loading}
                     className="text-right"
                     minLength={8}
+                    autoComplete="new-password"
                   />
                   <p className="text-xs text-muted-foreground text-right">
-                    يجب أن تحتوي على: 8 أحرف على الأقل، حرف كبير، حرف صغير، ورقم
+                    يجب أن تحتوي على: 8 أحرف، حرف كبير، حرف صغير، رقم، ورمز خاص
                   </p>
                 </div>
 
