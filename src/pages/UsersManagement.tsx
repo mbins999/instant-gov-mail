@@ -5,11 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Navigate } from 'react-router-dom';
-import { UserPlus, Loader2, Building2, Trash2, Plus } from 'lucide-react';
+import { UserPlus, Loader2, Building2, Trash2, Plus, Edit } from 'lucide-react';
 
 interface User {
   id: string;
@@ -39,6 +40,13 @@ export default function UsersManagement() {
     fullName: '',
     entityName: '',
     role: 'user' as 'admin' | 'user'
+  });
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    fullName: '',
+    password: '',
+    entityName: ''
   });
 
   useEffect(() => {
@@ -205,6 +213,63 @@ export default function UsersManagement() {
     }
   };
 
+  const handleEditUser = (user: User) => {
+    setEditingUser(user);
+    setEditFormData({
+      fullName: user.full_name,
+      password: '',
+      entityName: user.entity_name
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('update-user', {
+        body: {
+          userId: editingUser.id,
+          fullName: editFormData.fullName,
+          password: editFormData.password || undefined,
+          entityName: editFormData.entityName
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      toast({
+        title: 'تم بنجاح',
+        description: 'تم تحديث بيانات المستخدم بنجاح',
+      });
+
+      setEditDialogOpen(false);
+      setEditingUser(null);
+      setEditFormData({
+        fullName: '',
+        password: '',
+        entityName: ''
+      });
+
+      fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: 'خطأ',
+        description: error.message || 'فشل تحديث المستخدم',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (roleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -313,26 +378,94 @@ export default function UsersManagement() {
 
             <Card>
               <CardHeader>
-                <CardTitle>المستخدمون الحاليون</CardTitle>
+                <CardTitle>المستخدمين</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 max-h-[600px] overflow-y-auto">
                   {users.map((user) => (
-                    <div key={user.id} className="p-3 border rounded-lg">
-                      <div className="font-semibold">{user.full_name}</div>
-                      <div className="text-sm text-muted-foreground">@{user.username}</div>
-                      <div className="text-sm text-muted-foreground">{user.entity_name}</div>
-                      <div className="text-xs mt-1">
-                        <span className={`px-2 py-1 rounded ${user.role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-secondary/10'}`}>
-                          {user.role === 'admin' ? 'مدير' : 'مستخدم'}
-                        </span>
+                    <div key={user.id} className="p-3 border rounded-lg flex justify-between items-center">
+                      <div className="flex-1">
+                        <div className="font-semibold">{user.full_name}</div>
+                        <div className="text-sm text-muted-foreground">@{user.username}</div>
+                        <div className="text-sm text-muted-foreground">{user.entity_name}</div>
+                        <div className="text-xs mt-1">
+                          <span className={`px-2 py-1 rounded ${user.role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-secondary/10'}`}>
+                            {user.role === 'admin' ? 'مدير' : 'مستخدم'}
+                          </span>
+                        </div>
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditUser(user)}
+                        className="text-primary hover:text-primary hover:bg-primary/10"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
           </div>
+
+          <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>تحرير المستخدم</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleUpdateUser} className="space-y-4">
+                <div>
+                  <Label htmlFor="edit-fullName">الاسم الكامل</Label>
+                  <Input
+                    id="edit-fullName"
+                    value={editFormData.fullName}
+                    onChange={(e) => setEditFormData({ ...editFormData, fullName: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="edit-password">كلمة المرور الجديدة (اتركها فارغة إذا لم ترد التغيير)</Label>
+                  <Input
+                    id="edit-password"
+                    type="password"
+                    value={editFormData.password}
+                    onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
+                    placeholder="اتركها فارغة للإبقاء على القديمة"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="edit-entityName">جهة العمل</Label>
+                  <Select
+                    value={editFormData.entityName}
+                    onValueChange={(value) => setEditFormData({ ...editFormData, entityName: value })}
+                  >
+                    <SelectTrigger className="bg-background">
+                      <SelectValue placeholder="اختر الجهة" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border shadow-lg z-50">
+                      {entities.map((entity) => (
+                        <SelectItem key={entity.id} value={entity.name}>
+                          {entity.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex gap-2 justify-end">
+                  <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>
+                    إلغاء
+                  </Button>
+                  <Button type="submit" disabled={loading}>
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'حفظ التغييرات'}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
 
         <TabsContent value="entities">
