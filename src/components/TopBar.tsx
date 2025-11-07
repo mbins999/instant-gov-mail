@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import NotificationBell from './NotificationBell';
 
 export default function TopBar() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -47,8 +46,13 @@ export default function TopBar() {
     <div className="border-b border-border bg-card sticky top-0 z-10">
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between gap-4">
-          {/* Search bar - Left side */}
-          <form onSubmit={handleSearch} className="flex-1 max-w-md">
+          {/* User name - Left side */}
+          <div className="flex-1">
+            <h1 className="text-xl font-bold text-primary">{userName}</h1>
+          </div>
+
+          {/* Search bar - Center */}
+          <form onSubmit={handleSearch} className="flex-1 max-w-2xl">
             <div className="relative">
               <Input
                 type="text"
@@ -68,13 +72,8 @@ export default function TopBar() {
             </div>
           </form>
 
-          {/* Center - User name */}
-          <h1 className="text-2xl font-bold text-primary">{userName}</h1>
-
-          {/* Notification bell - Right side */}
-          <div className="flex-1 max-w-md flex justify-end">
-            <NotificationBell />
-          </div>
+          {/* Empty right side for balance */}
+          <div className="flex-1"></div>
         </div>
       </div>
     </div>
