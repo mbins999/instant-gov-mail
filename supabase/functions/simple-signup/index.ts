@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+import { genSalt, hash } from "https://deno.land/x/bcrypt@v0.2.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -115,8 +115,8 @@ serve(async (req) => {
     }
 
     // ===== SECURE PASSWORD HASHING WITH BCRYPT =====
-    const salt = await bcrypt.genSalt(12);
-    const passwordHash = await bcrypt.hash(password, salt);
+    const salt = await genSalt(12);
+    const passwordHash = await hash(password, salt);
 
     // Create user
     const { data: newUser, error: profileError } = await supabase
