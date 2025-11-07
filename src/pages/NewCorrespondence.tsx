@@ -230,6 +230,14 @@ export default function NewCorrespondence() {
         signature_url: formData.displayType === 'content' ? signatureUrl : '',
         display_type: formData.displayType,
         attachments: uploadedAttachments,
+        created_by: (() => {
+          const userData = localStorage.getItem('auth_user');
+          if (userData) {
+            const user = JSON.parse(userData);
+            return parseInt(user.id);
+          }
+          return null;
+        })()
       };
 
       if (isEditMode && id) {
@@ -302,6 +310,7 @@ export default function NewCorrespondence() {
                     ...correspondenceData,
                     type: 'incoming',
                     received_by_entity: receiverUser.entity_name,
+                    created_by: receiverUser.id,
                   }]);
               }
               

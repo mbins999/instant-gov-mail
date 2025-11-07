@@ -19,6 +19,7 @@ export type Database = {
           attachments: string[] | null
           content: string
           created_at: string | null
+          created_by: number | null
           date: string
           display_type: string
           from_entity: string
@@ -40,6 +41,7 @@ export type Database = {
           attachments?: string[] | null
           content: string
           created_at?: string | null
+          created_by?: number | null
           date?: string
           display_type?: string
           from_entity: string
@@ -61,6 +63,7 @@ export type Database = {
           attachments?: string[] | null
           content?: string
           created_at?: string | null
+          created_by?: number | null
           date?: string
           display_type?: string
           from_entity?: string
@@ -79,6 +82,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "correspondences_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "correspondences_received_by_fkey"
             columns: ["received_by"]

@@ -10,7 +10,27 @@ export function useCorrespondences() {
   const fetchCorrespondences = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // الحصول على بيانات المستخدم الحالي
+      const currentUserStr = localStorage.getItem('auth_user');
+      if (!currentUserStr) {
+        throw new Error('يجب تسجيل الدخول أولاً');
+      }
+      
+      const currentUser = JSON.parse(currentUserStr);
+      const userId = parseInt(currentUser.id);
+      
+      // التحقق من دور المستخدم
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      const isAdmin = roleData?.role === 'admin';
+      
+      // بناء الاستعلام
+      let query = supabase
         .from('correspondences')
         .select(`
           *,
@@ -20,8 +40,14 @@ export function useCorrespondences() {
             username,
             entity_name
           )
-        `)
-        .order('date', { ascending: false });
+        `);
+      
+      // إذا لم يكن مدير، اعرض فقط المراسلات الخاصة به
+      if (!isAdmin) {
+        query = query.eq('created_by', userId);
+      }
+      
+      const { data, error } = await query.order('date', { ascending: false });
 
       if (error) throw error;
 

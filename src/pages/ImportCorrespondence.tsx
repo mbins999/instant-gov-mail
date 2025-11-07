@@ -27,16 +27,32 @@ export default function ImportCorrespondence() {
       }
 
       const user = JSON.parse(userData);
+      const userId = parseInt(user.id);
 
       if (user?.entity_name) {
         setUserEntityName(user.entity_name);
 
-        // جلب المراسلات الموجهة لهذه الجهة
-        const { data, error } = await supabase
+        // التحقق من دور المستخدم
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', userId)
+          .maybeSingle();
+        
+        const isAdmin = roleData?.role === 'admin';
+
+        // بناء الاستعلام
+        let query = supabase
           .from('correspondences')
           .select('*')
-          .eq('received_by_entity', user.entity_name)
-          .order('date', { ascending: false });
+          .eq('received_by_entity', user.entity_name);
+        
+        // إذا لم يكن مدير، اعرض فقط المراسلات الموجهة له
+        if (!isAdmin) {
+          query = query.eq('created_by', userId);
+        }
+        
+        const { data, error } = await query.order('date', { ascending: false });
 
         if (error) throw error;
 
