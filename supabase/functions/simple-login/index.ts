@@ -73,13 +73,20 @@ serve(async (req) => {
     const sessionToken = crypto.randomUUID();
     
     // حذف password_hash من الاستجابة
-    delete userData.password_hash;
+    const userResponse = {
+      id: userData.id,
+      username: userData.username,
+      full_name: userData.full_name,
+      entity_name: userData.entity_name,
+      role: userData.role || 'user'
+    };
 
     return new Response(
       JSON.stringify({ 
-        success: true,
-        user: userData,
-        token: sessionToken
+        session: {
+          access_token: sessionToken,
+          user: userResponse
+        }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

@@ -17,9 +17,9 @@ export default function CorrespondenceTable({ correspondences, onReceive }: Corr
   const handleReceive = async (correspondenceId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     
-    const { data: { user } } = await supabase.auth.getUser();
+    const userData = localStorage.getItem('auth_user');
     
-    if (!user) {
+    if (!userData) {
       toast({
         title: "خطأ",
         description: "يجب تسجيل الدخول أولاً",
@@ -28,10 +28,12 @@ export default function CorrespondenceTable({ correspondences, onReceive }: Corr
       return;
     }
 
+    const user = JSON.parse(userData);
+
     const { error } = await supabase
       .from('correspondences')
       .update({ 
-        received_by: user.id,
+        received_by: parseInt(user.id),
         received_at: new Date().toISOString()
       })
       .eq('id', correspondenceId);

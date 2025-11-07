@@ -50,21 +50,22 @@ export default function UsersManagement() {
 
   const fetchUsers = async () => {
     try {
-      const { data: profiles } = await supabase
-        .from('profiles')
+      const { data: usersList } = await supabase
+        .from('users')
         .select('id, username, full_name, entity_name');
 
-      if (profiles) {
+      if (usersList) {
         const usersWithRoles = await Promise.all(
-          profiles.map(async (profile) => {
+          usersList.map(async (user) => {
             const { data: roleData } = await supabase
               .from('user_roles')
               .select('role')
-              .eq('user_id', profile.id)
+              .eq('user_id', user.id)
               .maybeSingle();
 
             return {
-              ...profile,
+              ...user,
+              id: user.id.toString(),
               role: roleData?.role || 'user'
             };
           })
@@ -96,27 +97,22 @@ export default function UsersManagement() {
     setLoading(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const currentUser = localStorage.getItem('auth_user');
+      let createdBy = null;
       
-      if (!session) {
-        toast({
-          title: 'خطأ',
-          description: 'يجب تسجيل الدخول أولاً',
-          variant: 'destructive',
-        });
-        return;
+      if (currentUser) {
+        const userData = JSON.parse(currentUser);
+        createdBy = userData.id;
       }
 
-      const { data, error } = await supabase.functions.invoke('create-user', {
+      const { data, error } = await supabase.functions.invoke('simple-signup', {
         body: {
           username: formData.username,
           password: formData.password,
           fullName: formData.fullName,
           entityName: formData.entityName,
-          role: formData.role
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
+          role: formData.role,
+          createdBy: createdBy
         }
       });
 

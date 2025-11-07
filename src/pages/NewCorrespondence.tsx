@@ -288,20 +288,20 @@ export default function NewCorrespondence() {
               await correspondenceApi.exportCorrespondence(metadata);
               
               // البحث عن المستخدم المستلم بناءً على اسم الجهة
-              const { data: receiverProfile } = await supabase
-                .from('profiles')
+              const { data: receiverUser } = await supabase
+                .from('users')
                 .select('id, entity_name')
                 .eq('entity_name', formData.to)
-                .single();
+                .maybeSingle();
 
               // إذا وُجدت الجهة المستلمة، إنشاء نسخة من المراسلة في حسابها
-              if (receiverProfile) {
+              if (receiverUser) {
                 await supabase
                   .from('correspondences')
                   .insert([{
                     ...correspondenceData,
                     type: 'incoming',
-                    received_by_entity: receiverProfile.entity_name,
+                    received_by_entity: receiverUser.entity_name,
                   }]);
               }
               

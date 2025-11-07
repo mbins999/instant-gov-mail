@@ -28,7 +28,7 @@ export type Database = {
           number: string
           pdf_url: string | null
           received_at: string | null
-          received_by: string | null
+          received_by: number | null
           received_by_entity: string | null
           responsible_person: string | null
           signature_url: string | null
@@ -49,7 +49,7 @@ export type Database = {
           number: string
           pdf_url?: string | null
           received_at?: string | null
-          received_by?: string | null
+          received_by?: number | null
           received_by_entity?: string | null
           responsible_person?: string | null
           signature_url?: string | null
@@ -70,7 +70,7 @@ export type Database = {
           number?: string
           pdf_url?: string | null
           received_at?: string | null
-          received_by?: string | null
+          received_by?: number | null
           received_by_entity?: string | null
           responsible_person?: string | null
           signature_url?: string | null
@@ -78,7 +78,15 @@ export type Database = {
           type?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "correspondences_received_by_fkey"
+            columns: ["received_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       entities: {
         Row: {
@@ -101,56 +109,72 @@ export type Database = {
         }
         Relationships: []
       }
-      profiles: {
-        Row: {
-          created_at: string | null
-          email: string
-          entity_name: string | null
-          full_name: string
-          id: string
-          password_hash: string | null
-          username: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          email: string
-          entity_name?: string | null
-          full_name: string
-          id: string
-          password_hash?: string | null
-          username?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          email?: string
-          entity_name?: string | null
-          full_name?: string
-          id?: string
-          password_hash?: string | null
-          username?: string | null
-        }
-        Relationships: []
-      }
       user_roles: {
         Row: {
           created_at: string | null
           id: string
           role: Database["public"]["Enums"]["app_role"]
-          user_id: string
+          user_id: number
         }
         Insert: {
           created_at?: string | null
           id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: number
         }
         Update: {
           created_at?: string | null
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
+          user_id?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          created_at: string
+          created_by: number | null
+          entity_name: string
+          full_name: string
+          id: number
+          password_hash: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: number | null
+          entity_name: string
+          full_name: string
+          id?: number
+          password_hash: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: number | null
+          entity_name?: string
+          full_name?: string
+          id?: number
+          password_hash?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "users_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -158,13 +182,21 @@ export type Database = {
     }
     Functions: {
       get_user_by_username: { Args: { username_input: string }; Returns: Json }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+      has_role:
+        | {
+            Args: {
+              _role: Database["public"]["Enums"]["app_role"]
+              _user_id: string
+            }
+            Returns: boolean
+          }
+        | {
+            Args: {
+              _role: Database["public"]["Enums"]["app_role"]
+              _user_id: number
+            }
+            Returns: boolean
+          }
       set_password_hash: {
         Args: { password_hash_input: string; user_id_input: string }
         Returns: boolean

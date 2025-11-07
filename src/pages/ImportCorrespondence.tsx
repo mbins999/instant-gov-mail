@@ -20,27 +20,22 @@ export default function ImportCorrespondence() {
   const fetchUserEntityAndCorrespondences = async () => {
     try {
       // الحصول على معلومات المستخدم الحالي
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      const userData = localStorage.getItem('auth_user');
+      if (!userData) {
         navigate('/auth');
         return;
       }
 
-      // الحصول على اسم جهة المستخدم
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('entity_name')
-        .eq('id', user.id)
-        .single();
+      const user = JSON.parse(userData);
 
-      if (profile?.entity_name) {
-        setUserEntityName(profile.entity_name);
+      if (user?.entity_name) {
+        setUserEntityName(user.entity_name);
 
         // جلب المراسلات الموجهة لهذه الجهة
         const { data, error } = await supabase
           .from('correspondences')
           .select('*')
-          .eq('received_by_entity', profile.entity_name)
+          .eq('received_by_entity', user.entity_name)
           .order('date', { ascending: false });
 
         if (error) throw error;

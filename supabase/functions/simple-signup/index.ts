@@ -38,7 +38,7 @@ serve(async (req) => {
 
     // التحقق من أن اسم المستخدم غير موجود
     const { data: existingUser } = await supabase
-      .from('profiles')
+      .from('users')
       .select('username')
       .eq('username', username)
       .maybeSingle();
@@ -50,32 +50,34 @@ serve(async (req) => {
       );
     }
 
-    // إنشاء البريد الإلكتروني الوهمي (للنظام الداخلي فقط)
-    const email = `${username}@correspondence.local`;
-    const userId = crypto.randomUUID();
-
     // تشفير كلمة المرور
     const passwordHash = await hashPassword(password);
 
-    // إنشاء ملف المستخدم
-    const { error: profileError } = await supabase
-      .from('profiles')
+    // الحصول على معرف المستخدم الحالي إذا كان موجوداً
+    const currentUserId = null; // يمكن تمريرها من الطلب إذا لزم الأمر
+
+    // إنشاء المستخدم
+    const { data: newUser, error: profileError } = await supabase
+      .from('users')
       .insert({
-        id: userId,
         username: username,
         full_name: fullName,
-        email: email,
-        entity_name: entityName,
         password_hash: passwordHash,
-      });
+        entity_name: entityName,
+        created_by: currentUserId,
+      })
+      .select()
+      .single();
 
-    if (profileError) {
+    if (profileError || !newUser) {
       console.error('Profile error:', profileError);
       return new Response(
         JSON.stringify({ error: 'فشل إنشاء المستخدم' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const userId = newUser.id;
 
     // إضافة الدور
     const userRole = role || 'user';
@@ -88,7 +90,7 @@ serve(async (req) => {
 
     if (roleError) {
       console.error('Role error:', roleError);
-      await supabase.from('profiles').delete().eq('id', userId);
+      await supabase.from('users').delete().eq('id', userId);
       return new Response(
         JSON.stringify({ error: 'فشل تعيين الصلاحية' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

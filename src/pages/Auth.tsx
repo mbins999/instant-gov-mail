@@ -57,10 +57,10 @@ export default function Auth() {
         return;
       }
 
-      if (data?.success && data?.user && data?.token) {
+      if (data?.session) {
         // تخزين التوكن والمستخدم في localStorage
-        localStorage.setItem('auth_token', data.token);
-        localStorage.setItem('auth_user', JSON.stringify(data.user));
+        localStorage.setItem('auth_token', data.session.access_token);
+        localStorage.setItem('auth_user', JSON.stringify(data.session.user));
         
         // الربط بالنظام الخارجي إذا تم إدخال البيانات
         if (externalUsername && externalPassword) {
@@ -73,7 +73,7 @@ export default function Auth() {
         
         toast({
           title: "تم تسجيل الدخول بنجاح",
-          description: `مرحباً ${data.user.full_name}`,
+          description: `مرحباً ${data.session.user.full_name}`,
         });
         
         navigate('/');
