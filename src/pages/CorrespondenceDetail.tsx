@@ -432,7 +432,7 @@ export default function CorrespondenceDetail() {
                     src={attachment} 
                     alt={`مرفق ${index + 1}`}
                     onError={(e) => {
-                      // SECURE FIX: Use safe DOM methods instead of innerHTML
+                      // SECURE FIX: Use safe DOM methods (no innerHTML!)
                       const img = e.target as HTMLImageElement;
                       const container = img.parentElement;
                       if (container) {
@@ -441,8 +441,10 @@ export default function CorrespondenceDetail() {
                         iframe.width = '100%';
                         iframe.height = '100%';
                         iframe.style.border = 'none';
-                        iframe.sandbox.add('allow-scripts', 'allow-same-origin');
-                        container.innerHTML = '';
+                        // Safe sandbox: only allow-scripts (no same-origin to prevent sandbox escape)
+                        iframe.setAttribute('sandbox', 'allow-scripts');
+                        // Use safe DOM method instead of innerHTML
+                        container.textContent = '';
                         container.appendChild(iframe);
                       }
                     }}

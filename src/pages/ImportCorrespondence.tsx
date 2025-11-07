@@ -19,15 +19,29 @@ export default function ImportCorrespondence() {
 
   const fetchUserEntityAndCorrespondences = async () => {
     try {
-      // الحصول على معلومات المستخدم الحالي
-      const userData = localStorage.getItem('auth_user');
-      if (!userData) {
+      // Get authenticated user from Supabase session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
         navigate('/auth');
         return;
       }
 
-      const user = JSON.parse(userData);
-      const userId = parseInt(user.id);
+      // Get user from users table
+      const { data: user } = await supabase
+        .from('users')
+        .select('id, entity_name')
+        .eq('id', parseInt(session.user.id))
+        .maybeSingle();
+
+      if (!user) {
+        toast({
+          title: "خطأ",
+          description: "لم يتم العثور على بيانات المستخدم",
+          variant: "destructive",
+        });
+        navigate('/auth');
+        return;
+      }
 
       if (user?.entity_name) {
         setUserEntityName(user.entity_name);
@@ -36,7 +50,7 @@ export default function ImportCorrespondence() {
         const { data: roleData } = await supabase
           .from('user_roles')
           .select('role')
-          .eq('user_id', userId)
+          .eq('user_id', user.id)
           .maybeSingle();
         
         const isAdmin = roleData?.role === 'admin';
@@ -49,7 +63,7 @@ export default function ImportCorrespondence() {
         
         // إذا لم يكن مدير، اعرض فقط المراسلات الموجهة له
         if (!isAdmin) {
-          query = query.eq('created_by', userId);
+          query = query.eq('created_by', user.id);
         }
         
         const { data, error } = await query.order('date', { ascending: false });

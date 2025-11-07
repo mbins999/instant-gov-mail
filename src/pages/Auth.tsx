@@ -24,7 +24,6 @@ export default function Auth() {
   const [signupPassword, setSignupPassword] = useState('');
   const [signupFullName, setSignupFullName] = useState('');
   const [signupEntityName, setSignupEntityName] = useState('');
-  const [signupRole, setSignupRole] = useState<'user' | 'admin'>('user');
   
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
@@ -142,7 +141,7 @@ export default function Auth() {
             username: signupUsername,
             full_name: signupFullName,
             entity_name: signupEntityName,
-            role: signupRole
+            role: 'user' // Always assign 'user' role by default
           }
         }
       });
@@ -297,22 +296,6 @@ export default function Auth() {
                     disabled={loading}
                     className="text-right"
                   />
-                </div>
-
-                <div className="space-y-2">
-                  <Select
-                    value={signupRole}
-                    onValueChange={(value: 'user' | 'admin') => setSignupRole(value)}
-                    disabled={loading}
-                  >
-                    <SelectTrigger className="text-right">
-                      <SelectValue placeholder="اختر الصلاحية" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="user">مستخدم</SelectItem>
-                      <SelectItem value="admin">مسؤول</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
 
                 <Button type="submit" className="w-full" disabled={loading}>

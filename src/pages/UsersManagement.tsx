@@ -103,10 +103,18 @@ export default function UsersManagement() {
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (formData.password.length < 3) {
+    // Validate password strength (same as Auth.tsx)
+    const passwordErrors: string[] = [];
+    if (formData.password.length < 8) passwordErrors.push('8 أحرف على الأقل');
+    if (!/[A-Z]/.test(formData.password)) passwordErrors.push('حرف كبير');
+    if (!/[a-z]/.test(formData.password)) passwordErrors.push('حرف صغير');
+    if (!/[0-9]/.test(formData.password)) passwordErrors.push('رقم');
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) passwordErrors.push('رمز خاص');
+
+    if (passwordErrors.length > 0) {
       toast({
-        title: 'خطأ',
-        description: 'كلمة المرور يجب أن تكون 3 أحرف على الأقل',
+        title: 'كلمة المرور ضعيفة',
+        description: `يجب أن تحتوي على: ${passwordErrors.join(', ')}`,
         variant: 'destructive',
       });
       return;
@@ -115,12 +123,17 @@ export default function UsersManagement() {
     setLoading(true);
 
     try {
-      const currentUser = localStorage.getItem('auth_user');
+      // Get authenticated user from Supabase session
+      const { data: { session } } = await supabase.auth.getSession();
       let createdBy = null;
       
-      if (currentUser) {
-        const userData = JSON.parse(currentUser);
-        createdBy = userData.id;
+      if (session?.user) {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('id')
+          .eq('id', parseInt(session.user.id))
+          .maybeSingle();
+        createdBy = userData?.id || null;
       }
 
       const { data, error } = await supabase.functions.invoke('simple-signup', {
@@ -237,13 +250,23 @@ export default function UsersManagement() {
     e.preventDefault();
     if (!editingUser) return;
     
-    if (editFormData.password && editFormData.password.length < 3) {
-      toast({
-        title: 'خطأ',
-        description: 'كلمة المرور يجب أن تكون 3 أحرف على الأقل',
-        variant: 'destructive',
-      });
-      return;
+    // Validate password strength if password is provided
+    if (editFormData.password) {
+      const passwordErrors: string[] = [];
+      if (editFormData.password.length < 8) passwordErrors.push('8 أحرف على الأقل');
+      if (!/[A-Z]/.test(editFormData.password)) passwordErrors.push('حرف كبير');
+      if (!/[a-z]/.test(editFormData.password)) passwordErrors.push('حرف صغير');
+      if (!/[0-9]/.test(editFormData.password)) passwordErrors.push('رقم');
+      if (!/[!@#$%^&*(),.?":{}|<>]/.test(editFormData.password)) passwordErrors.push('رمز خاص');
+
+      if (passwordErrors.length > 0) {
+        toast({
+          title: 'كلمة المرور ضعيفة',
+          description: `يجب أن تحتوي على: ${passwordErrors.join(', ')}`,
+          variant: 'destructive',
+        });
+        return;
+      }
     }
     
     setLoading(true);

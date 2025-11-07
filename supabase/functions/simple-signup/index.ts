@@ -13,7 +13,30 @@ serve(async (req) => {
   }
 
   try {
-    const { username, password, fullName, entityName, role } = await req.json();
+    const { username, password, fullName, entityName, role, createdBy } = await req.json();
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // ===== RATE LIMITING CHECK =====
+    const clientIP = req.headers.get('x-forwarded-for') || 'unknown';
+    
+    // Check rate limit (3 signups per hour per IP)
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const { data: recentAttempts } = await supabase
+      .from('rate_limits')
+      .select('*')
+      .eq('identifier', clientIP)
+      .eq('endpoint', 'signup')
+      .gte('created_at', oneHourAgo);
+
+    if (recentAttempts && recentAttempts.length >= 3) {
+      return new Response(
+        JSON.stringify({ error: 'تم تجاوز الحد الأقصى لمحاولات التسجيل. يرجى المحاولة لاحقاً' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // ===== COMPREHENSIVE INPUT VALIDATION =====
     const errors: string[] = [];
@@ -57,17 +80,20 @@ serve(async (req) => {
     }
 
     if (errors.length > 0) {
+      // Log failed attempt
+      await supabase.from('rate_limits').insert([{
+        identifier: clientIP,
+        endpoint: 'signup',
+        created_at: new Date().toISOString()
+      }]);
+
       return new Response(
         JSON.stringify({ error: errors.join(', ') }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // التحقق من أن اسم المستخدم غير موجود
+    // Check if username already exists
     const { data: existingUser } = await supabase
       .from('users')
       .select('username')
@@ -75,8 +101,15 @@ serve(async (req) => {
       .maybeSingle();
 
     if (existingUser) {
+      // Log failed attempt
+      await supabase.from('rate_limits').insert([{
+        identifier: clientIP,
+        endpoint: 'signup',
+        created_at: new Date().toISOString()
+      }]);
+
       return new Response(
-        JSON.stringify({ error: 'اسم المستخدم موجود مسبقاً' }),
+        JSON.stringify({ error: 'اسم المستخدم موجود بالفعل' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -85,10 +118,7 @@ serve(async (req) => {
     const salt = await bcrypt.genSalt(12);
     const passwordHash = await bcrypt.hash(password, salt);
 
-    // الحصول على معرف المستخدم الحالي إذا كان موجوداً
-    const currentUserId = null; // يمكن تمريرها من الطلب إذا لزم الأمر
-
-    // إنشاء المستخدم
+    // Create user
     const { data: newUser, error: profileError } = await supabase
       .from('users')
       .insert({
@@ -96,7 +126,7 @@ serve(async (req) => {
         full_name: fullName,
         password_hash: passwordHash,
         entity_name: entityName,
-        created_by: currentUserId,
+        created_by: createdBy || null,
       })
       .select()
       .single();
@@ -111,14 +141,12 @@ serve(async (req) => {
 
     const userId = newUser.id;
 
-    // إضافة الدور
-    const userRole = role || 'user';
-    const { error: roleError } = await supabase
-      .from('user_roles')
-      .insert({
-        user_id: userId,
-        role: userRole,
-      });
+    // Assign role (default to 'user')
+    const userRole = role && (role === 'admin' || role === 'user') ? role : 'user';
+    const { error: roleError } = await supabase.from('user_roles').insert([{
+      user_id: userId,
+      role: userRole
+    }]);
 
     if (roleError) {
       console.error('Role error:', roleError);
@@ -129,14 +157,20 @@ serve(async (req) => {
       );
     }
 
+    // Clear rate limit on successful signup
+    await supabase
+      .from('rate_limits')
+      .delete()
+      .eq('identifier', clientIP)
+      .eq('endpoint', 'signup');
+
     return new Response(
       JSON.stringify({ 
-        success: true,
         user: {
-          id: userId,
-          username,
-          fullName,
-          entityName,
+          id: newUser.id,
+          username: newUser.username,
+          full_name: newUser.full_name,
+          entity_name: newUser.entity_name,
           role: userRole
         }
       }),
@@ -146,7 +180,7 @@ serve(async (req) => {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error:', errorMessage);
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: 'حدث خطأ في التسجيل' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
