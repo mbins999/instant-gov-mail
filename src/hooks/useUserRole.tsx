@@ -18,9 +18,14 @@ export function useUserRole() {
           return;
         }
 
-        // Check if user is admin using the existing function
-        // For now, we'll use a simple query
-        setRole('user'); // Default role, will be updated when types.ts is refreshed
+        // Fetch user role from user_roles table
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
+        
+        setRole((roleData?.role as UserRole) || 'user');
       } catch (error) {
         console.error('Error fetching user role:', error);
         setRole('user'); // Default to user role

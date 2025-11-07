@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -36,6 +36,7 @@ export default function UsersManagement() {
   const [newEntityType, setNewEntityType] = useState<'sender' | 'receiver' | 'both'>('both');
   const [formData, setFormData] = useState({
     username: '',
+    email: '',
     password: '',
     fullName: '',
     entityName: '',
@@ -73,7 +74,6 @@ export default function UsersManagement() {
 
             return {
               ...user,
-              id: user.id.toString(),
               role: roleData?.role || 'user'
             };
           })
@@ -103,7 +103,7 @@ export default function UsersManagement() {
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate password strength (same as Auth.tsx)
+    // Validate password strength
     const passwordErrors: string[] = [];
     if (formData.password.length < 8) passwordErrors.push('8 أحرف على الأقل');
     if (!/[A-Z]/.test(formData.password)) passwordErrors.push('حرف كبير');
@@ -123,54 +123,54 @@ export default function UsersManagement() {
     setLoading(true);
 
     try {
-      // Get authenticated user from Supabase session
       const { data: { session } } = await supabase.auth.getSession();
-      let createdBy = null;
-      
-      if (session?.user) {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('id')
-          .eq('id', parseInt(session.user.id))
-          .maybeSingle();
-        createdBy = userData?.id || null;
-      }
+      if (!session?.user) throw new Error('يجب تسجيل الدخول');
 
-      const { data, error } = await supabase.functions.invoke('simple-signup', {
-        body: {
+      // Create auth user using admin API
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: formData.email,
+        password: formData.password,
+        email_confirm: true,
+        user_metadata: {
           username: formData.username,
-          password: formData.password,
-          fullName: formData.fullName,
-          entityName: formData.entityName,
-          role: formData.role,
-          createdBy: createdBy
-        }
+          full_name: formData.fullName,
+          entity_name: formData.entityName,
+        },
       });
 
-      if (error) throw error;
+      if (authError) throw authError;
+      if (!authData.user) throw new Error('فشل إنشاء المستخدم');
 
-      if (data.error) {
-        throw new Error(data.error);
-      }
+      // Create user profile
+      const { error: profileError } = await supabase.from('users').insert({
+        id: authData.user.id,
+        username: formData.username,
+        full_name: formData.fullName,
+        entity_name: formData.entityName,
+        password_hash: '', // Not needed with Supabase Auth
+      });
+
+      if (profileError) throw profileError;
+
+      // Assign role
+      const { error: roleError } = await supabase.from('user_roles').insert({
+        user_id: authData.user.id,
+        role: formData.role,
+      });
+
+      if (roleError) throw roleError;
 
       toast({
-        title: 'تم بنجاح',
-        description: 'تم إنشاء المستخدم بنجاح',
+        title: 'تم إنشاء المستخدم بنجاح',
+        description: `تم إنشاء حساب ${formData.username}`,
       });
 
-      setFormData({
-        username: '',
-        password: '',
-        fullName: '',
-        entityName: '',
-        role: 'user'
-      });
-
+      setFormData({ username: '', email: '', password: '', fullName: '', entityName: '', role: 'user' });
       fetchUsers();
     } catch (error: any) {
       toast({
         title: 'خطأ',
-        description: error.message || 'فشل إنشاء المستخدم',
+        description: error.message,
         variant: 'destructive',
       });
     } finally {
@@ -272,19 +272,24 @@ export default function UsersManagement() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('update-user', {
-        body: {
-          userId: editingUser.id,
-          fullName: editFormData.fullName,
-          password: editFormData.password || undefined,
-          entityName: editFormData.entityName
-        }
-      });
+      // Update user profile
+      const { error: profileError } = await supabase
+        .from('users')
+        .update({
+          full_name: editFormData.fullName,
+          entity_name: editFormData.entityName,
+        })
+        .eq('id', editingUser.id);
 
-      if (error) throw error;
+      if (profileError) throw profileError;
 
-      if (data.error) {
-        throw new Error(data.error);
+      // Update password if provided
+      if (editFormData.password) {
+        const { error: passwordError } = await supabase.auth.admin.updateUserById(
+          editingUser.id,
+          { password: editFormData.password }
+        );
+        if (passwordError) throw passwordError;
       }
 
       toast({
@@ -356,13 +361,24 @@ export default function UsersManagement() {
                   </div>
 
                   <div>
-                    <Label htmlFor="password">كلمة المرور (3 أحرف كحد أدنى)</Label>
+                    <Label htmlFor="email">البريد الإلكتروني</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="password">كلمة المرور (8+ أحرف، حرف كبير، صغير، رقم، رمز)</Label>
                     <Input
                       id="password"
                       type="password"
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      minLength={3}
+                      minLength={8}
                       required
                     />
                   </div>
@@ -476,6 +492,7 @@ export default function UsersManagement() {
                     value={editFormData.password}
                     onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
                     placeholder="اتركها فارغة للإبقاء على القديمة"
+                    minLength={8}
                   />
                 </div>
 
@@ -498,12 +515,12 @@ export default function UsersManagement() {
                   </Select>
                 </div>
 
-                <div className="flex gap-2 justify-end">
+                <div className="flex gap-2">
+                  <Button type="submit" disabled={loading} className="flex-1">
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'حفظ التغييرات'}
+                  </Button>
                   <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>
                     إلغاء
-                  </Button>
-                  <Button type="submit" disabled={loading}>
-                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'حفظ التغييرات'}
                   </Button>
                 </div>
               </form>
@@ -549,8 +566,8 @@ export default function UsersManagement() {
                     </Select>
                   </div>
 
-                  <Button onClick={handleAddEntity} className="w-full gap-2">
-                    <Plus className="h-4 w-4" />
+                  <Button onClick={handleAddEntity} className="w-full">
+                    <Plus className="h-4 w-4 ml-2" />
                     إضافة الجهة
                   </Button>
                 </div>
@@ -559,16 +576,17 @@ export default function UsersManagement() {
 
             <Card>
               <CardHeader>
-                <CardTitle>الجهات الحالية</CardTitle>
+                <CardTitle>الجهات الموجودة</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                <div className="space-y-2 max-h-[400px] overflow-y-auto">
                   {entities.map((entity) => (
-                    <div key={entity.id} className="p-3 border rounded-lg flex justify-between items-center">
+                    <div key={entity.id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div>
-                        <div className="font-semibold">{entity.name}</div>
+                        <div className="font-medium">{entity.name}</div>
                         <div className="text-xs text-muted-foreground">
-                          {entity.type === 'both' ? 'مرسل ومستقبل' : entity.type === 'sender' ? 'مرسل فقط' : 'مستقبل فقط'}
+                          {entity.type === 'both' ? 'مرسل ومستقبل' : 
+                           entity.type === 'sender' ? 'مرسل فقط' : 'مستقبل فقط'}
                         </div>
                       </div>
                       <Button

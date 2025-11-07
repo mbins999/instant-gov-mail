@@ -30,7 +30,7 @@ export default function ImportCorrespondence() {
       const { data: user } = await supabase
         .from('users')
         .select('id, entity_name')
-        .eq('id', parseInt(session.user.id))
+        .eq('id', session.user.id)
         .maybeSingle();
 
       if (!user) {

@@ -46,19 +46,26 @@ export default function Sidebar() {
         const { data } = await supabase
           .from('users')
           .select('full_name, username')
-          .eq('id', parseInt(session.user.id))
+          .eq('id', session.user.id)
           .maybeSingle();
         
         if (data) {
           setUserName(data.full_name || data.username);
         } else {
           // Fallback to auth metadata
-          setUserName(session.user.email?.split('@')[0] || 'مستخدم');
+          setUserName(session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'مستخدم');
         }
       }
     };
 
     fetchUserProfile();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      fetchUserProfile();
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleLogout = async () => {
