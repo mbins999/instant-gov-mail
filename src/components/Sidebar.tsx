@@ -46,7 +46,7 @@ export default function Sidebar() {
         const { data } = await supabase
           .from('users')
           .select('full_name, username')
-          .eq('id', session.user.id)
+          .eq('id', parseInt(session.user.id))
           .maybeSingle();
         
         if (data) {

@@ -13,7 +13,7 @@ import { Navigate } from 'react-router-dom';
 import { UserPlus, Loader2, Building2, Trash2, Plus, Edit } from 'lucide-react';
 
 interface User {
-  id: string;
+  id: number;
   username: string;
   full_name: string;
   entity_name: string;
@@ -123,42 +123,32 @@ export default function UsersManagement() {
     setLoading(true);
 
     try {
+      // Get authenticated user from Supabase session
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) throw new Error('يجب تسجيل الدخول');
+      let createdBy = null;
+      
+      if (session?.user) {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('id')
+          .eq('id', parseInt(session.user.id))
+          .maybeSingle();
+        createdBy = userData?.id || null;
+      }
 
-      // Create auth user using admin API
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: formData.email,
-        password: formData.password,
-        email_confirm: true,
-        user_metadata: {
+      const { data, error } = await supabase.functions.invoke('simple-signup', {
+        body: {
           username: formData.username,
-          full_name: formData.fullName,
-          entity_name: formData.entityName,
-        },
+          password: formData.password,
+          fullName: formData.fullName,
+          entityName: formData.entityName,
+          role: formData.role,
+          createdBy,
+        }
       });
 
-      if (authError) throw authError;
-      if (!authData.user) throw new Error('فشل إنشاء المستخدم');
-
-      // Create user profile
-      const { error: profileError } = await supabase.from('users').insert({
-        id: authData.user.id,
-        username: formData.username,
-        full_name: formData.fullName,
-        entity_name: formData.entityName,
-        password_hash: '', // Not needed with Supabase Auth
-      });
-
-      if (profileError) throw profileError;
-
-      // Assign role
-      const { error: roleError } = await supabase.from('user_roles').insert({
-        user_id: authData.user.id,
-        role: formData.role,
-      });
-
-      if (roleError) throw roleError;
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
       toast({
         title: 'تم إنشاء المستخدم بنجاح',
@@ -272,24 +262,18 @@ export default function UsersManagement() {
     setLoading(true);
 
     try {
-      // Update user profile
-      const { error: profileError } = await supabase
-        .from('users')
-        .update({
-          full_name: editFormData.fullName,
-          entity_name: editFormData.entityName,
-        })
-        .eq('id', editingUser.id);
+      const { data, error } = await supabase.functions.invoke('update-user', {
+        body: {
+          userId: editingUser.id,
+          fullName: editFormData.fullName,
+          password: editFormData.password || undefined,
+          entityName: editFormData.entityName
+        }
+      });
 
-      if (profileError) throw profileError;
-
-      // Update password if provided
-      if (editFormData.password) {
-        const { error: passwordError } = await supabase.auth.admin.updateUserById(
-          editingUser.id,
-          { password: editFormData.password }
-        );
-        if (passwordError) throw passwordError;
+      if (error) throw error;
+      if (data?.error) {
+        throw new Error(data.error);
       }
 
       toast({
