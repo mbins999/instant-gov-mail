@@ -1,29 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-// دالة لتشفير كلمة المرور باستخدام PBKDF2
-async function hashPassword(password: string, salt: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password + salt);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-// دالة للتحقق من كلمة المرور
-async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
-  const parts = storedHash.split(':');
-  if (parts.length !== 2) return false;
-  
-  const [salt, hash] = parts;
-  const computedHash = await hashPassword(password, salt);
-  return computedHash === hash;
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -44,30 +26,68 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // استخدام دالة الحصول على المستخدم
+    // ===== RATE LIMITING CHECK =====
+    // Get client IP for rate limiting
+    const clientIP = req.headers.get('x-forwarded-for') || 'unknown';
+    
+    // Check rate limit (5 attempts per 15 minutes)
+    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+    const { data: recentAttempts } = await supabase
+      .from('rate_limits')
+      .select('*')
+      .eq('identifier', clientIP)
+      .eq('endpoint', 'login')
+      .gte('created_at', fifteenMinutesAgo);
+
+    if (recentAttempts && recentAttempts.length >= 5) {
+      return new Response(
+        JSON.stringify({ error: 'تم تجاوز الحد الأقصى لمحاولات تسجيل الدخول. يرجى المحاولة لاحقاً' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Get user by username using RPC function
     const { data: userData, error } = await supabase.rpc('get_user_by_username', {
       username_input: username
     });
 
     if (error || !userData) {
-      console.error('Database error:', error);
+      // Log failed attempt
+      await supabase.from('rate_limits').insert([{
+        identifier: clientIP,
+        endpoint: 'login',
+        created_at: new Date().toISOString()
+      }]);
+
       return new Response(
         JSON.stringify({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // التحقق من كلمة المرور
-    const isValidPassword = userData.password_hash 
-      ? await verifyPassword(password, userData.password_hash)
-      : false;
+    // ===== VERIFY PASSWORD WITH BCRYPT =====
+    const isValidPassword = await bcrypt.compare(password, userData.password_hash);
 
     if (!isValidPassword) {
+      // Log failed attempt
+      await supabase.from('rate_limits').insert([{
+        identifier: clientIP,
+        endpoint: 'login',
+        created_at: new Date().toISOString()
+      }]);
+
       return new Response(
         JSON.stringify({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // Clear old rate limit records on successful login
+    await supabase
+      .from('rate_limits')
+      .delete()
+      .eq('identifier', clientIP)
+      .eq('endpoint', 'login');
 
     // إنشاء جلسة مخصصة
     const sessionToken = crypto.randomUUID();

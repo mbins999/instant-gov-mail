@@ -230,11 +230,15 @@ export default function NewCorrespondence() {
         signature_url: formData.displayType === 'content' ? signatureUrl : '',
         display_type: formData.displayType,
         attachments: uploadedAttachments,
-        created_by: (() => {
-          const userData = localStorage.getItem('auth_user');
-          if (userData) {
-            const user = JSON.parse(userData);
-            return parseInt(user.id);
+        created_by: await (async () => {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user) {
+            const { data } = await supabase
+              .from('users')
+              .select('id')
+              .eq('id', parseInt(session.user.id))
+              .maybeSingle();
+            return data?.id || null;
           }
           return null;
         })()

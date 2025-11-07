@@ -11,26 +11,26 @@ export function useCorrespondences() {
     try {
       setLoading(true);
       
-      // الحصول على بيانات المستخدم الحالي
-      const currentUserStr = localStorage.getItem('auth_user');
-      if (!currentUserStr) {
+      // Get authenticated user from Supabase session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
         throw new Error('يجب تسجيل الدخول أولاً');
       }
       
-      const currentUser = JSON.parse(currentUserStr);
-      const userId = parseInt(currentUser.id);
-      
-      // التحقق من دور المستخدم
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
+      // Get user from users table
+      const { data: userData } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', parseInt(session.user.id))
         .maybeSingle();
       
-      const isAdmin = roleData?.role === 'admin';
+      if (!userData) {
+        throw new Error('لم يتم العثور على بيانات المستخدم');
+      }
       
-      // بناء الاستعلام
-      let query = supabase
+      // RLS policies will automatically filter results based on user permissions
+      // No need to manually check admin role - database handles it
+      const { data, error } = await supabase
         .from('correspondences')
         .select(`
           *,
@@ -40,14 +40,8 @@ export function useCorrespondences() {
             username,
             entity_name
           )
-        `);
-      
-      // إذا لم يكن مدير، اعرض فقط المراسلات الخاصة به
-      if (!isAdmin) {
-        query = query.eq('created_by', userId);
-      }
-      
-      const { data, error } = await query.order('date', { ascending: false });
+        `)
+        .order('date', { ascending: false });
 
       if (error) throw error;
 

@@ -432,10 +432,18 @@ export default function CorrespondenceDetail() {
                     src={attachment} 
                     alt={`مرفق ${index + 1}`}
                     onError={(e) => {
+                      // SECURE FIX: Use safe DOM methods instead of innerHTML
                       const img = e.target as HTMLImageElement;
                       const container = img.parentElement;
                       if (container) {
-                        container.innerHTML = `<iframe src="${attachment}" width="100%" height="100%" style="border: none;"></iframe>`;
+                        const iframe = document.createElement('iframe');
+                        iframe.src = attachment;
+                        iframe.width = '100%';
+                        iframe.height = '100%';
+                        iframe.style.border = 'none';
+                        iframe.sandbox.add('allow-scripts', 'allow-same-origin');
+                        container.innerHTML = '';
+                        container.appendChild(iframe);
                       }
                     }}
                   />

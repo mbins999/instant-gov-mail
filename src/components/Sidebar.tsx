@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useUserRole } from '@/hooks/useUserRole';
 import NotificationBell from './NotificationBell';
+import { supabase } from '@/integrations/supabase/client';
 
 const navigationItems = [
   { icon: Mail, label: 'البريد', path: '/incoming' },
@@ -38,14 +39,21 @@ export default function Sidebar() {
   const [userName, setUserName] = useState('');
 
   useEffect(() => {
-    const fetchUserProfile = () => {
-      const userData = localStorage.getItem('auth_user');
-      if (userData) {
-        try {
-          const user = JSON.parse(userData);
-          setUserName(user.full_name || user.username);
-        } catch (error) {
-          console.error('Error parsing user data:', error);
+    const fetchUserProfile = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        // Get user profile from users table
+        const { data } = await supabase
+          .from('users')
+          .select('full_name, username')
+          .eq('id', parseInt(session.user.id))
+          .maybeSingle();
+        
+        if (data) {
+          setUserName(data.full_name || data.username);
+        } else {
+          // Fallback to auth metadata
+          setUserName(session.user.email?.split('@')[0] || 'مستخدم');
         }
       }
     };
@@ -54,8 +62,7 @@ export default function Sidebar() {
   }, []);
 
   const handleLogout = async () => {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('auth_user');
+    await supabase.auth.signOut();
     toast({
       title: "تم تسجيل الخروج",
       description: "تم تسجيل الخروج بنجاح",

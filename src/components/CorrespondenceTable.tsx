@@ -17,9 +17,10 @@ export default function CorrespondenceTable({ correspondences, onReceive }: Corr
   const handleReceive = async (correspondenceId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     
-    const userData = localStorage.getItem('auth_user');
+    // Get authenticated user from Supabase session
+    const { data: { session } } = await supabase.auth.getSession();
     
-    if (!userData) {
+    if (!session?.user) {
       toast({
         title: "خطأ",
         description: "يجب تسجيل الدخول أولاً",
@@ -28,12 +29,26 @@ export default function CorrespondenceTable({ correspondences, onReceive }: Corr
       return;
     }
 
-    const user = JSON.parse(userData);
+    // Get user ID from users table
+    const { data: userData } = await supabase
+      .from('users')
+      .select('id')
+      .eq('id', parseInt(session.user.id))
+      .maybeSingle();
+
+    if (!userData) {
+      toast({
+        title: "خطأ",
+        description: "لم يتم العثور على بيانات المستخدم",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const { error } = await supabase
       .from('correspondences')
       .update({ 
-        received_by: parseInt(user.id),
+        received_by: userData.id,
         received_at: new Date().toISOString()
       })
       .eq('id', correspondenceId);

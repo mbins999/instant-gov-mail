@@ -1,21 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-// دالة لتشفير كلمة المرور باستخدام SHA-256
-async function hashPassword(password: string): Promise<string> {
-  const salt = crypto.randomUUID();
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password + salt);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  return `${salt}:${hash}`;
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -25,16 +15,50 @@ serve(async (req) => {
   try {
     const { username, password, fullName, entityName, role } = await req.json();
 
-    if (!username || !password || !fullName || !entityName) {
-      return new Response(
-        JSON.stringify({ error: 'جميع الحقول مطلوبة' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // ===== COMPREHENSIVE INPUT VALIDATION =====
+    const errors: string[] = [];
+
+    // Username validation
+    if (!username || username.length < 3) {
+      errors.push('اسم المستخدم يجب أن يكون 3 أحرف على الأقل');
+    } else if (username.length > 50) {
+      errors.push('اسم المستخدم طويل جداً (الحد الأقصى 50 حرف)');
+    } else if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      errors.push('اسم المستخدم يجب أن يحتوي على أحرف وأرقام فقط');
     }
 
-    if (password.length < 3) {
+    // Password validation - STRONG requirements
+    if (!password || password.length < 8) {
+      errors.push('كلمة المرور يجب أن تكون 8 أحرف على الأقل');
+    } else {
+      if (!/[A-Z]/.test(password)) errors.push('كلمة المرور يجب أن تحتوي على حرف كبير');
+      if (!/[a-z]/.test(password)) errors.push('كلمة المرور يجب أن تحتوي على حرف صغير');
+      if (!/[0-9]/.test(password)) errors.push('كلمة المرور يجب أن تحتوي على رقم');
+      if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) errors.push('كلمة المرور يجب أن تحتوي على رمز خاص');
+    }
+
+    // Full name validation
+    if (!fullName || fullName.length < 3) {
+      errors.push('الاسم الكامل يجب أن يكون 3 أحرف على الأقل');
+    } else if (fullName.length > 100) {
+      errors.push('الاسم الكامل طويل جداً (الحد الأقصى 100 حرف)');
+    }
+
+    // Entity name validation
+    if (!entityName || entityName.length < 3) {
+      errors.push('اسم الجهة يجب أن يكون 3 أحرف على الأقل');
+    } else if (entityName.length > 100) {
+      errors.push('اسم الجهة طويل جداً (الحد الأقصى 100 حرف)');
+    }
+
+    // Role validation
+    if (role && !['user', 'admin'].includes(role)) {
+      errors.push('الصلاحية غير صحيحة');
+    }
+
+    if (errors.length > 0) {
       return new Response(
-        JSON.stringify({ error: 'كلمة المرور يجب أن تكون 3 أحرف على الأقل' }),
+        JSON.stringify({ error: errors.join(', ') }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -57,8 +81,9 @@ serve(async (req) => {
       );
     }
 
-    // تشفير كلمة المرور
-    const passwordHash = await hashPassword(password);
+    // ===== SECURE PASSWORD HASHING WITH BCRYPT =====
+    const salt = await bcrypt.genSalt(12);
+    const passwordHash = await bcrypt.hash(password, salt);
 
     // الحصول على معرف المستخدم الحالي إذا كان موجوداً
     const currentUserId = null; // يمكن تمريرها من الطلب إذا لزم الأمر
