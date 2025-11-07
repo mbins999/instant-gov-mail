@@ -113,10 +113,18 @@ export default function Auth() {
       return;
     }
 
-    if (signupPassword.length < 6) {
+    // Validate password strength
+    const passwordErrors: string[] = [];
+    if (signupPassword.length < 8) passwordErrors.push('8 أحرف على الأقل');
+    if (!/[A-Z]/.test(signupPassword)) passwordErrors.push('حرف كبير');
+    if (!/[a-z]/.test(signupPassword)) passwordErrors.push('حرف صغير');
+    if (!/[0-9]/.test(signupPassword)) passwordErrors.push('رقم');
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(signupPassword)) passwordErrors.push('رمز خاص');
+
+    if (passwordErrors.length > 0) {
       toast({
-        title: "خطأ",
-        description: "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
+        title: "كلمة المرور ضعيفة",
+        description: `يجب أن تحتوي على: ${passwordErrors.join(', ')}`,
         variant: "destructive",
       });
       return;
