@@ -102,6 +102,16 @@ export default function UsersManagement() {
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (formData.password.length < 3) {
+      toast({
+        title: 'خطأ',
+        description: 'كلمة المرور يجب أن تكون 3 أحرف على الأقل',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -227,6 +237,15 @@ export default function UsersManagement() {
     e.preventDefault();
     if (!editingUser) return;
     
+    if (editFormData.password && editFormData.password.length < 3) {
+      toast({
+        title: 'خطأ',
+        description: 'كلمة المرور يجب أن تكون 3 أحرف على الأقل',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -314,12 +333,13 @@ export default function UsersManagement() {
                   </div>
 
                   <div>
-                    <Label htmlFor="password">كلمة المرور</Label>
+                    <Label htmlFor="password">كلمة المرور (3 أحرف كحد أدنى)</Label>
                     <Input
                       id="password"
                       type="password"
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      minLength={3}
                       required
                     />
                   </div>

@@ -32,6 +32,13 @@ serve(async (req) => {
       );
     }
 
+    if (password.length < 3) {
+      return new Response(
+        JSON.stringify({ error: 'كلمة المرور يجب أن تكون 3 أحرف على الأقل' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);

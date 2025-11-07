@@ -44,6 +44,12 @@ serve(async (req) => {
     
     // تشفير كلمة المرور الجديدة إذا تم توفيرها
     if (password) {
+      if (password.length < 3) {
+        return new Response(
+          JSON.stringify({ error: 'كلمة المرور يجب أن تكون 3 أحرف على الأقل' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       updateData.password_hash = await hashPassword(password);
     }
 

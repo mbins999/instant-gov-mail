@@ -41,6 +41,15 @@ export default function Auth() {
       return;
     }
 
+    if (password.length < 3) {
+      toast({
+        title: "خطأ",
+        description: "كلمة المرور يجب أن تكون 3 أحرف على الأقل",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -120,11 +129,11 @@ export default function Auth() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="كلمة المرور"
+                placeholder="كلمة المرور (3 أحرف كحد أدنى)"
                 required
                 disabled={loading}
                 className="text-center"
-                minLength={6}
+                minLength={3}
               />
             </div>
 
