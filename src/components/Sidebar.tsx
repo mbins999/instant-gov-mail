@@ -31,6 +31,31 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAdmin } = useUserRole();
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    const fetchUserProfile = () => {
+      try {
+        const customSession = localStorage.getItem('custom_session');
+        if (customSession) {
+          const sessionData = JSON.parse(customSession);
+          setUserName(sessionData.user?.full_name || sessionData.user?.username || 'مستخدم');
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+        setUserName('مستخدم');
+      }
+    };
+
+    fetchUserProfile();
+
+    const handleStorageChange = () => {
+      fetchUserProfile();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('custom_session');
@@ -45,6 +70,21 @@ export default function Sidebar() {
     <aside className="w-64 bg-card border-l border-border h-screen sticky top-0 flex flex-col">
       <div className="p-6 border-b border-border">
         <h1 className="text-2xl font-bold text-primary text-center">مراسلات</h1>
+      </div>
+
+      {/* User section with new correspondence button */}
+      <div className="p-4 border-b border-border space-y-3">
+        <div className="text-right">
+          <h2 className="text-lg font-bold text-primary">{userName}</h2>
+        </div>
+        <Button
+          onClick={() => navigate('/new')}
+          className="w-full justify-center gap-2"
+          size="lg"
+        >
+          <Plus className="h-5 w-5" />
+          <span>كتاب جديد</span>
+        </Button>
       </div>
       
       <nav className="p-4 space-y-2 flex-1">

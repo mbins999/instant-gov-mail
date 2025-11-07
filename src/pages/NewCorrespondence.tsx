@@ -29,6 +29,7 @@ export default function NewCorrespondence() {
     type: 'outgoing',
     number: '',
     date: new Date().toISOString().split('T')[0],
+    from: '',
     to: '',
     subject: '',
     greeting: 'السيد/   المحترم\nالسلام عليكم ورحمة الله وبركاته ,,,',
@@ -77,7 +78,8 @@ export default function NewCorrespondence() {
               type: data.type,
               number: data.number,
               date: data.date.split('T')[0],
-              to: data.from_entity,
+              from: data.from_entity,
+              to: data.received_by_entity || '',
               subject: data.subject,
               greeting: data.greeting,
               content: data.content,
@@ -222,7 +224,8 @@ export default function NewCorrespondence() {
         number: formData.number,
         type: formData.type,
         date: formData.date,
-        from_entity: formData.to,
+        from_entity: formData.from,
+        received_by_entity: formData.to,
         subject: formData.displayType === 'content' ? formData.subject : 'مرفق',
         greeting: formData.displayType === 'content' ? formData.greeting : '',
         content: formData.displayType === 'content' ? formData.content : '',
@@ -407,6 +410,28 @@ export default function NewCorrespondence() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="from">الجهة المرسلة *</Label>
+                <Select
+                  value={formData.from}
+                  onValueChange={(value) => setFormData({ ...formData, from: value })}
+                  disabled={loading}
+                >
+                  <SelectTrigger className="bg-background">
+                    <SelectValue placeholder="اختر الجهة المرسلة" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border shadow-lg z-50">
+                    {entities
+                      .filter(e => e.type === 'sender' || e.type === 'both')
+                      .map((entity) => (
+                        <SelectItem key={entity.id} value={entity.name}>
+                          {entity.name}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="to">الجهة المستلمة *</Label>
                 <Select
                   value={formData.to}
@@ -427,21 +452,21 @@ export default function NewCorrespondence() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="date">التاريخ *</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  required
-                  disabled={loading}
-                />
-                <div className="text-sm space-y-1 mt-2">
-                  <div className="text-muted-foreground">التاريخ: {hijriDate}</div>
-                  <div className="text-muted-foreground">الموافق: {new Date(formData.date).toLocaleDateString('en-GB')}</div>
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="date">التاريخ *</Label>
+              <Input
+                id="date"
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                required
+                disabled={loading}
+              />
+              <div className="text-sm space-y-1 mt-2">
+                <div className="text-muted-foreground">التاريخ: {hijriDate}</div>
+                <div className="text-muted-foreground">الموافق: {new Date(formData.date).toLocaleDateString('en-GB')}</div>
               </div>
             </div>
 

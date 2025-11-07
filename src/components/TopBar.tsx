@@ -1,38 +1,13 @@
-import { Search, Plus } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NotificationBell from './NotificationBell';
 
 export default function TopBar() {
-  const [userName, setUserName] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchUserProfile = () => {
-      try {
-        const customSession = localStorage.getItem('custom_session');
-        if (customSession) {
-          const sessionData = JSON.parse(customSession);
-          setUserName(sessionData.user?.full_name || sessionData.user?.username || 'مستخدم');
-        }
-      } catch (error) {
-        console.error('Error fetching user profile:', error);
-        setUserName('مستخدم');
-      }
-    };
-
-    fetchUserProfile();
-
-    const handleStorageChange = () => {
-      fetchUserProfile();
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,13 +21,7 @@ export default function TopBar() {
   return (
     <div className="border-b border-border bg-card sticky top-0 z-10">
       <div className="container mx-auto px-6 py-4">
-        <div className="flex items-center justify-between gap-4">
-          {/* User name and notification */}
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold text-primary">{userName}</h1>
-            <NotificationBell />
-          </div>
-
+        <div className="flex items-center justify-center gap-4">
           {/* Search bar */}
           <form onSubmit={handleSearch} className="flex-1 max-w-2xl">
             <div className="relative">
@@ -74,14 +43,8 @@ export default function TopBar() {
             </div>
           </form>
 
-          {/* New correspondence button */}
-          <Button
-            onClick={() => navigate('/new')}
-            size="icon"
-            className="shrink-0"
-          >
-            <Plus className="h-5 w-5" />
-          </Button>
+          {/* Notification bell */}
+          <NotificationBell />
         </div>
       </div>
     </div>
