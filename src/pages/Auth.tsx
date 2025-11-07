@@ -3,48 +3,61 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Lock } from 'lucide-react';
-import { correspondenceApi } from '@/services/correspondenceApi';
+import type { Session } from '@supabase/supabase-js';
 
 export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   
-  // بيانات النظام الخارجي
-  const [externalUsername, setExternalUsername] = useState('');
-  const [externalPassword, setExternalPassword] = useState('');
+  // Login states
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  
+  // Signup states
+  const [signupUsername, setSignupUsername] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
+  const [signupFullName, setSignupFullName] = useState('');
+  const [signupEntityName, setSignupEntityName] = useState('');
+  const [signupRole, setSignupRole] = useState<'user' | 'admin'>('user');
+  
+  const [loading, setLoading] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    // التحقق من تسجيل الدخول
-    const token = localStorage.getItem('auth_token');
-    const user = localStorage.getItem('auth_user');
-    
-    if (token && user) {
-      navigate('/');
-    }
+    // Setup auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+        if (session) {
+          navigate('/');
+        }
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session) {
+        navigate('/');
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!username || !password) {
+    if (!loginEmail || !loginPassword) {
       toast({
         title: "خطأ",
-        description: "يرجى إدخال اسم المستخدم وكلمة المرور",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (password.length < 3) {
-      toast({
-        title: "خطأ",
-        description: "كلمة المرور يجب أن تكون 3 أحرف على الأقل",
+        description: "يرجى إدخال البريد الإلكتروني وكلمة المرور",
         variant: "destructive",
       });
       return;
@@ -53,42 +66,104 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('simple-login', {
-        body: { username, password }
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password: loginPassword,
       });
 
-      if (error || data?.error) {
+      if (error) {
         toast({
           title: "خطأ في تسجيل الدخول",
-          description: data?.error || "اسم المستخدم أو كلمة المرور غير صحيحة",
+          description: error.message === 'Invalid login credentials'
+            ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة'
+            : error.message,
           variant: "destructive",
         });
         return;
       }
 
-      if (data?.session) {
-        // تخزين التوكن والمستخدم في localStorage
-        localStorage.setItem('auth_token', data.session.access_token);
-        localStorage.setItem('auth_user', JSON.stringify(data.session.user));
-        
-        // الربط بالنظام الخارجي إذا تم إدخال البيانات
-        if (externalUsername && externalPassword) {
-          try {
-            await correspondenceApi.login('', externalUsername, externalPassword);
-          } catch (error) {
-            console.error('External system connection failed:', error);
-          }
-        }
-        
+      if (data.session) {
         toast({
           title: "تم تسجيل الدخول بنجاح",
-          description: `مرحباً ${data.session.user.full_name}`,
+          description: "مرحباً بك",
         });
-        
         navigate('/');
       }
     } catch (error) {
       console.error('Login error:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ في الاتصال",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!signupEmail || !signupPassword || !signupUsername || !signupFullName || !signupEntityName) {
+      toast({
+        title: "خطأ",
+        description: "يرجى ملء جميع الحقول المطلوبة",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (signupPassword.length < 6) {
+      toast({
+        title: "خطأ",
+        description: "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: signupEmail,
+        password: signupPassword,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            username: signupUsername,
+            full_name: signupFullName,
+            entity_name: signupEntityName,
+            role: signupRole
+          }
+        }
+      });
+
+      if (error) {
+        toast({
+          title: "خطأ في التسجيل",
+          description: error.message === 'User already registered'
+            ? 'هذا البريد مسجل مسبقاً'
+            : error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data.session) {
+        toast({
+          title: "تم التسجيل بنجاح",
+          description: "مرحباً بك في النظام",
+        });
+        navigate('/');
+      } else {
+        toast({
+          title: "تم إنشاء الحساب",
+          description: "يمكنك الآن تسجيل الدخول",
+        });
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
       toast({
         title: "خطأ",
         description: "حدث خطأ في الاتصال",
@@ -104,71 +179,137 @@ export default function Auth() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4" dir="rtl">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center pb-2">
-          <div className="flex justify-center">
+          <div className="flex justify-center mb-2">
             <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
               <Lock className="h-10 w-10 text-primary" />
             </div>
           </div>
+          <CardTitle>نظام إدارة المراسلات</CardTitle>
         </CardHeader>
-        <CardContent className="pt-6">
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="اسم المستخدم"
-                required
-                disabled={loading}
-                className="text-center"
-              />
-            </div>
+        <CardContent>
+          <Tabs defaultValue="login" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="login">تسجيل الدخول</TabsTrigger>
+              <TabsTrigger value="signup">إنشاء حساب</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="login">
+              <form onSubmit={handleLogin} className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Input
+                    type="email"
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    placeholder="البريد الإلكتروني"
+                    required
+                    disabled={loading}
+                    className="text-right"
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="كلمة المرور (3 أحرف كحد أدنى)"
-                required
-                disabled={loading}
-                className="text-center"
-                minLength={3}
-              />
-            </div>
+                <div className="space-y-2">
+                  <Input
+                    type="password"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    placeholder="كلمة المرور"
+                    required
+                    disabled={loading}
+                    className="text-right"
+                  />
+                </div>
 
-            <div className="pt-4 border-t border-border">
-              <p className="text-sm text-muted-foreground text-center mb-3">
-                الربط مع وزارة الصحة (اختياري)
-              </p>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
+                </Button>
+              </form>
+            </TabsContent>
+            
+            <TabsContent value="signup">
+              <form onSubmit={handleSignup} className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Input
+                    type="text"
+                    value={signupUsername}
+                    onChange={(e) => setSignupUsername(e.target.value)}
+                    placeholder="اسم المستخدم"
+                    required
+                    disabled={loading}
+                    className="text-right"
+                  />
+                </div>
 
-              <div className="space-y-2 mt-2">
-                <Input
-                  type="text"
-                  value={externalUsername}
-                  onChange={(e) => setExternalUsername(e.target.value)}
-                  placeholder="اسم المستخدم في وزارة الصحة"
-                  disabled={loading}
-                  className="text-center text-sm"
-                />
-              </div>
+                <div className="space-y-2">
+                  <Input
+                    type="text"
+                    value={signupFullName}
+                    onChange={(e) => setSignupFullName(e.target.value)}
+                    placeholder="الاسم الكامل"
+                    required
+                    disabled={loading}
+                    className="text-right"
+                  />
+                </div>
 
-              <div className="space-y-2 mt-2">
-                <Input
-                  type="password"
-                  value={externalPassword}
-                  onChange={(e) => setExternalPassword(e.target.value)}
-                  placeholder="كلمة المرور في وزارة الصحة"
-                  disabled={loading}
-                  className="text-center text-sm"
-                />
-              </div>
-            </div>
+                <div className="space-y-2">
+                  <Input
+                    type="email"
+                    value={signupEmail}
+                    onChange={(e) => setSignupEmail(e.target.value)}
+                    placeholder="البريد الإلكتروني"
+                    required
+                    disabled={loading}
+                    className="text-right"
+                  />
+                </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
-            </Button>
-          </form>
+                <div className="space-y-2">
+                  <Input
+                    type="password"
+                    value={signupPassword}
+                    onChange={(e) => setSignupPassword(e.target.value)}
+                    placeholder="كلمة المرور (6 أحرف على الأقل)"
+                    required
+                    disabled={loading}
+                    className="text-right"
+                    minLength={6}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Input
+                    type="text"
+                    value={signupEntityName}
+                    onChange={(e) => setSignupEntityName(e.target.value)}
+                    placeholder="اسم الجهة"
+                    required
+                    disabled={loading}
+                    className="text-right"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Select
+                    value={signupRole}
+                    onValueChange={(value: 'user' | 'admin') => setSignupRole(value)}
+                    disabled={loading}
+                  >
+                    <SelectTrigger className="text-right">
+                      <SelectValue placeholder="اختر الصلاحية" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="user">مستخدم</SelectItem>
+                      <SelectItem value="admin">مسؤول</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "جاري إنشاء الحساب..." : "إنشاء حساب"}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </div>
