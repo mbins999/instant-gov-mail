@@ -3,12 +3,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
-import NotificationBar from "./components/NotificationBar";
-import AdvancedSearchBar from "./components/AdvancedSearchBar";
+import TopBar from "./components/TopBar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Auth from "./pages/Auth";
+import Index from "./pages/Index";
 import Incoming from "./pages/Incoming";
 import Outgoing from "./pages/Outgoing";
 import NewCorrespondence from "./pages/NewCorrespondence";
@@ -31,6 +31,7 @@ function App() {
           <Toaster />
           <Sonner />
           <Routes>
+            <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route
               path="/*"
@@ -41,16 +42,11 @@ function App() {
                       <Sidebar />
                     </div>
                     <div className="flex-1 flex flex-col">
-                      <div className="sticky top-0 z-40 bg-card border-b border-border py-4 print:hidden">
-                        <h1 className="text-2xl font-bold text-center text-primary">مراسلات</h1>
-                      </div>
                       <div className="print:hidden">
-                        <NotificationBar />
-                        <AdvancedSearchBar />
+                        <TopBar />
                       </div>
                       <main className="flex-1 p-8 overflow-auto bg-background print:p-0 print:overflow-visible">
                         <Routes>
-                          <Route path="/" element={<Incoming />} />
                           <Route path="/incoming" element={<Incoming />} />
                           <Route path="/outgoing" element={<Outgoing />} />
                           <Route path="/new" element={<NewCorrespondence />} />
@@ -61,9 +57,7 @@ function App() {
                           <Route path="/archive" element={<ArchivePage />} />
                           <Route path="/import" element={<ImportCorrespondence />} />
                           <Route path="/monitoring" element={<MonitoringDashboard />} />
-                          <Route path="/settings" element={<Navigate to="/users" replace />} />
                           <Route path="/users" element={<UsersManagement />} />
-                          <Route path="/users-management" element={<UsersManagement />} />
                           <Route path="*" element={<NotFound />} />
                         </Routes>
                       </main>

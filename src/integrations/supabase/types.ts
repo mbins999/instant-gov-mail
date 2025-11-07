@@ -247,21 +247,13 @@ export type Database = {
       cleanup_old_rate_limits: { Args: never; Returns: undefined }
       get_user_by_username: { Args: { username_input: string }; Returns: Json }
       get_user_id_from_session: { Args: never; Returns: number }
-      has_role:
-        | {
-            Args: {
-              _role: Database["public"]["Enums"]["app_role"]
-              _user_id: string
-            }
-            Returns: boolean
-          }
-        | {
-            Args: {
-              _role: Database["public"]["Enums"]["app_role"]
-              _user_id: number
-            }
-            Returns: boolean
-          }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: number
+        }
+        Returns: boolean
+      }
       set_password_hash: {
         Args: { password_hash_input: string; user_id_input: string }
         Returns: boolean

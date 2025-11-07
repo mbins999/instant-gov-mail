@@ -62,22 +62,15 @@ serve(async (req) => {
     }
 
     if (password !== undefined) {
-      // ===== STRONG PASSWORD VALIDATION =====
-      const passwordErrors: string[] = [];
-      if (password.length < 8) passwordErrors.push('8 أحرف على الأقل');
-      if (!/[A-Z]/.test(password)) passwordErrors.push('حرف كبير');
-      if (!/[a-z]/.test(password)) passwordErrors.push('حرف صغير');
-      if (!/[0-9]/.test(password)) passwordErrors.push('رقم');
-      if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) passwordErrors.push('رمز خاص');
-
-      if (passwordErrors.length > 0) {
+      // Simplified password validation (8 characters minimum)
+      if (password.length < 8) {
         return new Response(
-          JSON.stringify({ error: `كلمة المرور يجب أن تحتوي على: ${passwordErrors.join(', ')}` }),
+          JSON.stringify({ error: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // ===== SECURE PASSWORD HASHING WITH BCRYPT =====
+      // Secure password hashing with bcrypt
       updateData.password_hash = await bcrypt.hash(password, 12);
     }
 

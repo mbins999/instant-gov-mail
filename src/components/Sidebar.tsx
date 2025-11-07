@@ -8,21 +8,17 @@ import {
   LogOut,
   Download,
   Users,
-  Activity,
-  Search
+  Activity
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useUserRole } from '@/hooks/useUserRole';
-import NotificationBell from './NotificationBell';
-import { supabase } from '@/integrations/supabase/client';
 
 const navigationItems = [
   { icon: Mail, label: 'البريد', path: '/incoming' },
   { icon: Send, label: 'المرسل', path: '/outgoing' },
   { icon: Download, label: 'الوارد', path: '/import' },
-  { icon: Search, label: 'بحث متقدم', path: '/advanced-search' },
   { icon: Archive, label: 'الأرشيف', path: '/archive' },
 ];
 
@@ -36,40 +32,9 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAdmin } = useUserRole();
-  const [userName, setUserName] = useState('');
 
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        // Get user profile from users table
-        const { data } = await supabase
-          .from('users')
-          .select('full_name, username')
-          .eq('id', parseInt(session.user.id))
-          .maybeSingle();
-        
-        if (data) {
-          setUserName(data.full_name || data.username);
-        } else {
-          // Fallback to auth metadata
-          setUserName(session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'مستخدم');
-        }
-      }
-    };
-
-    fetchUserProfile();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      fetchUserProfile();
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
+  const handleLogout = () => {
+    localStorage.removeItem('custom_session');
     toast({
       title: "تم تسجيل الخروج",
       description: "تم تسجيل الخروج بنجاح",
@@ -79,16 +44,11 @@ export default function Sidebar() {
 
   return (
     <aside className="w-64 bg-card border-l border-border h-screen sticky top-0 flex flex-col">
-      <div className="p-6 border-b border-border flex items-center justify-between">
-        <h1 className="text-xl font-bold text-primary">{userName || 'مستخدم'}</h1>
-        <NotificationBell />
+      <div className="p-6 border-b border-border">
+        <h1 className="text-2xl font-bold text-primary text-center">مراسلات</h1>
       </div>
       
       <nav className="p-4 space-y-2 flex-1">
-        <Link to="/new" className="flex justify-center mb-6">
-          <Plus className="h-12 w-12 text-primary hover:opacity-80 transition-opacity cursor-pointer" />
-        </Link>
-        
         {navigationItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;

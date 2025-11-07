@@ -36,7 +36,6 @@ export default function UsersManagement() {
   const [newEntityType, setNewEntityType] = useState<'sender' | 'receiver' | 'both'>('both');
   const [formData, setFormData] = useState({
     username: '',
-    email: '',
     password: '',
     fullName: '',
     entityName: '',
@@ -103,18 +102,11 @@ export default function UsersManagement() {
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate password strength
-    const passwordErrors: string[] = [];
-    if (formData.password.length < 8) passwordErrors.push('8 أحرف على الأقل');
-    if (!/[A-Z]/.test(formData.password)) passwordErrors.push('حرف كبير');
-    if (!/[a-z]/.test(formData.password)) passwordErrors.push('حرف صغير');
-    if (!/[0-9]/.test(formData.password)) passwordErrors.push('رقم');
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) passwordErrors.push('رمز خاص');
-
-    if (passwordErrors.length > 0) {
+    // Validate password strength (simplified - 8 characters minimum)
+    if (formData.password.length < 8) {
       toast({
-        title: 'كلمة المرور ضعيفة',
-        description: `يجب أن تحتوي على: ${passwordErrors.join(', ')}`,
+        title: 'كلمة المرور قصيرة',
+        description: 'يجب أن تحتوي على 8 أحرف على الأقل',
         variant: 'destructive',
       });
       return;
@@ -155,7 +147,7 @@ export default function UsersManagement() {
         description: `تم إنشاء حساب ${formData.username}`,
       });
 
-      setFormData({ username: '', email: '', password: '', fullName: '', entityName: '', role: 'user' });
+      setFormData({ username: '', password: '', fullName: '', entityName: '', role: 'user' });
       fetchUsers();
     } catch (error: any) {
       toast({
@@ -240,23 +232,14 @@ export default function UsersManagement() {
     e.preventDefault();
     if (!editingUser) return;
     
-    // Validate password strength if password is provided
-    if (editFormData.password) {
-      const passwordErrors: string[] = [];
-      if (editFormData.password.length < 8) passwordErrors.push('8 أحرف على الأقل');
-      if (!/[A-Z]/.test(editFormData.password)) passwordErrors.push('حرف كبير');
-      if (!/[a-z]/.test(editFormData.password)) passwordErrors.push('حرف صغير');
-      if (!/[0-9]/.test(editFormData.password)) passwordErrors.push('رقم');
-      if (!/[!@#$%^&*(),.?":{}|<>]/.test(editFormData.password)) passwordErrors.push('رمز خاص');
-
-      if (passwordErrors.length > 0) {
-        toast({
-          title: 'كلمة المرور ضعيفة',
-          description: `يجب أن تحتوي على: ${passwordErrors.join(', ')}`,
-          variant: 'destructive',
-        });
-        return;
-      }
+    // Validate password strength if password is provided (simplified)
+    if (editFormData.password && editFormData.password.length < 8) {
+      toast({
+        title: 'كلمة المرور قصيرة',
+        description: 'يجب أن تحتوي على 8 أحرف على الأقل',
+        variant: 'destructive',
+      });
+      return;
     }
     
     setLoading(true);
@@ -345,18 +328,7 @@ export default function UsersManagement() {
                   </div>
 
                   <div>
-                    <Label htmlFor="email">البريد الإلكتروني</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="password">كلمة المرور (8+ أحرف، حرف كبير، صغير، رقم، رمز)</Label>
+                    <Label htmlFor="password">كلمة المرور (8 أحرف على الأقل)</Label>
                     <Input
                       id="password"
                       type="password"

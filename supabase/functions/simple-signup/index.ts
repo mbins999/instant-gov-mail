@@ -50,14 +50,9 @@ serve(async (req) => {
       errors.push('اسم المستخدم يجب أن يحتوي على أحرف وأرقام فقط');
     }
 
-    // Password validation - STRONG requirements
+    // Password validation - simplified (8 characters minimum)
     if (!password || password.length < 8) {
       errors.push('كلمة المرور يجب أن تكون 8 أحرف على الأقل');
-    } else {
-      if (!/[A-Z]/.test(password)) errors.push('كلمة المرور يجب أن تحتوي على حرف كبير');
-      if (!/[a-z]/.test(password)) errors.push('كلمة المرور يجب أن تحتوي على حرف صغير');
-      if (!/[0-9]/.test(password)) errors.push('كلمة المرور يجب أن تحتوي على رقم');
-      if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) errors.push('كلمة المرور يجب أن تحتوي على رمز خاص');
     }
 
     // Full name validation
