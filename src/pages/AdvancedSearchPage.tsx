@@ -10,8 +10,8 @@ import { useCorrespondences } from '@/hooks/useCorrespondences';
 
 export default function AdvancedSearchPage() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [status, setStatus] = useState<string>('');
-  const [type, setType] = useState<string>('');
+  const [status, setStatus] = useState<string>('all');
+  const [type, setType] = useState<string>('all');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   
@@ -23,8 +23,8 @@ export default function AdvancedSearchPage() {
       corr.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
       corr.content.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = !status || corr.type === status;
-    const matchesType = !type || corr.type === type;
+    const matchesStatus = !status || status === 'all' || corr.type === status;
+    const matchesType = !type || type === 'all' || corr.type === type;
     
     const matchesDateFrom = !dateFrom || new Date(corr.date) >= new Date(dateFrom);
     const matchesDateTo = !dateTo || new Date(corr.date) <= new Date(dateTo);
@@ -34,8 +34,8 @@ export default function AdvancedSearchPage() {
 
   const handleReset = () => {
     setSearchTerm('');
-    setStatus('');
-    setType('');
+    setStatus('all');
+    setType('all');
     setDateFrom('');
     setDateTo('');
   };
@@ -76,7 +76,7 @@ export default function AdvancedSearchPage() {
                       <SelectValue placeholder="جميع الأنواع" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">جميع الأنواع</SelectItem>
+                      <SelectItem value="all">جميع الأنواع</SelectItem>
                       <SelectItem value="incoming">وارد</SelectItem>
                       <SelectItem value="outgoing">صادر</SelectItem>
                     </SelectContent>
