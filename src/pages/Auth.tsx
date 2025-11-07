@@ -276,12 +276,15 @@ export default function Auth() {
                     type="password"
                     value={signupPassword}
                     onChange={(e) => setSignupPassword(e.target.value)}
-                    placeholder="كلمة المرور (6 أحرف على الأقل)"
+                    placeholder="كلمة المرور (8 أحرف، حرف كبير، حرف صغير، رقم)"
                     required
                     disabled={loading}
                     className="text-right"
-                    minLength={6}
+                    minLength={8}
                   />
+                  <p className="text-xs text-muted-foreground text-right">
+                    يجب أن تحتوي على: 8 أحرف على الأقل، حرف كبير، حرف صغير، ورقم
+                  </p>
                 </div>
 
                 <div className="space-y-2">

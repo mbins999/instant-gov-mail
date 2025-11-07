@@ -7,21 +7,26 @@ import {
   Plus,
   LogOut,
   Download,
-  Users
+  Users,
+  Activity,
+  Search
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useUserRole } from '@/hooks/useUserRole';
+import NotificationBell from './NotificationBell';
 
 const navigationItems = [
   { icon: Mail, label: 'البريد', path: '/incoming' },
   { icon: Send, label: 'المرسل', path: '/outgoing' },
   { icon: Download, label: 'الوارد', path: '/import' },
+  { icon: Search, label: 'بحث متقدم', path: '/advanced-search' },
   { icon: Archive, label: 'الأرشيف', path: '/archive' },
 ];
 
 const adminNavigationItems = [
+  { icon: Activity, label: 'المراقبة', path: '/monitoring' },
   { icon: Users, label: 'إدارة', path: '/users' },
 ];
 
@@ -60,8 +65,9 @@ export default function Sidebar() {
 
   return (
     <aside className="w-64 bg-card border-l border-border h-screen sticky top-0 flex flex-col">
-      <div className="p-6 border-b border-border">
+      <div className="p-6 border-b border-border flex items-center justify-between">
         <h1 className="text-xl font-bold text-primary">{userName || 'مستخدم'}</h1>
+        <NotificationBell />
       </div>
       
       <nav className="p-4 space-y-2 flex-1">
