@@ -4,7 +4,8 @@ import { useCorrespondences } from '@/hooks/useCorrespondences';
 
 export default function Outgoing() {
   const { correspondences, loading, error, refetch } = useCorrespondences();
-  const outgoingCorrespondences = correspondences.filter(c => c.type === 'outgoing');
+  // الوارد الخارجي: الكتب الواردة من جهات أخرى
+  const outgoingCorrespondences = correspondences.filter(c => c.type === 'incoming');
 
   if (loading) {
     return (
@@ -25,20 +26,20 @@ export default function Outgoing() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">المرسل</h1>
-        <p className="text-muted-foreground mt-2">جميع المراسلات الصادرة</p>
+        <h1 className="text-3xl font-bold">الوارد الخارجي</h1>
+        <p className="text-muted-foreground mt-2">المراسلات الواردة من الجهات الأخرى</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>الكتب الصادرة ({outgoingCorrespondences.length})</CardTitle>
+          <CardTitle>الكتب الواردة ({outgoingCorrespondences.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {outgoingCorrespondences.length > 0 ? (
             <CorrespondenceTable correspondences={outgoingCorrespondences} onReceive={refetch} />
           ) : (
             <div className="text-center py-12 text-muted-foreground">
-              لا توجد مراسلات صادرة حالياً
+              لا توجد مراسلات واردة من الجهات الخارجية حالياً
             </div>
           )}
         </CardContent>

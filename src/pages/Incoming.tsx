@@ -1,10 +1,24 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import CorrespondenceTable from '@/components/CorrespondenceTable';
 import { useCorrespondences } from '@/hooks/useCorrespondences';
+import { useState, useEffect } from 'react';
 
 export default function Incoming() {
   const { correspondences, loading, error, refetch } = useCorrespondences();
-  const incomingCorrespondences = correspondences.filter(c => c.type === 'incoming');
+  const [userEntity, setUserEntity] = useState<string>('');
+  
+  useEffect(() => {
+    const customSession = localStorage.getItem('custom_session');
+    if (customSession) {
+      const sessionData = JSON.parse(customSession);
+      setUserEntity(sessionData.user?.entity_name || '');
+    }
+  }, []);
+  
+  // البريد: الكتب المرسلة إلى جهة المستخدم
+  const incomingCorrespondences = correspondences.filter(c => 
+    c.type === 'outgoing' && c.from === userEntity
+  );
 
   if (loading) {
     return (

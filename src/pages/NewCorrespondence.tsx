@@ -230,15 +230,15 @@ export default function NewCorrespondence() {
         signature_url: formData.displayType === 'content' ? signatureUrl : '',
         display_type: formData.displayType,
         attachments: uploadedAttachments,
-        created_by: await (async () => {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session?.user) {
-            const { data } = await supabase
-              .from('users')
-              .select('id')
-              .eq('id', parseInt(session.user.id))
-              .maybeSingle();
-            return data?.id || null;
+        created_by: (() => {
+          try {
+            const customSession = localStorage.getItem('custom_session');
+            if (customSession) {
+              const sessionData = JSON.parse(customSession);
+              return sessionData.user?.id || null;
+            }
+          } catch (e) {
+            console.error('Error getting user from session:', e);
           }
           return null;
         })()
