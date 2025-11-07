@@ -1,13 +1,38 @@
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NotificationBell from './NotificationBell';
 
 export default function TopBar() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [userName, setUserName] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUserProfile = () => {
+      try {
+        const customSession = localStorage.getItem('custom_session');
+        if (customSession) {
+          const sessionData = JSON.parse(customSession);
+          setUserName(sessionData.user?.full_name || sessionData.user?.username || 'مستخدم');
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+        setUserName('مستخدم');
+      }
+    };
+
+    fetchUserProfile();
+
+    const handleStorageChange = () => {
+      fetchUserProfile();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,8 +68,8 @@ export default function TopBar() {
             </div>
           </form>
 
-          {/* Center title */}
-          <h1 className="text-2xl font-bold text-primary">مراسلات</h1>
+          {/* Center - User name */}
+          <h1 className="text-2xl font-bold text-primary">{userName}</h1>
 
           {/* Notification bell - Right side */}
           <div className="flex-1 max-w-md flex justify-end">
