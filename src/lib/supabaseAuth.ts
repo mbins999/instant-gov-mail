@@ -11,7 +11,11 @@ export function getAuthenticatedSupabaseClient() {
   }
 
   const sessionData = JSON.parse(customSession);
-  const token = sessionData.access_token;
+  const userId = sessionData.user?.id;
+
+  if (!userId) {
+    throw new Error('معرف المستخدم غير موجود');
+  }
 
   // إعادة استخدام نفس الـ client إذا كان موجوداً
   if (authenticatedClient) {
@@ -24,7 +28,7 @@ export function getAuthenticatedSupabaseClient() {
   authenticatedClient = createClient<Database>(supabaseUrl, supabaseKey, {
     global: {
       headers: {
-        Authorization: `Bearer ${token}`
+        'x-user-id': userId.toString()
       }
     }
   });
