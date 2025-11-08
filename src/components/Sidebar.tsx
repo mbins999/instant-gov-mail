@@ -7,8 +7,7 @@ import {
   Plus,
   LogOut,
   Download,
-  Users,
-  Activity
+  Users
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -23,7 +22,6 @@ const navigationItems = [
 ];
 
 const adminNavigationItems = [
-  { icon: Activity, label: 'المراقبة', path: '/monitoring' },
   { icon: Users, label: 'إدارة', path: '/users' },
 ];
 
