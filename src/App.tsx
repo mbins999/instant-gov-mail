@@ -27,7 +27,7 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="sunny" themes={["sunny", "claude", "dark"]}>
+      <ThemeProvider attribute="class" defaultTheme="claude" themes={["claude", "dark"]}>
         <BrowserRouter>
           <TooltipProvider>
             <Toaster />
