@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { getAuthenticatedSupabaseClient } from '@/lib/supabaseAuth';
-import { Plus, Trash2, Edit, Power, PowerOff } from 'lucide-react';
+import { Plus, Trash2, Edit, Power, PowerOff, RefreshCw, Key } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,11 @@ interface ExternalConnection {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  session_token: string | null;
+  session_expires_at: string | null;
+  last_sync_at: string | null;
+  sync_status: string;
+  sync_error: string | null;
 }
 
 export default function ExternalConnections() {
@@ -151,6 +156,66 @@ export default function ExternalConnections() {
       toast({
         title: 'خطأ',
         description: 'فشل تحديث حالة الاتصال',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const authenticateConnection = async (id: string) => {
+    try {
+      const supabase = getAuthenticatedSupabaseClient();
+      toast({
+        title: 'جاري المصادقة...',
+        description: 'يتم الآن المصادقة مع النظام الخارجي',
+      });
+
+      const { data, error } = await supabase.functions.invoke('wsdl-session-manager', {
+        body: { action: 'authenticate', connectionId: id },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'تمت المصادقة',
+        description: data.message || 'تم الاتصال بنجاح',
+      });
+
+      fetchConnections();
+    } catch (error: any) {
+      console.error('Error authenticating:', error);
+      toast({
+        title: 'خطأ في المصادقة',
+        description: error.message || 'فشل الاتصال بالنظام الخارجي',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const syncConnection = async (id: string) => {
+    try {
+      const supabase = getAuthenticatedSupabaseClient();
+      toast({
+        title: 'جاري المزامنة...',
+        description: 'يتم الآن مزامنة البيانات',
+      });
+
+      const { data, error } = await supabase.functions.invoke('wsdl-session-manager', {
+        body: { action: 'sync', connectionId: id },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'تمت المزامنة',
+        description: data.message || 'تمت المزامنة بنجاح',
+      });
+
+      fetchConnections();
+    } catch (error: any) {
+      console.error('Error syncing:', error);
+      toast({
+        title: 'خطأ في المزامنة',
+        description: error.message || 'فشل مزامنة البيانات',
         variant: 'destructive',
       });
     }
@@ -310,6 +375,22 @@ export default function ExternalConnections() {
                     <Button
                       variant="ghost"
                       size="icon"
+                      onClick={() => authenticateConnection(connection.id)}
+                      title="المصادقة الآن"
+                    >
+                      <Key className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => syncConnection(connection.id)}
+                      title="مزامنة الآن"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => toggleConnectionStatus(connection)}
                     >
                       {connection.is_active ? (
@@ -352,9 +433,41 @@ export default function ExternalConnections() {
                     </span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">تاريخ الإضافة: </span>
-                    <span>{new Date(connection.created_at).toLocaleDateString('ar-SA')}</span>
+                    <span className="text-muted-foreground">حالة المزامنة: </span>
+                    <span className={
+                      connection.sync_status === 'connected' ? 'text-green-600' :
+                      connection.sync_status === 'synced' ? 'text-blue-600' :
+                      connection.sync_status === 'error' ? 'text-red-600' :
+                      'text-gray-600'
+                    }>
+                      {connection.sync_status === 'connected' ? 'متصل' :
+                       connection.sync_status === 'synced' ? 'تمت المزامنة' :
+                       connection.sync_status === 'error' ? 'خطأ' :
+                       'في الانتظار'}
+                    </span>
                   </div>
+                  <div>
+                    <span className="text-muted-foreground">آخر مزامنة: </span>
+                    <span>
+                      {connection.last_sync_at 
+                        ? new Date(connection.last_sync_at).toLocaleString('ar-SA')
+                        : 'لم تتم بعد'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">انتهاء الجلسة: </span>
+                    <span>
+                      {connection.session_expires_at 
+                        ? new Date(connection.session_expires_at).toLocaleString('ar-SA')
+                        : 'غير متصل'}
+                    </span>
+                  </div>
+                  {connection.sync_error && (
+                    <div className="col-span-2">
+                      <span className="text-muted-foreground">الخطأ: </span>
+                      <span className="text-red-600 text-xs">{connection.sync_error}</span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

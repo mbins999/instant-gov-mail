@@ -143,8 +143,13 @@ export type Database = {
           created_by: number | null
           id: string
           is_active: boolean
+          last_sync_at: string | null
           name: string
           password_encrypted: string
+          session_expires_at: string | null
+          session_token: string | null
+          sync_error: string | null
+          sync_status: string | null
           token_expires_at: string | null
           updated_at: string
           username: string
@@ -156,8 +161,13 @@ export type Database = {
           created_by?: number | null
           id?: string
           is_active?: boolean
+          last_sync_at?: string | null
           name: string
           password_encrypted: string
+          session_expires_at?: string | null
+          session_token?: string | null
+          sync_error?: string | null
+          sync_status?: string | null
           token_expires_at?: string | null
           updated_at?: string
           username: string
@@ -169,8 +179,13 @@ export type Database = {
           created_by?: number | null
           id?: string
           is_active?: boolean
+          last_sync_at?: string | null
           name?: string
           password_encrypted?: string
+          session_expires_at?: string | null
+          session_token?: string | null
+          sync_error?: string | null
+          sync_status?: string | null
           token_expires_at?: string | null
           updated_at?: string
           username?: string
