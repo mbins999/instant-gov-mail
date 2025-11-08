@@ -284,6 +284,45 @@ export default function UsersManagement() {
     }
   };
 
+  const handleDeleteUser = async (userId: number) => {
+    if (!confirm('هل أنت متأكد من حذف هذا المستخدم؟')) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Delete user role first
+      await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userId);
+
+      // Delete user
+      const { error } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'تم بنجاح',
+        description: 'تم حذف المستخدم بنجاح',
+      });
+
+      fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: 'خطأ',
+        description: error.message || 'فشل حذف المستخدم',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (roleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -393,33 +432,51 @@ export default function UsersManagement() {
 
             <Card>
               <CardHeader>
-                <CardTitle>المستخدمين</CardTitle>
+                <CardTitle>
+                  المستخدمين ({users.length})
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                  {users.map((user) => (
-                    <div key={user.id} className="p-3 border rounded-lg flex justify-between items-center">
-                      <div className="flex-1">
-                        <div className="font-semibold">{user.full_name}</div>
-                        <div className="text-sm text-muted-foreground">@{user.username}</div>
-                        <div className="text-sm text-muted-foreground">{user.entity_name}</div>
-                        <div className="text-xs mt-1">
-                          <span className={`px-2 py-1 rounded ${user.role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-secondary/10'}`}>
-                            {user.role === 'admin' ? 'مدير' : 'مستخدم'}
-                          </span>
+                {users.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    لا توجد مستخدمين بعد
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                    {users.map((user) => (
+                      <div key={user.id} className="p-3 border rounded-lg flex justify-between items-center">
+                        <div className="flex-1">
+                          <div className="font-semibold">{user.full_name}</div>
+                          <div className="text-sm text-muted-foreground">@{user.username}</div>
+                          <div className="text-sm text-muted-foreground">{user.entity_name}</div>
+                          <div className="text-xs mt-1">
+                            <span className={`px-2 py-1 rounded ${user.role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-secondary/10'}`}>
+                              {user.role === 'admin' ? 'مدير' : 'مستخدم'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEditUser(user)}
+                            className="text-primary hover:text-primary hover:bg-primary/10"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteUser(user.id)}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEditUser(user)}
-                        className="text-primary hover:text-primary hover:bg-primary/10"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
