@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { getAuthenticatedSupabaseClient } from '@/lib/supabaseAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Navigate } from 'react-router-dom';
 import { UserPlus, Loader2, Building2, Trash2, Plus, Edit } from 'lucide-react';
@@ -58,14 +59,15 @@ export default function UsersManagement() {
 
   const fetchUsers = async () => {
     try {
-      const { data: usersList } = await supabase
+      const authenticatedSupabase = getAuthenticatedSupabaseClient();
+      const { data: usersList } = await authenticatedSupabase
         .from('users')
         .select('id, username, full_name, entity_name');
 
       if (usersList) {
         const usersWithRoles = await Promise.all(
           usersList.map(async (user) => {
-            const { data: roleData } = await supabase
+            const { data: roleData } = await authenticatedSupabase
               .from('user_roles')
               .select('role')
               .eq('user_id', user.id)
@@ -292,14 +294,16 @@ export default function UsersManagement() {
     setLoading(true);
 
     try {
+      const authenticatedSupabase = getAuthenticatedSupabaseClient();
+      
       // Delete user role first
-      await supabase
+      await authenticatedSupabase
         .from('user_roles')
         .delete()
         .eq('user_id', userId);
 
       // Delete user
-      const { error } = await supabase
+      const { error } = await authenticatedSupabase
         .from('users')
         .delete()
         .eq('id', userId);
