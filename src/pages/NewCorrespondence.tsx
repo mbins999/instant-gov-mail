@@ -44,6 +44,18 @@ export default function NewCorrespondence() {
   const [existingAttachments, setExistingAttachments] = useState<string[]>([]);
 
   useEffect(() => {
+    // تعيين جهة المستخدم تلقائياً كجهة مرسلة
+    const userSession = localStorage.getItem('user_session');
+    if (userSession && !isEditMode) {
+      const userData = JSON.parse(userSession);
+      setFormData(prev => ({
+        ...prev,
+        from: userData.entity_name || ''
+      }));
+    }
+  }, [isEditMode]);
+
+  useEffect(() => {
     // Fetch entities for dropdown
     const fetchEntities = async () => {
       try {
@@ -436,24 +448,16 @@ export default function NewCorrespondence() {
 
               <div className="space-y-2">
                 <Label htmlFor="from">الجهة المرسلة *</Label>
-                <Select
+                <Input
+                  id="from"
                   value={formData.from}
-                  onValueChange={(value) => setFormData({ ...formData, from: value })}
-                  disabled={loading}
-                >
-                  <SelectTrigger className="bg-background">
-                    <SelectValue placeholder="اختر الجهة المرسلة" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background border shadow-lg z-50">
-                    {entities
-                      .filter(e => e.type === 'sender' || e.type === 'both')
-                      .map((entity) => (
-                        <SelectItem key={entity.id} value={entity.name}>
-                          {entity.name}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
+                  disabled
+                  className="bg-muted"
+                  placeholder="جهتك"
+                />
+                <p className="text-xs text-muted-foreground">
+                  لا يمكن تغيير الجهة المرسلة
+                </p>
               </div>
 
               <div className="space-y-2">
