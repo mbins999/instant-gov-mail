@@ -455,9 +455,6 @@ export default function NewCorrespondence() {
                   className="bg-muted"
                   placeholder="جهتك"
                 />
-                <p className="text-xs text-muted-foreground">
-                  لا يمكن تغيير الجهة المرسلة
-                </p>
               </div>
 
               <div className="space-y-2">
