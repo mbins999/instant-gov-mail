@@ -408,7 +408,7 @@ export default function UsersManagement() {
                   </div>
 
                   <div>
-                    <Label htmlFor="entityId">الجهة (UUID)</Label>
+                    <Label htmlFor="entityId">الجهة</Label>
                     <Select
                       value={formData.entityId}
                       onValueChange={(value) => setFormData({ ...formData, entityId: value })}
@@ -419,7 +419,7 @@ export default function UsersManagement() {
                       <SelectContent className="bg-background border shadow-lg z-50">
                         {entities.map((entity) => (
                           <SelectItem key={entity.id} value={entity.id}>
-                            {entity.name} ({entity.id.substring(0, 8)}...)
+                            {entity.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -468,9 +468,6 @@ export default function UsersManagement() {
                           <div className="font-semibold">{user.full_name}</div>
                           <div className="text-sm text-muted-foreground">@{user.username}</div>
                           <div className="text-sm text-muted-foreground">{user.entity_name || 'لا توجد جهة'}</div>
-                          {user.entity_id && (
-                            <div className="text-xs text-muted-foreground">ID: {user.entity_id.substring(0, 8)}...</div>
-                          )}
                           <div className="text-xs mt-1">
                             <span className={`px-2 py-1 rounded ${user.role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-secondary/10'}`}>
                               {user.role === 'admin' ? 'مدير' : 'مستخدم'}
@@ -544,7 +541,7 @@ export default function UsersManagement() {
                 </div>
 
                 <div>
-                  <Label htmlFor="edit-entityId">الجهة (UUID)</Label>
+                  <Label htmlFor="edit-entityId">الجهة</Label>
                   <Select
                     value={editFormData.entityId}
                     onValueChange={(value) => setEditFormData({ ...editFormData, entityId: value })}
@@ -555,7 +552,7 @@ export default function UsersManagement() {
                     <SelectContent className="bg-background border shadow-lg z-50">
                       {entities.map((entity) => (
                         <SelectItem key={entity.id} value={entity.id}>
-                          {entity.name} ({entity.id.substring(0, 8)}...)
+                          {entity.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
