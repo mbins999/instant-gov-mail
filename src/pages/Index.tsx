@@ -5,8 +5,8 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const customSession = localStorage.getItem('custom_session');
-    if (customSession) {
+    const userSession = localStorage.getItem('user_session');
+    if (userSession) {
       navigate('/incoming');
     } else {
       navigate('/auth');
