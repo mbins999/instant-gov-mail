@@ -10,6 +10,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Auth from "./pages/Auth";
 import Index from "./pages/Index";
 import Incoming from "./pages/Incoming";
+import Sent from "./pages/Sent";
 import Outgoing from "./pages/Outgoing";
 import NewCorrespondence from "./pages/NewCorrespondence";
 import CorrespondenceDetail from "./pages/CorrespondenceDetail";
@@ -48,6 +49,7 @@ function App() {
                       <main className="flex-1 p-8 overflow-auto bg-background print:p-0 print:overflow-visible">
                         <Routes>
                           <Route path="/incoming" element={<Incoming />} />
+                          <Route path="/sent" element={<Sent />} />
                           <Route path="/outgoing" element={<Outgoing />} />
                           <Route path="/new" element={<NewCorrespondence />} />
                           <Route path="/edit/:id" element={<NewCorrespondence />} />

@@ -17,7 +17,8 @@ import { useUserRole } from '@/hooks/useUserRole';
 
 const navigationItems = [
   { icon: Mail, label: 'البريد', path: '/incoming' },
-  { icon: Send, label: 'الوارد الخارجي', path: '/outgoing' },
+  { icon: Send, label: 'المرسل', path: '/sent' },
+  { icon: Download, label: 'الوارد الخارجي', path: '/outgoing' },
   { icon: Archive, label: 'الأرشيف', path: '/archive' },
 ];
 
