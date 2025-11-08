@@ -14,6 +14,234 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_log: {
+        Row: {
+          action: string
+          created_at: string | null
+          description: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          ip_address: unknown
+          new_data: Json | null
+          old_data: Json | null
+          user_agent: string | null
+          user_id: number | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          description?: string | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          ip_address?: unknown
+          new_data?: Json | null
+          old_data?: Json | null
+          user_agent?: string | null
+          user_id?: number | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          description?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          ip_address?: unknown
+          new_data?: Json | null
+          old_data?: Json | null
+          user_agent?: string | null
+          user_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_performance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      correspondence_comments: {
+        Row: {
+          attachments: string[] | null
+          comment: string
+          correspondence_id: string | null
+          created_at: string | null
+          id: string
+          is_edited: boolean | null
+          is_internal: boolean | null
+          mentioned_users: number[] | null
+          parent_comment_id: string | null
+          updated_at: string | null
+          user_id: number | null
+        }
+        Insert: {
+          attachments?: string[] | null
+          comment: string
+          correspondence_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_edited?: boolean | null
+          is_internal?: boolean | null
+          mentioned_users?: number[] | null
+          parent_comment_id?: string | null
+          updated_at?: string | null
+          user_id?: number | null
+        }
+        Update: {
+          attachments?: string[] | null
+          comment?: string
+          correspondence_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_edited?: boolean | null
+          is_internal?: boolean | null
+          mentioned_users?: number[] | null
+          parent_comment_id?: string | null
+          updated_at?: string | null
+          user_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "correspondence_comments_correspondence_id_fkey"
+            columns: ["correspondence_id"]
+            isOneToOne: false
+            referencedRelation: "correspondences"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "correspondence_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "correspondence_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "correspondence_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_performance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "correspondence_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      correspondence_templates: {
+        Row: {
+          category: string | null
+          content_template: string
+          created_at: string | null
+          created_by: number | null
+          entity_id: string | null
+          greeting: string | null
+          id: string
+          is_active: boolean | null
+          is_public: boolean | null
+          name: string
+          subject_template: string | null
+          type: string | null
+          updated_at: string | null
+          updated_by: number | null
+          usage_count: number | null
+          variables: Json | null
+        }
+        Insert: {
+          category?: string | null
+          content_template: string
+          created_at?: string | null
+          created_by?: number | null
+          entity_id?: string | null
+          greeting?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_public?: boolean | null
+          name: string
+          subject_template?: string | null
+          type?: string | null
+          updated_at?: string | null
+          updated_by?: number | null
+          usage_count?: number | null
+          variables?: Json | null
+        }
+        Update: {
+          category?: string | null
+          content_template?: string
+          created_at?: string | null
+          created_by?: number | null
+          entity_id?: string | null
+          greeting?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_public?: boolean | null
+          name?: string
+          subject_template?: string | null
+          type?: string | null
+          updated_at?: string | null
+          updated_by?: number | null
+          usage_count?: number | null
+          variables?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "correspondence_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_performance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "correspondence_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "correspondence_templates_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "correspondence_templates_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entity_statistics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "correspondence_templates_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "user_performance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "correspondence_templates_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       correspondences: {
         Row: {
           archived: boolean | null
@@ -95,6 +323,13 @@ export type Database = {
             foreignKeyName: "correspondences_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "user_performance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "correspondences_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -103,6 +338,13 @@ export type Database = {
             columns: ["external_connection_id"]
             isOneToOne: false
             referencedRelation: "external_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "correspondences_received_by_fkey"
+            columns: ["received_by"]
+            isOneToOne: false
+            referencedRelation: "user_performance"
             referencedColumns: ["id"]
           },
           {
@@ -195,6 +437,119 @@ export type Database = {
             foreignKeyName: "external_connections_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "user_performance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "external_connections_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          action_url: string | null
+          correspondence_id: string | null
+          created_at: string | null
+          id: string
+          message: string
+          priority: string | null
+          read: boolean | null
+          read_at: string | null
+          related_entity_id: string | null
+          related_entity_type: string | null
+          title: string
+          type: string
+          user_id: number | null
+        }
+        Insert: {
+          action_url?: string | null
+          correspondence_id?: string | null
+          created_at?: string | null
+          id?: string
+          message: string
+          priority?: string | null
+          read?: boolean | null
+          read_at?: string | null
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          title: string
+          type: string
+          user_id?: number | null
+        }
+        Update: {
+          action_url?: string | null
+          correspondence_id?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string
+          priority?: string | null
+          read?: boolean | null
+          read_at?: string | null
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          title?: string
+          type?: string
+          user_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_correspondence_id_fkey"
+            columns: ["correspondence_id"]
+            isOneToOne: false
+            referencedRelation: "correspondences"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_performance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      password_history: {
+        Row: {
+          created_at: string | null
+          id: string
+          password_hash: string
+          user_id: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          password_hash: string
+          user_id?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          password_hash?: string
+          user_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "password_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_performance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "password_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -244,6 +599,13 @@ export type Database = {
           user_id?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_performance"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "sessions_user_id_fkey"
             columns: ["user_id"]
@@ -331,6 +693,13 @@ export type Database = {
             foreignKeyName: "user_roles_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "user_performance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -372,6 +741,13 @@ export type Database = {
             foreignKeyName: "users_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "user_performance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "users_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -382,14 +758,87 @@ export type Database = {
             referencedRelation: "entities"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "users_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entity_statistics"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      correspondence_statistics: {
+        Row: {
+          archived_count: number | null
+          attachment_only_count: number | null
+          avg_hours_to_receive: number | null
+          from_entity: string | null
+          month: string | null
+          received_by_entity: string | null
+          received_count: number | null
+          total_count: number | null
+          type: string | null
+          with_content_count: number | null
+          with_signature_count: number | null
+        }
+        Relationships: []
+      }
+      daily_activity: {
+        Row: {
+          active_users: number | null
+          correspondences_created: number | null
+          correspondences_updated: number | null
+          correspondences_viewed: number | null
+          date: string | null
+          logins: number | null
+        }
+        Relationships: []
+      }
+      entity_statistics: {
+        Row: {
+          id: string | null
+          name: string | null
+          received_count: number | null
+          sent_count: number | null
+          templates_count: number | null
+          total_correspondences: number | null
+          type: string | null
+          users_count: number | null
+        }
+        Relationships: []
+      }
+      user_performance: {
+        Row: {
+          avg_response_hours: number | null
+          comments_count: number | null
+          created_count: number | null
+          entity_name: string | null
+          full_name: string | null
+          id: number | null
+          last_activity: string | null
+          received_count: number | null
+          role: Database["public"]["Enums"]["app_role"] | null
+          total_correspondences: number | null
+          username: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       cleanup_old_rate_limits: { Args: never; Returns: undefined }
+      create_notification: {
+        Args: {
+          p_correspondence_id?: string
+          p_message: string
+          p_priority?: string
+          p_title: string
+          p_type: string
+          p_user_id: number
+        }
+        Returns: string
+      }
       get_user_by_username: { Args: { username_input: string }; Returns: Json }
       get_user_id_from_session: { Args: never; Returns: number }
       has_role: {
@@ -398,6 +847,18 @@ export type Database = {
           _user_id: number
         }
         Returns: boolean
+      }
+      log_audit: {
+        Args: {
+          p_action: string
+          p_description?: string
+          p_entity_id: string
+          p_entity_type: string
+          p_new_data?: Json
+          p_old_data?: Json
+          p_user_id: number
+        }
+        Returns: string
       }
       set_password_hash: {
         Args: { password_hash_input: string; user_id_input: string }

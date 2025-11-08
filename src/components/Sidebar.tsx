@@ -7,7 +7,8 @@ import {
   Plus,
   LogOut,
   Download,
-  Users
+  Users,
+  BarChart3
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ const navigationItems = [
   { icon: Send, label: 'المرسل', path: '/sent' },
   { icon: Download, label: 'الوارد الخارجي', path: '/outgoing' },
   { icon: Archive, label: 'الأرشيف', path: '/archive' },
+  { icon: BarChart3, label: 'التقارير', path: '/reports' },
 ];
 
 const adminNavigationItems = [

@@ -1,9 +1,10 @@
 import { Search, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { NotificationsPopover } from '@/components/NotificationsPopover';
 import {
   Dialog,
   DialogContent,
@@ -16,7 +17,20 @@ import AdvancedSearchForm from '@/components/AdvancedSearchForm';
 export default function TopBar() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+  const [userId, setUserId] = useState<number | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const userSession = localStorage.getItem('user_session');
+    if (userSession) {
+      try {
+        const userData = JSON.parse(userSession);
+        setUserId(userData.id);
+      } catch (error) {
+        console.error('Error parsing user session:', error);
+      }
+    }
+  }, []);
 
   const handleSimpleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,8 +44,11 @@ export default function TopBar() {
     <div className="border-b border-border bg-card sticky top-0 z-10">
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between gap-4">
-          {/* Theme Toggle - Right */}
-          <ThemeToggle />
+          {/* Theme Toggle & Notifications - Right */}
+          <div className="flex items-center gap-2">
+            <NotificationsPopover userId={userId} />
+            <ThemeToggle />
+          </div>
           
           {/* Search bar - Center */}
           <form onSubmit={handleSimpleSearch} className="flex-1 max-w-2xl">

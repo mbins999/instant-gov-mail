@@ -21,6 +21,7 @@ import ImportCorrespondence from "./pages/ImportCorrespondence";
 import NotFound from "./pages/NotFound";
 import UsersManagement from "@/pages/UsersManagement";
 import AdvancedSearchPage from "@/pages/AdvancedSearchPage";
+import ReportsPage from "@/pages/ReportsPage";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ function App() {
                           <Route path="/archive" element={<ArchivePage />} />
                           <Route path="/import" element={<ImportCorrespondence />} />
                           <Route path="/users" element={<UsersManagement />} />
+                          <Route path="/reports" element={<ReportsPage />} />
                           <Route path="*" element={<NotFound />} />
                         </Routes>
                       </main>
