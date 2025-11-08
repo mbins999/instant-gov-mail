@@ -83,9 +83,6 @@ export default function Sent() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">المرسل</h1>
-        <p className="text-muted-foreground mt-2">
-          الكتب التي تم إرسالها من هذا الحساب
-        </p>
       </div>
 
       {correspondences.length === 0 ? (
