@@ -382,7 +382,7 @@ export default function UsersManagement() {
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         minLength={8}
                         required
-                        className="pr-10"
+                        className="pl-12"
                       />
                       <Button
                         type="button"
@@ -525,7 +525,7 @@ export default function UsersManagement() {
                       onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
                       placeholder="اتركها فارغة للإبقاء على القديمة"
                       minLength={8}
-                      className="pr-10"
+                      className="pl-12"
                     />
                     <Button
                       type="button"
