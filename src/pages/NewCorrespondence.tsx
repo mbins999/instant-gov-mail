@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Save, Loader2, Send, Scan } from 'lucide-react';
+import { getAuthenticatedSupabaseClient } from '@/lib/supabaseAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useParams } from 'react-router-dom';
 import { correspondenceApi } from '@/services/correspondenceApi';
@@ -182,6 +183,8 @@ export default function NewCorrespondence() {
       let signatureUrl = signaturePreview;
       const uploadedAttachments: string[] = [...existingAttachments];
       
+      const authed = getAuthenticatedSupabaseClient();
+      
       // Upload new signature if provided
       if (signatureFile) {
         const fileExt = 'png';
@@ -248,7 +251,7 @@ export default function NewCorrespondence() {
       };
 
       if (isEditMode && id) {
-        const { error } = await supabase
+        const { error } = await authed
           .from('correspondences')
           .update(correspondenceData)
           .eq('id', id);
@@ -262,7 +265,7 @@ export default function NewCorrespondence() {
         
         navigate(`/correspondence/${id}`);
       } else {
-        const { error, data: insertedData } = await supabase
+        const { error, data: insertedData } = await authed
           .from('correspondences')
           .insert([correspondenceData])
           .select()
@@ -273,7 +276,7 @@ export default function NewCorrespondence() {
         // Generate PDF for the correspondence
         if (insertedData?.id) {
           try {
-            await supabase.functions.invoke('generate-correspondence-pdf', {
+            await authed.functions.invoke('generate-correspondence-pdf', {
               body: { correspondenceId: insertedData.id }
             });
             console.log('PDF generation started for correspondence:', insertedData.id);
@@ -303,23 +306,23 @@ export default function NewCorrespondence() {
               await correspondenceApi.exportCorrespondence(metadata);
               
               // البحث عن المستخدم المستلم بناءً على اسم الجهة
-              const { data: receiverUser } = await supabase
+              const { data: receiverUser } = await authed
                 .from('users')
                 .select('id, entity_name')
                 .eq('entity_name', formData.to)
                 .maybeSingle();
 
               // إذا وُجدت الجهة المستلمة، إنشاء نسخة من المراسلة في حسابها
-              if (receiverUser) {
-                await supabase
-                  .from('correspondences')
-                  .insert([{
-                    ...correspondenceData,
-                    type: 'incoming',
-                    received_by_entity: receiverUser.entity_name,
-                    created_by: receiverUser.id,
-                  }]);
-              }
+                if (receiverUser) {
+                  await authed
+                    .from('correspondences')
+                    .insert([{
+                      ...correspondenceData,
+                      type: 'incoming',
+                      received_by_entity: receiverUser.entity_name,
+                      created_by: receiverUser.id,
+                    }]);
+                }
               
               toast({
                 title: "تم الإرسال بنجاح",
