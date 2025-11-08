@@ -343,6 +343,8 @@ export default function NewCorrespondence() {
         navigate('/');
       }
     } catch (error) {
+      console.error('Error saving correspondence:', error);
+      console.error('Error details:', error instanceof Error ? error.message : error);
       toast({
         title: "خطأ",
         description: error instanceof Error ? error.message : "حدث خطأ في حفظ المراسلة",
