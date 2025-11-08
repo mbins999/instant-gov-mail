@@ -114,7 +114,7 @@ export default function AdvancedSearchForm({ onClose }: AdvancedSearchFormProps)
             onValueChange={(value) => setSearchData({ ...searchData, type: value })}
           >
             <SelectTrigger className="bg-background">
-              <SelectValue placeholder="اختر النوع" />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-background border shadow-lg z-50">
               <SelectItem value="all">الكل</SelectItem>
@@ -128,7 +128,6 @@ export default function AdvancedSearchForm({ onClose }: AdvancedSearchFormProps)
         <div className="space-y-2">
           <Label>رقم الكتاب</Label>
           <Input
-            placeholder="أدخل رقم الكتاب"
             value={searchData.number}
             onChange={(e) => setSearchData({ ...searchData, number: e.target.value })}
           />
@@ -162,7 +161,7 @@ export default function AdvancedSearchForm({ onClose }: AdvancedSearchFormProps)
             onValueChange={(value) => setSearchData({ ...searchData, from: value })}
           >
             <SelectTrigger className="bg-background">
-              <SelectValue placeholder="اختر الجهة" />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-background border shadow-lg z-50">
               <SelectItem value="all">الكل</SelectItem>
@@ -183,7 +182,7 @@ export default function AdvancedSearchForm({ onClose }: AdvancedSearchFormProps)
             onValueChange={(value) => setSearchData({ ...searchData, to: value })}
           >
             <SelectTrigger className="bg-background">
-              <SelectValue placeholder="اختر الجهة" />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-background border shadow-lg z-50">
               <SelectItem value="all">الكل</SelectItem>
@@ -200,7 +199,6 @@ export default function AdvancedSearchForm({ onClose }: AdvancedSearchFormProps)
         <div className="space-y-2 md:col-span-2 lg:col-span-3">
           <Label>الموضوع</Label>
           <Input
-            placeholder="ابحث في الموضوع"
             value={searchData.subject}
             onChange={(e) => setSearchData({ ...searchData, subject: e.target.value })}
           />
@@ -210,7 +208,6 @@ export default function AdvancedSearchForm({ onClose }: AdvancedSearchFormProps)
         <div className="space-y-2 md:col-span-2 lg:col-span-3">
           <Label>التحية</Label>
           <Input
-            placeholder="ابحث في التحية"
             value={searchData.greeting}
             onChange={(e) => setSearchData({ ...searchData, greeting: e.target.value })}
           />
@@ -220,7 +217,6 @@ export default function AdvancedSearchForm({ onClose }: AdvancedSearchFormProps)
         <div className="space-y-2 md:col-span-2 lg:col-span-3">
           <Label>المحتوى</Label>
           <Textarea
-            placeholder="ابحث في المحتوى"
             value={searchData.content}
             onChange={(e) => setSearchData({ ...searchData, content: e.target.value })}
             rows={3}
@@ -231,7 +227,6 @@ export default function AdvancedSearchForm({ onClose }: AdvancedSearchFormProps)
         <div className="space-y-2">
           <Label>اسم المسؤول</Label>
           <Input
-            placeholder="ابحث عن المسؤول"
             value={searchData.responsiblePerson}
             onChange={(e) => setSearchData({ ...searchData, responsiblePerson: e.target.value })}
           />
@@ -245,7 +240,7 @@ export default function AdvancedSearchForm({ onClose }: AdvancedSearchFormProps)
             onValueChange={(value) => setSearchData({ ...searchData, displayType: value })}
           >
             <SelectTrigger className="bg-background">
-              <SelectValue placeholder="اختر نوع العرض" />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-background border shadow-lg z-50">
               <SelectItem value="all">الكل</SelectItem>
@@ -263,7 +258,7 @@ export default function AdvancedSearchForm({ onClose }: AdvancedSearchFormProps)
             onValueChange={(value) => setSearchData({ ...searchData, hasSignature: value })}
           >
             <SelectTrigger className="bg-background">
-              <SelectValue placeholder="اختر" />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-background border shadow-lg z-50">
               <SelectItem value="all">الكل</SelectItem>
@@ -281,7 +276,7 @@ export default function AdvancedSearchForm({ onClose }: AdvancedSearchFormProps)
             onValueChange={(value) => setSearchData({ ...searchData, hasAttachments: value })}
           >
             <SelectTrigger className="bg-background">
-              <SelectValue placeholder="اختر" />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-background border shadow-lg z-50">
               <SelectItem value="all">الكل</SelectItem>
