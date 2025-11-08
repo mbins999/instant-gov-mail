@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { userId, fullName, password, entityName } = await req.json();
+    const { userId, fullName, password, entityId } = await req.json();
 
     if (!userId) {
       return new Response(
@@ -45,20 +45,16 @@ serve(async (req) => {
       updateData.full_name = fullName;
     }
 
-    if (entityName !== undefined) {
-      if (entityName.length < 3) {
+    if (entityId !== undefined) {
+      // Validate UUID format
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(entityId)) {
         return new Response(
-          JSON.stringify({ error: 'اسم الجهة يجب أن يكون 3 أحرف على الأقل' }),
+          JSON.stringify({ error: 'معرف الجهة (UUID) غير صحيح' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      if (entityName.length > 100) {
-        return new Response(
-          JSON.stringify({ error: 'اسم الجهة طويل جداً (الحد الأقصى 100 حرف)' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      updateData.entity_name = entityName;
+      updateData.entity_id = entityId;
     }
 
     if (password !== undefined) {

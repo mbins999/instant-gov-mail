@@ -17,7 +17,8 @@ interface User {
   id: number;
   username: string;
   full_name: string;
-  entity_name: string;
+  entity_id: string | null;
+  entity_name: string | null;
   role: string;
 }
 
@@ -39,7 +40,7 @@ export default function UsersManagement() {
     username: '',
     password: '',
     fullName: '',
-    entityName: '',
+    entityId: '',
     role: 'user' as 'admin' | 'user'
   });
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -47,7 +48,7 @@ export default function UsersManagement() {
   const [editFormData, setEditFormData] = useState({
     fullName: '',
     password: '',
-    entityName: ''
+    entityId: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showEditPassword, setShowEditPassword] = useState(false);
@@ -64,7 +65,7 @@ export default function UsersManagement() {
       const authenticatedSupabase = getAuthenticatedSupabaseClient();
       const { data: usersList } = await authenticatedSupabase
         .from('users')
-        .select('id, username, full_name, entity_name');
+        .select('id, username, full_name, entity_id, entity_name');
 
       if (usersList) {
         const usersWithRoles = await Promise.all(
@@ -137,7 +138,7 @@ export default function UsersManagement() {
           username: formData.username,
           password: formData.password,
           fullName: formData.fullName,
-          entityName: formData.entityName,
+          entityId: formData.entityId,
           role: formData.role,
           createdBy,
         }
@@ -151,7 +152,7 @@ export default function UsersManagement() {
         description: `تم إنشاء حساب ${formData.username}`,
       });
 
-      setFormData({ username: '', password: '', fullName: '', entityName: '', role: 'user' });
+      setFormData({ username: '', password: '', fullName: '', entityId: '', role: 'user' });
       fetchUsers();
     } catch (error: any) {
       toast({
@@ -227,7 +228,7 @@ export default function UsersManagement() {
     setEditFormData({
       fullName: user.full_name,
       password: '',
-      entityName: user.entity_name
+      entityId: user.entity_id || ''
     });
     setEditDialogOpen(true);
   };
@@ -254,7 +255,7 @@ export default function UsersManagement() {
           userId: editingUser.id,
           fullName: editFormData.fullName,
           password: editFormData.password || undefined,
-          entityName: editFormData.entityName
+          entityId: editFormData.entityId
         }
       });
 
@@ -273,7 +274,7 @@ export default function UsersManagement() {
       setEditFormData({
         fullName: '',
         password: '',
-        entityName: ''
+        entityId: ''
       });
 
       fetchUsers();
@@ -407,18 +408,18 @@ export default function UsersManagement() {
                   </div>
 
                   <div>
-                    <Label htmlFor="entityName">اسم الجهة</Label>
+                    <Label htmlFor="entityId">الجهة (UUID)</Label>
                     <Select
-                      value={formData.entityName}
-                      onValueChange={(value) => setFormData({ ...formData, entityName: value })}
+                      value={formData.entityId}
+                      onValueChange={(value) => setFormData({ ...formData, entityId: value })}
                     >
                       <SelectTrigger className="bg-background">
                         <SelectValue placeholder="اختر الجهة" />
                       </SelectTrigger>
                       <SelectContent className="bg-background border shadow-lg z-50">
                         {entities.map((entity) => (
-                          <SelectItem key={entity.id} value={entity.name}>
-                            {entity.name}
+                          <SelectItem key={entity.id} value={entity.id}>
+                            {entity.name} ({entity.id.substring(0, 8)}...)
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -466,7 +467,10 @@ export default function UsersManagement() {
                         <div className="flex-1">
                           <div className="font-semibold">{user.full_name}</div>
                           <div className="text-sm text-muted-foreground">@{user.username}</div>
-                          <div className="text-sm text-muted-foreground">{user.entity_name}</div>
+                          <div className="text-sm text-muted-foreground">{user.entity_name || 'لا توجد جهة'}</div>
+                          {user.entity_id && (
+                            <div className="text-xs text-muted-foreground">ID: {user.entity_id.substring(0, 8)}...</div>
+                          )}
                           <div className="text-xs mt-1">
                             <span className={`px-2 py-1 rounded ${user.role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-secondary/10'}`}>
                               {user.role === 'admin' ? 'مدير' : 'مستخدم'}
@@ -540,18 +544,18 @@ export default function UsersManagement() {
                 </div>
 
                 <div>
-                  <Label htmlFor="edit-entityName">جهة العمل</Label>
+                  <Label htmlFor="edit-entityId">الجهة (UUID)</Label>
                   <Select
-                    value={editFormData.entityName}
-                    onValueChange={(value) => setEditFormData({ ...editFormData, entityName: value })}
+                    value={editFormData.entityId}
+                    onValueChange={(value) => setEditFormData({ ...editFormData, entityId: value })}
                   >
                     <SelectTrigger className="bg-background">
                       <SelectValue placeholder="اختر الجهة" />
                     </SelectTrigger>
                     <SelectContent className="bg-background border shadow-lg z-50">
                       {entities.map((entity) => (
-                        <SelectItem key={entity.id} value={entity.name}>
-                          {entity.name}
+                        <SelectItem key={entity.id} value={entity.id}>
+                          {entity.name} ({entity.id.substring(0, 8)}...)
                         </SelectItem>
                       ))}
                     </SelectContent>

@@ -325,7 +325,8 @@ export type Database = {
         Row: {
           created_at: string
           created_by: number | null
-          entity_name: string
+          entity_id: string | null
+          entity_name: string | null
           full_name: string
           id: number
           password_hash: string
@@ -334,7 +335,8 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: number | null
-          entity_name: string
+          entity_id?: string | null
+          entity_name?: string | null
           full_name: string
           id?: number
           password_hash: string
@@ -343,7 +345,8 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: number | null
-          entity_name?: string
+          entity_id?: string | null
+          entity_name?: string | null
           full_name?: string
           id?: number
           password_hash?: string
@@ -355,6 +358,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "users_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
             referencedColumns: ["id"]
           },
         ]

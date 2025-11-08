@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { username, password, fullName, entityName, role, createdBy } = await req.json();
+    const { username, password, fullName, entityId, role, createdBy } = await req.json();
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -62,11 +62,14 @@ serve(async (req) => {
       errors.push('الاسم الكامل طويل جداً (الحد الأقصى 100 حرف)');
     }
 
-    // Entity name validation
-    if (!entityName || entityName.length < 3) {
-      errors.push('اسم الجهة يجب أن يكون 3 أحرف على الأقل');
-    } else if (entityName.length > 100) {
-      errors.push('اسم الجهة طويل جداً (الحد الأقصى 100 حرف)');
+    // Entity ID validation
+    if (!entityId) {
+      errors.push('معرف الجهة مطلوب');
+    } else {
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(entityId)) {
+        errors.push('معرف الجهة (UUID) غير صحيح');
+      }
     }
 
     // Role validation
@@ -119,7 +122,7 @@ serve(async (req) => {
         username: username,
         full_name: fullName,
         password_hash: passwordHash,
-        entity_name: entityName,
+        entity_id: entityId,
         created_by: createdBy || null,
       })
       .select()
@@ -164,7 +167,7 @@ serve(async (req) => {
           id: newUser.id,
           username: newUser.username,
           full_name: newUser.full_name,
-          entity_name: newUser.entity_name,
+          entity_id: newUser.entity_id,
           role: userRole
         }
       }),
