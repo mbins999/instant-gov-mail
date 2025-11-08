@@ -38,17 +38,24 @@ export default function Auth() {
     setIsLoading(true);
 
     try {
-      // البحث عن المستخدم مباشرة في قاعدة البيانات
-      const { data: user, error } = await supabase
-        .from('users')
-        .select('*, user_roles(role)')
-        .eq('username', loginUsername)
-        .eq('password_hash', loginPassword)
-        .maybeSingle();
+      // استدعاء edge function للتحقق من المستخدم باستخدام bcrypt
+      const { data, error } = await supabase.functions.invoke('simple-login', {
+        body: {
+          username: loginUsername,
+          password: loginPassword
+        }
+      });
 
-      if (error) throw error;
+      if (error) {
+        toast({
+          title: "خطأ في تسجيل الدخول",
+          description: error.message || "اسم المستخدم أو كلمة المرور غير صحيحة",
+          variant: "destructive",
+        });
+        return;
+      }
 
-      if (!user) {
+      if (!data || !data.session) {
         toast({
           title: "خطأ في تسجيل الدخول",
           description: "اسم المستخدم أو كلمة المرور غير صحيحة",
@@ -57,18 +64,13 @@ export default function Auth() {
         return;
       }
 
-      // حفظ بيانات المستخدم
-      localStorage.setItem('user_session', JSON.stringify({
-        id: user.id,
-        username: user.username,
-        full_name: user.full_name,
-        entity_name: user.entity_name,
-        role: user.user_roles?.[0]?.role || 'user'
-      }));
+      // حفظ بيانات المستخدم والجلسة
+      localStorage.setItem('user_session', JSON.stringify(data.session.user));
+      localStorage.setItem('access_token', data.session.access_token);
       
       toast({
         title: "تم تسجيل الدخول",
-        description: `أهلاً بك ${user.full_name}`,
+        description: `أهلاً بك ${data.session.user.full_name}`,
       });
 
       navigate('/');
@@ -76,7 +78,7 @@ export default function Auth() {
       console.error('Login error:', error);
       toast({
         title: "خطأ",
-        description: error.message || "حدث خطأ أثناء تسجيل الدخول",
+        description: "حدث خطأ أثناء تسجيل الدخول. الرجاء المحاولة مرة أخرى",
         variant: "destructive",
       });
     } finally {
