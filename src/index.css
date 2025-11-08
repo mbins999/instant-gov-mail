@@ -10,24 +10,24 @@ All colors MUST be HSL.
   /* Claude Theme - Misty gray with navy */
   :root, .claude {
     --background: 220 12% 94%;
-    --foreground: 220 20% 20%;
+    --foreground: 220 25% 15%;
 
     --card: 220 10% 97%;
-    --card-foreground: 220 20% 20%;
+    --card-foreground: 220 25% 15%;
 
     --popover: 220 10% 97%;
-    --popover-foreground: 220 20% 20%;
+    --popover-foreground: 220 25% 15%;
 
-    --primary: 220 70% 30%;
+    --primary: 220 85% 22%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 8% 88%;
-    --secondary-foreground: 220 70% 30%;
+    --secondary-foreground: 220 85% 22%;
 
     --muted: 220 8% 90%;
-    --muted-foreground: 220 15% 45%;
+    --muted-foreground: 220 20% 40%;
 
-    --accent: 215 65% 45%;
+    --accent: 215 75% 35%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 75% 55%;
@@ -35,7 +35,7 @@ All colors MUST be HSL.
 
     --border: 220 10% 82%;
     --input: 220 10% 82%;
-    --ring: 220 70% 30%;
+    --ring: 220 85% 22%;
 
     --radius: 0.5rem;
     
@@ -46,13 +46,13 @@ All colors MUST be HSL.
     --warning-foreground: 0 0% 100%;
 
     --sidebar-background: 220 10% 92%;
-    --sidebar-foreground: 220 20% 25%;
-    --sidebar-primary: 220 70% 30%;
+    --sidebar-foreground: 220 25% 18%;
+    --sidebar-primary: 220 85% 22%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 8% 86%;
-    --sidebar-accent-foreground: 220 20% 25%;
+    --sidebar-accent-foreground: 220 25% 18%;
     --sidebar-border: 220 10% 78%;
-    --sidebar-ring: 220 70% 30%;
+    --sidebar-ring: 220 85% 22%;
   }
 
   /* Dark Theme - Soft gray-blue burgundy */
