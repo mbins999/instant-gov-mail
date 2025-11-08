@@ -23,6 +23,8 @@ export type Database = {
           created_by: number | null
           date: string
           display_type: string
+          external_connection_id: string | null
+          external_doc_id: string | null
           from_entity: string
           greeting: string
           id: string
@@ -46,6 +48,8 @@ export type Database = {
           created_by?: number | null
           date?: string
           display_type?: string
+          external_connection_id?: string | null
+          external_doc_id?: string | null
           from_entity: string
           greeting?: string
           id?: string
@@ -69,6 +73,8 @@ export type Database = {
           created_by?: number | null
           date?: string
           display_type?: string
+          external_connection_id?: string | null
+          external_doc_id?: string | null
           from_entity?: string
           greeting?: string
           id?: string
@@ -90,6 +96,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "correspondences_external_connection_id_fkey"
+            columns: ["external_connection_id"]
+            isOneToOne: false
+            referencedRelation: "external_connections"
             referencedColumns: ["id"]
           },
           {
@@ -121,6 +134,56 @@ export type Database = {
           type?: string
         }
         Relationships: []
+      }
+      external_connections: {
+        Row: {
+          api_token: string | null
+          base_url: string
+          created_at: string
+          created_by: number | null
+          id: string
+          is_active: boolean
+          name: string
+          password_encrypted: string
+          token_expires_at: string | null
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          api_token?: string | null
+          base_url: string
+          created_at?: string
+          created_by?: number | null
+          id?: string
+          is_active?: boolean
+          name: string
+          password_encrypted: string
+          token_expires_at?: string | null
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          api_token?: string | null
+          base_url?: string
+          created_at?: string
+          created_by?: number | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          password_encrypted?: string
+          token_expires_at?: string | null
+          updated_at?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "external_connections_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rate_limits: {
         Row: {
@@ -171,6 +234,60 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sync_log: {
+        Row: {
+          connection_id: string | null
+          correspondence_id: string | null
+          created_at: string
+          error_message: string | null
+          external_doc_id: string | null
+          id: string
+          operation: string
+          request_payload: Json | null
+          response_payload: Json | null
+          status: string
+        }
+        Insert: {
+          connection_id?: string | null
+          correspondence_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          external_doc_id?: string | null
+          id?: string
+          operation: string
+          request_payload?: Json | null
+          response_payload?: Json | null
+          status: string
+        }
+        Update: {
+          connection_id?: string | null
+          correspondence_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          external_doc_id?: string | null
+          id?: string
+          operation?: string
+          request_payload?: Json | null
+          response_payload?: Json | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sync_log_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "external_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sync_log_correspondence_id_fkey"
+            columns: ["correspondence_id"]
+            isOneToOne: false
+            referencedRelation: "correspondences"
             referencedColumns: ["id"]
           },
         ]

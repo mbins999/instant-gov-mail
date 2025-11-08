@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.simple-signup]
 verify_jwt = false
+
+[functions.external-sync]
+verify_jwt = true
