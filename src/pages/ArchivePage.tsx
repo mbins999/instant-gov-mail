@@ -1,40 +1,24 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import CorrespondenceTable from '@/components/CorrespondenceTable';
 import { useCorrespondences } from '@/hooks/useCorrespondences';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Archive, ArchiveX } from 'lucide-react';
-import { getAuthenticatedSupabaseClient } from '@/lib/supabaseAuth';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from 'react';
+import { FileText } from 'lucide-react';
 
 export default function ArchivePage() {
   const { correspondences, loading, error, refetch } = useCorrespondences();
-  const [archiving, setArchiving] = useState(false);
-  const { toast } = useToast();
+  const [userEntity, setUserEntity] = useState<string>('');
+  
+  useEffect(() => {
+    const userSession = localStorage.getItem('user_session');
+    if (userSession) {
+      const userData = JSON.parse(userSession);
+      setUserEntity(userData.entity_name || '');
+    }
+  }, []);
   
   // في المستقبل سنضيف حقل archived في قاعدة البيانات
-  // حالياً نعرض جميع المراسلات
-  const archivedCorrespondences = correspondences;
-
-  const handleArchive = async (id: string) => {
-    setArchiving(true);
-    try {
-      const supabase = getAuthenticatedSupabaseClient();
-      // سيتم تفعيل هذا لاحقاً عند إضافة حقل archived
-      toast({
-        title: "قريباً",
-        description: "سيتم تفعيل الأرشفة قريباً",
-      });
-    } catch (err) {
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ في الأرشفة",
-        variant: "destructive",
-      });
-    } finally {
-      setArchiving(false);
-    }
-  };
+  // حالياً نعرض فقط رسالة أن الأرشيف فارغ
+  const archivedCorrespondences: any[] = [];
 
   if (loading) {
     return (
@@ -59,13 +43,13 @@ export default function ArchivePage() {
           <CardTitle>المراسلات المؤرشفة ({archivedCorrespondences.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          {archivedCorrespondences.length > 0 ? (
-            <CorrespondenceTable correspondences={archivedCorrespondences} onReceive={refetch} />
-          ) : (
-            <div className="text-center py-12 text-muted-foreground">
-              لا توجد مراسلات مؤرشفة حالياً
-            </div>
-          )}
+          <div className="text-center py-12">
+            <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">لا توجد مراسلات مؤرشفة</h3>
+            <p className="text-muted-foreground">
+              سيتم إضافة ميزة الأرشفة قريباً
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>

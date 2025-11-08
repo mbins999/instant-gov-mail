@@ -177,6 +177,26 @@ export default function NewCorrespondence() {
 
   const handleSubmit = async (e: React.FormEvent, shouldSendExternal = false) => {
     e.preventDefault();
+    
+    // التحقق من الحقول الإجبارية
+    if (!formData.to) {
+      toast({
+        title: "خطأ",
+        description: "يجب اختيار الجهة المستلمة",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.from) {
+      toast({
+        title: "خطأ",
+        description: "يجب اختيار الجهة المرسلة",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     
     try {
@@ -238,10 +258,10 @@ export default function NewCorrespondence() {
         attachments: uploadedAttachments,
         created_by: (() => {
           try {
-            const customSession = localStorage.getItem('custom_session');
-            if (customSession) {
-              const sessionData = JSON.parse(customSession);
-              return sessionData.user?.id || null;
+            const userSession = localStorage.getItem('user_session');
+            if (userSession) {
+              const userData = JSON.parse(userSession);
+              return userData.id || null;
             }
           } catch (e) {
             console.error('Error getting user from session:', e);

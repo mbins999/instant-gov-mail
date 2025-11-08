@@ -94,6 +94,8 @@ export interface Correspondence {
   type: CorrespondenceType;
   subject: string;
   from: string;
+  from_entity?: string;
+  received_by_entity?: string;
   date: string;
   content: string;
   greeting?: string;

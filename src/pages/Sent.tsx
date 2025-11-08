@@ -31,14 +31,14 @@ export default function Sent() {
         const supabase = getAuthenticatedSupabaseClient();
         
         // Get current user entity
-        const customSession = localStorage.getItem('custom_session');
-        if (!customSession) {
+        const userSession = localStorage.getItem('user_session');
+        if (!userSession) {
           navigate('/auth');
           return;
         }
 
-        const sessionData = JSON.parse(customSession);
-        const userId = sessionData.user?.id;
+        const userData = JSON.parse(userSession);
+        const userId = userData.id;
 
         if (!userId) {
           navigate('/auth');

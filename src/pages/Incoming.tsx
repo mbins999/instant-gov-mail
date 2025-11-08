@@ -8,16 +8,18 @@ export default function Incoming() {
   const [userEntity, setUserEntity] = useState<string>('');
   
   useEffect(() => {
-    const customSession = localStorage.getItem('custom_session');
-    if (customSession) {
-      const sessionData = JSON.parse(customSession);
-      setUserEntity(sessionData.user?.entity_name || '');
+    const userSession = localStorage.getItem('user_session');
+    if (userSession) {
+      const userData = JSON.parse(userSession);
+      setUserEntity(userData.entity_name || '');
     }
   }, []);
   
-  // البريد: الكتب المرسلة إلى جهة المستخدم
+  // البريد: الكتب الموجهة لجهة المستخدم فقط
   const incomingCorrespondences = correspondences.filter(c => 
-    c.type === 'outgoing' && c.from === userEntity
+    c.type === 'outgoing' && 
+    c.received_by_entity && 
+    c.received_by_entity === userEntity
   );
 
   if (loading) {
