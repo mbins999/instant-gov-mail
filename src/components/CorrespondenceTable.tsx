@@ -17,54 +17,59 @@ export default function CorrespondenceTable({ correspondences, onReceive }: Corr
   const handleReceive = async (correspondenceId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // Get authenticated user from Supabase session
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session?.user) {
+    // Get user from localStorage
+    try {
+      const userSession = localStorage.getItem('user_session');
+      if (!userSession) {
+        toast({
+          title: "خطأ",
+          description: "يجب تسجيل الدخول أولاً",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const userData = JSON.parse(userSession);
+      const userId = userData.id;
+
+      if (!userId) {
+        toast({
+          title: "خطأ",
+          description: "لم يتم العثور على بيانات المستخدم",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('correspondences')
+        .update({ 
+          received_by: userId,
+          received_at: new Date().toISOString()
+        })
+        .eq('id', correspondenceId);
+
+      if (error) {
+        console.error('Receive error:', error);
+        toast({
+          title: "خطأ",
+          description: "فشل تسجيل الاستلام",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "تم الاستلام",
+          description: "تم تسجيل استلام الكتاب بنجاح",
+        });
+        onReceive?.();
+      }
+    } catch (err) {
+      console.error('Error in handleReceive:', err);
       toast({
         title: "خطأ",
-        description: "يجب تسجيل الدخول أولاً",
+        description: "حدث خطأ غير متوقع",
         variant: "destructive",
       });
-      return;
-    }
-
-    // Get user ID from users table
-    const { data: userData } = await supabase
-      .from('users')
-      .select('id')
-      .eq('id', parseInt(session.user.id))
-      .maybeSingle();
-
-    if (!userData) {
-      toast({
-        title: "خطأ",
-        description: "لم يتم العثور على بيانات المستخدم",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const { error } = await supabase
-      .from('correspondences')
-      .update({ 
-        received_by: userData.id,
-        received_at: new Date().toISOString()
-      })
-      .eq('id', correspondenceId);
-
-    if (error) {
-      toast({
-        title: "خطأ",
-        description: "فشل تسجيل الاستلام",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "تم الاستلام",
-        description: "تم تسجيل استلام الكتاب بنجاح",
-      });
-      onReceive?.();
     }
   };
 
