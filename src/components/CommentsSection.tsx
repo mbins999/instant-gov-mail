@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { getAuthenticatedSupabaseClient } from '@/lib/supabaseAuth';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -44,6 +44,7 @@ export function CommentsSection({ correspondenceId, currentUserId }: CommentsSec
   // جلب التعليقات
   const fetchComments = async () => {
     try {
+      const supabase = getAuthenticatedSupabaseClient();
       const { data, error } = await supabase
         .from('correspondence_comments')
         .select(`
@@ -67,6 +68,7 @@ export function CommentsSection({ correspondenceId, currentUserId }: CommentsSec
     fetchComments();
 
     // الاشتراك في Realtime
+    const supabase = getAuthenticatedSupabaseClient();
     const channel = supabase
       .channel(`comments-${correspondenceId}`)
       .on(
@@ -93,6 +95,7 @@ export function CommentsSection({ correspondenceId, currentUserId }: CommentsSec
     if (!newComment.trim()) return;
 
     try {
+      const supabase = getAuthenticatedSupabaseClient();
       const { error } = await supabase
         .from('correspondence_comments')
         .insert({
@@ -124,6 +127,7 @@ export function CommentsSection({ correspondenceId, currentUserId }: CommentsSec
     if (!editText.trim()) return;
 
     try {
+      const supabase = getAuthenticatedSupabaseClient();
       const { error } = await supabase
         .from('correspondence_comments')
         .update({ comment: editText.trim() })
@@ -152,6 +156,7 @@ export function CommentsSection({ correspondenceId, currentUserId }: CommentsSec
     if (!confirm('هل أنت متأكد من حذف هذا التعليق؟')) return;
 
     try {
+      const supabase = getAuthenticatedSupabaseClient();
       const { error } = await supabase
         .from('correspondence_comments')
         .delete()
