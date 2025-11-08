@@ -55,35 +55,35 @@ All colors MUST be HSL.
     --sidebar-ring: 35 95% 50%;
   }
 
-  /* Claude Theme - Soft and elegant */
+  /* Claude Theme - Misty gray with navy */
   .claude {
-    --background: 30 20% 96%;
-    --foreground: 30 10% 20%;
+    --background: 220 12% 94%;
+    --foreground: 220 20% 20%;
 
-    --card: 30 15% 98%;
-    --card-foreground: 30 10% 20%;
+    --card: 220 10% 97%;
+    --card-foreground: 220 20% 20%;
 
-    --popover: 30 15% 98%;
-    --popover-foreground: 30 10% 20%;
+    --popover: 220 10% 97%;
+    --popover-foreground: 220 20% 20%;
 
-    --primary: 25 60% 45%;
+    --primary: 220 70% 30%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 30 20% 90%;
-    --secondary-foreground: 25 60% 45%;
+    --secondary: 220 8% 88%;
+    --secondary-foreground: 220 70% 30%;
 
-    --muted: 30 15% 92%;
-    --muted-foreground: 30 10% 45%;
+    --muted: 220 8% 90%;
+    --muted-foreground: 220 15% 45%;
 
-    --accent: 15 70% 60%;
+    --accent: 215 65% 45%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 30 15% 85%;
-    --input: 30 15% 85%;
-    --ring: 25 60% 45%;
+    --border: 220 10% 82%;
+    --input: 220 10% 82%;
+    --ring: 220 70% 30%;
 
     --radius: 0.5rem;
     
@@ -93,14 +93,14 @@ All colors MUST be HSL.
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --sidebar-background: 30 18% 94%;
-    --sidebar-foreground: 30 10% 25%;
-    --sidebar-primary: 25 60% 45%;
+    --sidebar-background: 220 10% 92%;
+    --sidebar-foreground: 220 20% 25%;
+    --sidebar-primary: 220 70% 30%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 30 15% 88%;
-    --sidebar-accent-foreground: 30 10% 25%;
-    --sidebar-border: 30 15% 82%;
-    --sidebar-ring: 25 60% 45%;
+    --sidebar-accent: 220 8% 86%;
+    --sidebar-accent-foreground: 220 20% 25%;
+    --sidebar-border: 220 10% 78%;
+    --sidebar-ring: 220 70% 30%;
   }
 
   /* Dark Theme - Soft gray-blue burgundy */
