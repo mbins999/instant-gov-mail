@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function TopBar() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -20,9 +21,12 @@ export default function TopBar() {
   return (
     <div className="border-b border-border bg-card sticky top-0 z-10">
       <div className="container mx-auto px-6 py-4">
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-between gap-4">
+          {/* Theme Toggle - Right */}
+          <ThemeToggle />
+          
           {/* Search bar - Center */}
-          <form onSubmit={handleSearch} className="w-full max-w-2xl">
+          <form onSubmit={handleSearch} className="flex-1 max-w-2xl">
             <div className="relative">
               <Input
                 type="text"
