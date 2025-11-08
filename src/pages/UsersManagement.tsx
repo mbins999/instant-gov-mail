@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { getAuthenticatedSupabaseClient } from '@/lib/supabaseAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Navigate } from 'react-router-dom';
-import { UserPlus, Loader2, Building2, Trash2, Plus, Edit } from 'lucide-react';
+import { UserPlus, Loader2, Building2, Trash2, Plus, Edit, Eye, EyeOff } from 'lucide-react';
 
 interface User {
   id: number;
@@ -49,6 +49,8 @@ export default function UsersManagement() {
     password: '',
     entityName: ''
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showEditPassword, setShowEditPassword] = useState(false);
 
   useEffect(() => {
     if (isAdmin) {
@@ -372,14 +374,26 @@ export default function UsersManagement() {
 
                   <div>
                     <Label htmlFor="password">كلمة المرور (8 أحرف على الأقل)</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      minLength={8}
-                      required
-                    />
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        minLength={8}
+                        required
+                        className="pr-10"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute left-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
                   </div>
 
                   <div>
@@ -503,14 +517,26 @@ export default function UsersManagement() {
 
                 <div>
                   <Label htmlFor="edit-password">كلمة المرور الجديدة (اتركها فارغة إذا لم ترد التغيير)</Label>
-                  <Input
-                    id="edit-password"
-                    type="password"
-                    value={editFormData.password}
-                    onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
-                    placeholder="اتركها فارغة للإبقاء على القديمة"
-                    minLength={8}
-                  />
+                  <div className="relative">
+                    <Input
+                      id="edit-password"
+                      type={showEditPassword ? "text" : "password"}
+                      value={editFormData.password}
+                      onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
+                      placeholder="اتركها فارغة للإبقاء على القديمة"
+                      minLength={8}
+                      className="pr-10"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute left-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                      onClick={() => setShowEditPassword(!showEditPassword)}
+                    >
+                      {showEditPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
                 </div>
 
                 <div>
