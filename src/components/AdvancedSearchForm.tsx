@@ -34,8 +34,8 @@ export default function AdvancedSearchForm({ onClose }: AdvancedSearchFormProps)
     number: '',
     dateFrom: '',
     dateTo: '',
-    from: '',
-    to: '',
+    from: 'all',
+    to: 'all',
     subject: '',
     greeting: '',
     content: '',
@@ -71,8 +71,8 @@ export default function AdvancedSearchForm({ onClose }: AdvancedSearchFormProps)
     if (searchData.number) params.append('number', searchData.number);
     if (searchData.dateFrom) params.append('dateFrom', searchData.dateFrom);
     if (searchData.dateTo) params.append('dateTo', searchData.dateTo);
-    if (searchData.from) params.append('from', searchData.from);
-    if (searchData.to) params.append('to', searchData.to);
+    if (searchData.from !== 'all') params.append('from', searchData.from);
+    if (searchData.to !== 'all') params.append('to', searchData.to);
     if (searchData.subject) params.append('subject', searchData.subject);
     if (searchData.greeting) params.append('greeting', searchData.greeting);
     if (searchData.content) params.append('content', searchData.content);
@@ -91,8 +91,8 @@ export default function AdvancedSearchForm({ onClose }: AdvancedSearchFormProps)
       number: '',
       dateFrom: '',
       dateTo: '',
-      from: '',
-      to: '',
+      from: 'all',
+      to: 'all',
       subject: '',
       greeting: '',
       content: '',
@@ -165,7 +165,7 @@ export default function AdvancedSearchForm({ onClose }: AdvancedSearchFormProps)
               <SelectValue placeholder="اختر الجهة" />
             </SelectTrigger>
             <SelectContent className="bg-background border shadow-lg z-50">
-              <SelectItem value="">الكل</SelectItem>
+              <SelectItem value="all">الكل</SelectItem>
               {entities.map((entity) => (
                 <SelectItem key={entity.id} value={entity.name}>
                   {entity.name}
@@ -186,7 +186,7 @@ export default function AdvancedSearchForm({ onClose }: AdvancedSearchFormProps)
               <SelectValue placeholder="اختر الجهة" />
             </SelectTrigger>
             <SelectContent className="bg-background border shadow-lg z-50">
-              <SelectItem value="">الكل</SelectItem>
+              <SelectItem value="all">الكل</SelectItem>
               {entities.map((entity) => (
                 <SelectItem key={entity.id} value={entity.name}>
                   {entity.name}
