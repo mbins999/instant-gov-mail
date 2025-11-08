@@ -25,11 +25,6 @@ export default function Outgoing() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">الوارد الخارجي</h1>
-        <p className="text-muted-foreground mt-2">المراسلات الواردة من الجهات الأخرى</p>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>الكتب الواردة ({outgoingCorrespondences.length})</CardTitle>
