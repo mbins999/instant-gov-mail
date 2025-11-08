@@ -131,14 +131,13 @@ export default function Sidebar() {
         )}
       </nav>
 
-      <div className="p-4 border-t border-border">
+      <div className="p-4 border-t border-border flex justify-center">
         <Button 
           variant="ghost" 
-          className="w-full justify-start gap-3"
+          size="icon"
           onClick={handleLogout}
         >
           <LogOut className="h-5 w-5" />
-          <span>تسجيل الخروج</span>
         </Button>
       </div>
     </aside>
