@@ -20,7 +20,6 @@ import ImportCorrespondence from "./pages/ImportCorrespondence";
 import NotFound from "./pages/NotFound";
 import UsersManagement from "@/pages/UsersManagement";
 import AdvancedSearchPage from "@/pages/AdvancedSearchPage";
-import ExternalConnections from "@/pages/ExternalConnections";
 
 const queryClient = new QueryClient();
 
@@ -59,7 +58,6 @@ function App() {
                           <Route path="/archive" element={<ArchivePage />} />
                           <Route path="/import" element={<ImportCorrespondence />} />
                           <Route path="/users" element={<UsersManagement />} />
-                          <Route path="/external-connections" element={<ExternalConnections />} />
                           <Route path="*" element={<NotFound />} />
                         </Routes>
                       </main>

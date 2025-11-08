@@ -7,8 +7,7 @@ import {
   Plus,
   LogOut,
   Download,
-  Users,
-  Cable
+  Users
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -24,7 +23,6 @@ const navigationItems = [
 
 const adminNavigationItems = [
   { icon: Users, label: 'إدارة المستخدمين', path: '/users' },
-  { icon: Cable, label: 'الاتصالات الخارجية', path: '/external-connections' },
 ];
 
 export default function Sidebar() {
