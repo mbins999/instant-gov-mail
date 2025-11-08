@@ -35,10 +35,10 @@ export default function Sidebar() {
   useEffect(() => {
     const fetchUserProfile = () => {
       try {
-        const customSession = localStorage.getItem('custom_session');
-        if (customSession) {
-          const sessionData = JSON.parse(customSession);
-          setUserName(sessionData.user?.full_name || sessionData.user?.username || 'مستخدم');
+        const userSession = localStorage.getItem('user_session');
+        if (userSession) {
+          const userData = JSON.parse(userSession);
+          setUserName(userData.full_name || userData.username || 'مستخدم');
         }
       } catch (error) {
         console.error('Error fetching user profile:', error);
@@ -57,7 +57,7 @@ export default function Sidebar() {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('custom_session');
+    localStorage.removeItem('user_session');
     toast({
       title: "تم تسجيل الخروج",
       description: "تم تسجيل الخروج بنجاح",

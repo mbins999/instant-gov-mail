@@ -9,16 +9,16 @@ export function useUserRole() {
   useEffect(() => {
     const fetchUserRole = () => {
       try {
-        const customSession = localStorage.getItem('custom_session');
+        const userSession = localStorage.getItem('user_session');
         
-        if (!customSession) {
+        if (!userSession) {
           setRole(null);
           setLoading(false);
           return;
         }
 
-        const sessionData = JSON.parse(customSession);
-        setRole((sessionData.user?.role as UserRole) || 'user');
+        const userData = JSON.parse(userSession);
+        setRole((userData.role as UserRole) || 'user');
       } catch (error) {
         console.error('Error fetching user role:', error);
         setRole('user');

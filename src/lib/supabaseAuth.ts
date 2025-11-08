@@ -1,60 +1,17 @@
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from '@/integrations/supabase/types';
+import { supabase } from '@/integrations/supabase/client';
 
-let authenticatedClient: ReturnType<typeof createClient<Database>> | null = null;
-
+// تم تبسيط النظام - نستخدم الـ client العادي بدون authentication معقد
 export function getAuthenticatedSupabaseClient() {
-  const customSession = localStorage.getItem('custom_session');
-  
-  if (!customSession) {
-    throw new Error('يجب تسجيل الدخول أولاً');
-  }
-
-  const sessionData = JSON.parse(customSession);
-  const userId = sessionData.user?.id;
-
-  if (!userId) {
-    throw new Error('معرف المستخدم غير موجود');
-  }
-
-  // إعادة استخدام نفس الـ client إذا كان موجوداً
-  if (authenticatedClient) {
-    return authenticatedClient;
-  }
-
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-  authenticatedClient = createClient<Database>(supabaseUrl, supabaseKey, {
-    global: {
-      headers: {
-        'x-user-id': userId.toString()
-      }
-    }
-  });
-
-  return authenticatedClient;
-}
-
-export function getSessionToken(): string | null {
-  try {
-    const customSession = localStorage.getItem('custom_session');
-    if (!customSession) return null;
-    
-    const sessionData = JSON.parse(customSession);
-    return sessionData.access_token || null;
-  } catch {
-    return null;
-  }
+  return supabase;
 }
 
 export function getUserFromSession() {
   try {
-    const customSession = localStorage.getItem('custom_session');
-    if (!customSession) return null;
+    const userSession = localStorage.getItem('user_session');
+    if (!userSession) return null;
     
-    const sessionData = JSON.parse(customSession);
-    return sessionData.user || null;
+    const userData = JSON.parse(userSession);
+    return userData || null;
   } catch {
     return null;
   }

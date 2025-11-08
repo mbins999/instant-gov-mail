@@ -10,8 +10,8 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   useEffect(() => {
     const checkAuth = () => {
-      const customSession = localStorage.getItem('custom_session');
-      setIsAuthenticated(!!customSession);
+      const userSession = localStorage.getItem('user_session');
+      setIsAuthenticated(!!userSession);
     };
 
     checkAuth();
