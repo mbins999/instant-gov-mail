@@ -54,11 +54,6 @@ export default function ArchivePage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">الأرشيف</h1>
-        <p className="text-muted-foreground mt-2">المراسلات المؤرشفة</p>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>المراسلات المؤرشفة ({archivedCorrespondences.length})</CardTitle>
