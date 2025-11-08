@@ -45,12 +45,13 @@ export default function Sent() {
           return;
         }
 
-        // Fetch correspondences created by this user (sent by this user)
+        // Fetch correspondences created by this user (sent by this user) - غير المؤرشفة
         const { data, error } = await supabase
           .from('correspondences')
           .select('*')
           .eq('created_by', userId)
           .eq('type', 'outgoing')
+          .eq('archived', false)
           .order('date', { ascending: false });
 
         if (error) throw error;

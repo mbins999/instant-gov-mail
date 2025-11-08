@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       correspondences: {
         Row: {
+          archived: boolean | null
           attachments: string[] | null
           content: string
           created_at: string | null
@@ -38,6 +39,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          archived?: boolean | null
           attachments?: string[] | null
           content: string
           created_at?: string | null
@@ -60,6 +62,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          archived?: boolean | null
           attachments?: string[] | null
           content?: string
           created_at?: string | null

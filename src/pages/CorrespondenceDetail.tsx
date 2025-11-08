@@ -15,6 +15,8 @@ export default function CorrespondenceDetail() {
   const [correspondence, setCorrespondence] = useState<Correspondence | null>(null);
   const [loading, setLoading] = useState(true);
   const [sendingToExternal, setSendingToExternal] = useState(false);
+  const [archiving, setArchiving] = useState(false);
+  const [isArchived, setIsArchived] = useState(false);
 
   useEffect(() => {
     const fetchCorrespondence = async () => {
@@ -44,6 +46,7 @@ export default function CorrespondenceDetail() {
             signature_url: data.signature_url,
             display_type: data.display_type,
           } as any);
+          setIsArchived(data.archived || false);
         }
       } catch (err) {
         console.error('Error fetching correspondence:', err);
@@ -92,6 +95,40 @@ export default function CorrespondenceDetail() {
       });
     } finally {
       setSendingToExternal(false);
+    }
+  };
+
+  const handleToggleArchive = async () => {
+    if (!correspondence) return;
+    
+    setArchiving(true);
+    try {
+      const newArchivedStatus = !isArchived;
+      
+      const { error } = await supabase
+        .from('correspondences')
+        .update({ archived: newArchivedStatus })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setIsArchived(newArchivedStatus);
+      
+      toast({
+        title: newArchivedStatus ? "تم الأرشفة" : "تم إلغاء الأرشفة",
+        description: newArchivedStatus 
+          ? "تم أرشفة الكتاب بنجاح" 
+          : "تم إعادة توجيه الكتاب بنجاح",
+      });
+    } catch (error) {
+      console.error('Archive error:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ في عملية الأرشفة",
+        variant: "destructive",
+      });
+    } finally {
+      setArchiving(false);
     }
   };
 
@@ -265,8 +302,18 @@ export default function CorrespondenceDetail() {
           <Button variant="outline" size="icon" onClick={handlePrint} title="طباعة">
             <Printer className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon">
-            <Archive className="h-4 w-4" />
+          <Button 
+            variant={isArchived ? "default" : "outline"} 
+            size="icon"
+            onClick={handleToggleArchive}
+            disabled={archiving}
+            title={isArchived ? "إلغاء الأرشفة" : "أرشفة"}
+          >
+            {archiving ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Archive className="h-4 w-4" />
+            )}
           </Button>
         </div>
       </div>

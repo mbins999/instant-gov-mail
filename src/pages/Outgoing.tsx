@@ -4,8 +4,10 @@ import { useCorrespondences } from '@/hooks/useCorrespondences';
 
 export default function Outgoing() {
   const { correspondences, loading, error, refetch } = useCorrespondences();
-  // الوارد الخارجي: الكتب الواردة من جهات أخرى
-  const outgoingCorrespondences = correspondences.filter(c => c.type === 'incoming');
+  // الوارد الخارجي: الكتب الواردة من جهات أخرى (غير المؤرشفة)
+  const outgoingCorrespondences = correspondences.filter((c: any) => 
+    c.type === 'incoming' && !c.archived
+  );
 
   if (loading) {
     return (

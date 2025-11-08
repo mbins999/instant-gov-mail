@@ -15,11 +15,12 @@ export default function Incoming() {
     }
   }, []);
   
-  // البريد: الكتب الموجهة لجهة المستخدم فقط
+  // البريد: الكتب الموجهة لجهة المستخدم فقط (غير المؤرشفة)
   const incomingCorrespondences = correspondences.filter(c => 
     c.type === 'outgoing' && 
     c.received_by_entity && 
-    c.received_by_entity === userEntity
+    c.received_by_entity === userEntity &&
+    !(c as any).archived
   );
 
   if (loading) {

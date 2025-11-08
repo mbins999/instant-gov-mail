@@ -16,9 +16,8 @@ export default function ArchivePage() {
     }
   }, []);
   
-  // في المستقبل سنضيف حقل archived في قاعدة البيانات
-  // حالياً نعرض فقط رسالة أن الأرشيف فارغ
-  const archivedCorrespondences: any[] = [];
+  // عرض المراسلات المؤرشفة فقط
+  const archivedCorrespondences = correspondences.filter((c: any) => c.archived === true);
 
   if (loading) {
     return (
@@ -43,13 +42,17 @@ export default function ArchivePage() {
           <CardTitle>المراسلات المؤرشفة ({archivedCorrespondences.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-12">
-            <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">لا توجد مراسلات مؤرشفة</h3>
-            <p className="text-muted-foreground">
-              سيتم إضافة ميزة الأرشفة قريباً
-            </p>
-          </div>
+          {archivedCorrespondences.length > 0 ? (
+            <CorrespondenceTable correspondences={archivedCorrespondences} onReceive={refetch} />
+          ) : (
+            <div className="text-center py-12">
+              <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">لا توجد مراسلات مؤرشفة</h3>
+              <p className="text-muted-foreground">
+                لم يتم أرشفة أي كتب بعد
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
