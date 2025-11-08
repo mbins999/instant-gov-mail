@@ -51,6 +51,12 @@ serve(async (req) => {
       username_input: username
     });
 
+    console.log('User lookup result:', { 
+      found: !!userData, 
+      error: error?.message,
+      username 
+    });
+
     if (error || !userData) {
       // Log failed attempt
       await supabase.from('rate_limits').insert([{
@@ -66,7 +72,9 @@ serve(async (req) => {
     }
 
     // ===== VERIFY PASSWORD WITH BCRYPT =====
+    console.log('Comparing password with hash length:', userData.password_hash?.length);
     const isValidPassword = await bcrypt.compare(password, userData.password_hash);
+    console.log('Password comparison result:', isValidPassword);
 
     if (!isValidPassword) {
       // Log failed attempt
