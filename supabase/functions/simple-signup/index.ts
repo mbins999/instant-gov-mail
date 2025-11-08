@@ -50,10 +50,46 @@ serve(async (req) => {
       errors.push('اسم المستخدم يجب أن يحتوي على أحرف وأرقام فقط');
     }
 
-    // Password validation - simplified (8 characters minimum)
-    if (!password || password.length < 8) {
-      errors.push('كلمة المرور يجب أن تكون 8 أحرف على الأقل');
+    // Password validation - ENHANCED with strict policy
+    if (!password || password.length < 12) {
+      errors.push('كلمة المرور يجب أن تكون 12 حرفاً على الأقل');
+    } else {
+      // Check for uppercase
+      if (!/[A-Z]/.test(password)) {
+        errors.push('كلمة المرور يجب أن تحتوي على حرف كبير (A-Z) على الأقل');
+      }
+      // Check for lowercase
+      if (!/[a-z]/.test(password)) {
+        errors.push('كلمة المرور يجب أن تحتوي على حرف صغير (a-z) على الأقل');
+      }
+      // Check for numbers
+      if (!/[0-9]/.test(password)) {
+        errors.push('كلمة المرور يجب أن تحتوي على رقم (0-9) على الأقل');
+      }
+      // Check for special characters
+      if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+        errors.push('كلمة المرور يجب أن تحتوي على رمز خاص (!@#$%^&*) على الأقل');
+      }
+      // Check for common passwords
+      const commonPasswords = ['password', '123456', '12345678', 'qwerty', 'abc123', 'password123'];
+      if (commonPasswords.some(common => password.toLowerCase().includes(common))) {
+        errors.push('كلمة المرور ضعيفة وسهلة التخمين');
+      }
+      // Check if password contains username
+      if (password.toLowerCase().includes(username.toLowerCase())) {
+        errors.push('كلمة المرور يجب ألا تحتوي على اسم المستخدم');
+      }
+      // Check if password contains full name parts
+      if (fullName) {
+        const nameParts = fullName.toLowerCase().split(' ');
+        if (nameParts.some((part: string) => part.length > 2 && password.toLowerCase().includes(part))) {
+          errors.push('كلمة المرور يجب ألا تحتوي على اسمك');
+        }
+      }
     }
+
+    // Check password history (if user exists - for update scenario)
+    // This is handled at database level via trigger
 
     // Full name validation
     if (!fullName || fullName.length < 3) {

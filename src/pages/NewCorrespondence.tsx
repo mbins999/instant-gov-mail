@@ -11,6 +11,7 @@ import { getAuthenticatedSupabaseClient } from '@/lib/supabaseAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useParams } from 'react-router-dom';
 import { correspondenceApi } from '@/services/correspondenceApi';
+import { TemplateSelector } from '@/components/TemplateSelector';
 
 interface Entity {
   id: string;
@@ -521,6 +522,25 @@ export default function NewCorrespondence() {
 
             {formData.displayType === 'content' && (
               <>
+                {/* Template Selector */}
+                <div className="flex justify-end">
+                  <TemplateSelector 
+                    type={formData.type as 'incoming' | 'outgoing'}
+                    onApply={(templateData) => {
+                      setFormData(prev => ({
+                        ...prev,
+                        greeting: templateData.greeting,
+                        subject: templateData.subject,
+                        content: templateData.content
+                      }));
+                      toast({
+                        title: 'تم تطبيق القالب',
+                        description: 'تم تطبيق القالب بنجاح على المراسلة',
+                      });
+                    }}
+                  />
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="greeting">التحية *</Label>
                   <Textarea

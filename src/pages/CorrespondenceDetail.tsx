@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Correspondence } from '@/types/correspondence';
 import { correspondenceApi } from '@/services/correspondenceApi';
 import { useToast } from '@/hooks/use-toast';
+import { CommentsSection } from '@/components/CommentsSection';
 
 export default function CorrespondenceDetail() {
   const { id } = useParams();
@@ -17,6 +18,20 @@ export default function CorrespondenceDetail() {
   const [sendingToExternal, setSendingToExternal] = useState(false);
   const [archiving, setArchiving] = useState(false);
   const [isArchived, setIsArchived] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+
+  useEffect(() => {
+    // Get current user ID
+    const userSession = localStorage.getItem('user_session');
+    if (userSession) {
+      try {
+        const userData = JSON.parse(userSession);
+        setCurrentUserId(userData.id);
+      } catch (error) {
+        console.error('Error parsing user session:', error);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const fetchCorrespondence = async () => {
@@ -502,6 +517,21 @@ export default function CorrespondenceDetail() {
           )}
         </CardContent>
       </Card>
+
+      {/* Comments Section */}
+      {id && currentUserId && (
+        <Card>
+          <CardHeader>
+            <CardTitle>التعليقات والملاحظات</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CommentsSection 
+              correspondenceId={id} 
+              currentUserId={currentUserId}
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
