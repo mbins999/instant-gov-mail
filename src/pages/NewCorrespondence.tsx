@@ -209,6 +209,38 @@ export default function NewCorrespondence() {
       return;
     }
 
+    // التحقق من الاتصال بالجهة الخارجية عند محاولة الإرسال الخارجي
+    if (shouldSendExternal) {
+      try {
+        const { data: connection, error } = await supabase
+          .from('external_connections')
+          .select('is_active')
+          .eq('is_active', true)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error checking connection:', error);
+        }
+
+        if (!connection) {
+          toast({
+            title: "خطأ",
+            description: "يرجى الاتصال بالجهة الخارجية",
+            variant: "destructive",
+          });
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking external connection:', error);
+        toast({
+          title: "خطأ",
+          description: "يرجى الاتصال بالجهة الخارجية",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     setLoading(true);
     
     try {
