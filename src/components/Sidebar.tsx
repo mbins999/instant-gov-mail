@@ -58,6 +58,7 @@ export default function Sidebar() {
 
   const handleLogout = () => {
     localStorage.removeItem('user_session');
+    localStorage.removeItem('session_token');
     toast({
       title: "تم تسجيل الخروج",
       description: "تم تسجيل الخروج بنجاح",

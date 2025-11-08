@@ -17,8 +17,8 @@ export default function Auth() {
 
   useEffect(() => {
     // إذا كان مسجل دخول، انتقل للصفحة الرئيسية
-    const userSession = localStorage.getItem('user_session');
-    if (userSession) {
+    const sessionToken = localStorage.getItem('session_token');
+    if (sessionToken) {
       navigate('/');
     }
   }, [navigate]);
@@ -64,9 +64,15 @@ export default function Auth() {
         return;
       }
 
-      // حفظ بيانات المستخدم والجلسة
-      localStorage.setItem('user_session', JSON.stringify(data.session.user));
-      localStorage.setItem('access_token', data.session.access_token);
+      // حفظ session token فقط (بدون بيانات المستخدم)
+      localStorage.setItem('session_token', data.session.access_token);
+      
+      // تخزين معلومات أساسية للعرض (سيتم التحقق منها من الخادم)
+      localStorage.setItem('user_session', JSON.stringify({
+        username: data.session.user.username,
+        full_name: data.session.user.full_name,
+        entity_name: data.session.user.entity_name,
+      }));
       
       toast({
         title: "تم تسجيل الدخول",
