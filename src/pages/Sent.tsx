@@ -81,9 +81,6 @@ export default function Sent() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">المرسل</h1>
-      </div>
 
       {correspondences.length === 0 ? (
         <Card className="p-12 text-center">
