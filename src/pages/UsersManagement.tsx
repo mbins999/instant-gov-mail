@@ -62,10 +62,13 @@ export default function UsersManagement() {
 
   const fetchUsers = async () => {
     try {
+      console.log('[UsersManagement] Fetching users...');
       const authenticatedSupabase = getAuthenticatedSupabaseClient();
-      const { data: usersList } = await authenticatedSupabase
+      const { data: usersList, error: usersError } = await authenticatedSupabase
         .from('users')
         .select('id, username, full_name, entity_id, entity_name');
+
+      console.log('[UsersManagement] Users fetch result:', { usersList, usersError });
 
       if (usersList) {
         const usersWithRoles = await Promise.all(
@@ -92,16 +95,20 @@ export default function UsersManagement() {
 
   const fetchEntities = async () => {
     try {
+      console.log('[UsersManagement] Fetching entities...');
       const authenticatedSupabase = getAuthenticatedSupabaseClient();
       const { data, error } = await authenticatedSupabase
         .from('entities')
         .select('*')
         .order('name');
 
+      console.log('[UsersManagement] Entities fetch result:', { data, error });
+
       if (error) throw error;
       setEntities((data || []) as Entity[]);
+      console.log('[UsersManagement] Entities state updated:', data?.length || 0);
     } catch (error) {
-      console.error('Error fetching entities:', error);
+      console.error('[UsersManagement] Error fetching entities:', error);
     }
   };
 

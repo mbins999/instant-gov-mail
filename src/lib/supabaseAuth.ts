@@ -18,12 +18,20 @@ export function getAuthenticatedSupabaseClient() {
     if (userSessionRaw) userId = JSON.parse(userSessionRaw)?.id ?? null;
   } catch {}
 
+  console.log('[SupabaseAuth] Creating client with:', { 
+    hasSessionToken: !!sessionToken, 
+    userId,
+    sessionTokenPreview: sessionToken?.substring(0, 10) + '...' 
+  });
+
   if (!cachedClient || lastToken !== sessionToken) {
     lastToken = sessionToken;
 
     const headers: Record<string, string> = {};
     if (sessionToken) headers['x-session-token'] = sessionToken;
     if (userId) headers['x-user-id'] = String(userId);
+
+    console.log('[SupabaseAuth] Headers being sent:', headers);
 
     cachedClient = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
       global: { headers },
