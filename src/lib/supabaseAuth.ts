@@ -1,8 +1,26 @@
-import { supabase } from '@/integrations/supabase/client';
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from '@/integrations/supabase/types';
 
-// تم تبسيط النظام - نستخدم الـ client العادي بدون authentication معقد
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+// إنشاء Supabase client مع session token في headers
 export function getAuthenticatedSupabaseClient() {
-  return supabase;
+  const sessionToken = localStorage.getItem('session_token');
+  
+  if (sessionToken) {
+    // إنشاء client جديد مع custom headers
+    return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      global: {
+        headers: {
+          'Authorization': `Bearer ${sessionToken}`
+        }
+      }
+    });
+  }
+  
+  // إذا لم يكن هناك session token، استخدم الـ client العادي
+  return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 }
 
 export function getUserFromSession() {
