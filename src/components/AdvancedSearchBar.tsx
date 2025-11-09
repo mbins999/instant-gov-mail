@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
+import { getAuthenticatedSupabaseClient } from '@/lib/supabaseAuth';
 
 interface Entity {
   id: string;
@@ -37,6 +37,7 @@ export default function AdvancedSearchBar() {
   useEffect(() => {
     const fetchEntities = async () => {
       try {
+        const supabase = getAuthenticatedSupabaseClient();
         const { data, error } = await supabase
           .from('entities')
           .select('*')

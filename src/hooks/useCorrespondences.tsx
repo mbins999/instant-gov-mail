@@ -16,15 +16,7 @@ export function useCorrespondences() {
       // RLS policies will automatically filter results based on user permissions
       const { data, error } = await supabase
         .from('correspondences')
-        .select(`
-          *,
-          received_by_user:users!received_by(
-            id,
-            full_name,
-            username,
-            entity_name
-          )
-        `)
+        .select('*')
         .order('date', { ascending: false });
 
       if (error) throw error;
