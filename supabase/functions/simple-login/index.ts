@@ -13,9 +13,13 @@ serve(async (req) => {
   }
 
   try {
-    const { username, password } = await req.json();
+    let { username, password } = await req.json();
 
-    if (!username || !password) {
+    // Normalize inputs
+    const uname = String(username ?? '').trim();
+    const pwd = String(password ?? '').trim();
+
+    if (!uname || !pwd) {
       return new Response(
         JSON.stringify({ error: 'اسم المستخدم وكلمة المرور مطلوبة' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -48,13 +52,13 @@ serve(async (req) => {
 
     // Get user by username using RPC function
     const { data: userData, error } = await supabase.rpc('get_user_by_username', {
-      username_input: username
+      username_input: uname
     });
 
     console.log('User lookup result:', { 
       found: !!userData, 
       error: error?.message,
-      username 
+      username: uname 
     });
 
     if (error || !userData) {
@@ -73,7 +77,7 @@ serve(async (req) => {
 
     // ===== VERIFY PASSWORD WITH BCRYPT =====
     console.log('Comparing password with hash length:', userData.password_hash?.length);
-    const isValidPassword = await bcrypt.compare(password, userData.password_hash);
+    const isValidPassword = await bcrypt.compare(pwd, userData.password_hash);
     console.log('Password comparison result:', isValidPassword);
 
     if (!isValidPassword) {

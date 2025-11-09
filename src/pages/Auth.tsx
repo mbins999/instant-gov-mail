@@ -38,11 +38,15 @@ export default function Auth() {
     setIsLoading(true);
 
     try {
+      // Normalize inputs
+      const username = loginUsername.trim();
+      const password = loginPassword.trim();
+
       // استدعاء edge function للتحقق من المستخدم باستخدام bcrypt
       const { data, error } = await supabase.functions.invoke('simple-login', {
         body: {
-          username: loginUsername,
-          password: loginPassword
+          username,
+          password
         }
       });
 
