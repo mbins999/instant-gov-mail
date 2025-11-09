@@ -11,21 +11,23 @@ let lastToken: string | null = null;
 export function getAuthenticatedSupabaseClient() {
   const sessionToken = localStorage.getItem('session_token');
 
-  // أعد إنشاء العميل فقط إذا تغيّر التوكن
+  // أعد إنشاء العميل فقط إذا تغيّر التوكن أو هوية المستخدم
+  const userSessionRaw = localStorage.getItem('user_session');
+  let userId: number | null = null;
+  try {
+    if (userSessionRaw) userId = JSON.parse(userSessionRaw)?.id ?? null;
+  } catch {}
+
   if (!cachedClient || lastToken !== sessionToken) {
     lastToken = sessionToken;
 
-    if (sessionToken) {
-      cachedClient = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-        global: {
-          headers: {
-            'x-session-token': sessionToken,
-          },
-        },
-      });
-    } else {
-      cachedClient = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-    }
+    const headers: Record<string, string> = {};
+    if (sessionToken) headers['x-session-token'] = sessionToken;
+    if (userId) headers['x-user-id'] = String(userId);
+
+    cachedClient = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      global: { headers },
+    });
   }
 
   return cachedClient as SupabaseClient<Database>;
