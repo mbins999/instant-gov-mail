@@ -1047,6 +1047,33 @@ export type Database = {
         }
         Relationships: []
       }
+      real_time_statistics: {
+        Row: {
+          active_sessions: number | null
+          active_templates: number | null
+          avg_response_hours: number | null
+          month_correspondences: number | null
+          today_comments: number | null
+          today_correspondences: number | null
+          today_logins: number | null
+          today_received: number | null
+          total_correspondences: number | null
+          total_entities: number | null
+          total_users: number | null
+          unread_notifications: number | null
+          week_correspondences: number | null
+          week_new_users: number | null
+        }
+        Relationships: []
+      }
+      system_health: {
+        Row: {
+          component: string | null
+          details: Json | null
+          status: string | null
+        }
+        Relationships: []
+      }
       user_performance: {
         Row: {
           avg_response_hours: number | null
@@ -1065,6 +1092,7 @@ export type Database = {
       }
     }
     Functions: {
+      cleanup_old_data: { Args: never; Returns: undefined }
       cleanup_old_rate_limits: { Args: never; Returns: undefined }
       create_notification: {
         Args: {
@@ -1077,8 +1105,33 @@ export type Database = {
         }
         Returns: string
       }
+      get_system_summary: {
+        Args: never
+        Returns: {
+          active_sessions: number
+          system_status: string
+          total_comments: number
+          total_correspondences: number
+          total_entities: number
+          total_foreign_keys: number
+          total_indexes: number
+          total_notifications: number
+          total_users: number
+        }[]
+      }
       get_user_by_username: { Args: { username_input: string }; Returns: Json }
       get_user_id_from_session: { Args: never; Returns: number }
+      get_user_statistics: {
+        Args: { user_id_param: number }
+        Returns: {
+          avg_response_hours: number
+          last_login: string
+          total_comments: number
+          total_created: number
+          total_received: number
+          unread_notifications: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
