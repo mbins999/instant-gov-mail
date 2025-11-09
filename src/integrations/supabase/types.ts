@@ -59,6 +59,13 @@ export type Database = {
             foreignKeyName: "audit_log_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "safe_users_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "user_performance"
             referencedColumns: ["id"]
           },
@@ -67,6 +74,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_audit_log_user"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "safe_users_view"
             referencedColumns: ["id"]
           },
           {
@@ -144,6 +158,13 @@ export type Database = {
             foreignKeyName: "correspondence_comments_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "safe_users_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "correspondence_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "user_performance"
             referencedColumns: ["id"]
           },
@@ -166,6 +187,13 @@ export type Database = {
             columns: ["parent_comment_id"]
             isOneToOne: false
             referencedRelation: "correspondence_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_comments_user"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "safe_users_view"
             referencedColumns: ["id"]
           },
           {
@@ -244,6 +272,13 @@ export type Database = {
             foreignKeyName: "correspondence_templates_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "safe_users_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "correspondence_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "user_performance"
             referencedColumns: ["id"]
           },
@@ -272,6 +307,13 @@ export type Database = {
             foreignKeyName: "correspondence_templates_updated_by_fkey"
             columns: ["updated_by"]
             isOneToOne: false
+            referencedRelation: "safe_users_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "correspondence_templates_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
             referencedRelation: "user_performance"
             referencedColumns: ["id"]
           },
@@ -280,6 +322,13 @@ export type Database = {
             columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_templates_created_by"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "safe_users_view"
             referencedColumns: ["id"]
           },
           {
@@ -308,6 +357,13 @@ export type Database = {
             columns: ["entity_id"]
             isOneToOne: false
             referencedRelation: "entity_statistics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_templates_updated_by"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "safe_users_view"
             referencedColumns: ["id"]
           },
           {
@@ -407,6 +463,13 @@ export type Database = {
             foreignKeyName: "correspondences_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "safe_users_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "correspondences_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "user_performance"
             referencedColumns: ["id"]
           },
@@ -428,6 +491,13 @@ export type Database = {
             foreignKeyName: "correspondences_received_by_fkey"
             columns: ["received_by"]
             isOneToOne: false
+            referencedRelation: "safe_users_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "correspondences_received_by_fkey"
+            columns: ["received_by"]
+            isOneToOne: false
             referencedRelation: "user_performance"
             referencedColumns: ["id"]
           },
@@ -436,6 +506,13 @@ export type Database = {
             columns: ["received_by"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_correspondences_created_by"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "safe_users_view"
             referencedColumns: ["id"]
           },
           {
@@ -457,6 +534,13 @@ export type Database = {
             columns: ["external_connection_id"]
             isOneToOne: false
             referencedRelation: "external_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_correspondences_received_by"
+            columns: ["received_by"]
+            isOneToOne: false
+            referencedRelation: "safe_users_view"
             referencedColumns: ["id"]
           },
           {
@@ -556,6 +640,13 @@ export type Database = {
             foreignKeyName: "external_connections_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "safe_users_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "external_connections_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "user_performance"
             referencedColumns: ["id"]
           },
@@ -564,6 +655,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_connections_created_by"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "safe_users_view"
             referencedColumns: ["id"]
           },
           {
@@ -640,6 +738,13 @@ export type Database = {
             foreignKeyName: "fk_notifications_user"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "safe_users_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_notifications_user"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "user_performance"
             referencedColumns: ["id"]
           },
@@ -655,6 +760,13 @@ export type Database = {
             columns: ["correspondence_id"]
             isOneToOne: false
             referencedRelation: "correspondences"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "safe_users_view"
             referencedColumns: ["id"]
           },
           {
@@ -697,6 +809,13 @@ export type Database = {
             foreignKeyName: "fk_password_history_user"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "safe_users_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_password_history_user"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "user_performance"
             referencedColumns: ["id"]
           },
@@ -705,6 +824,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "password_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "safe_users_view"
             referencedColumns: ["id"]
           },
           {
@@ -771,6 +897,13 @@ export type Database = {
             foreignKeyName: "fk_sessions_user"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "safe_users_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_sessions_user"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "user_performance"
             referencedColumns: ["id"]
           },
@@ -779,6 +912,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "safe_users_view"
             referencedColumns: ["id"]
           },
           {
@@ -889,6 +1029,13 @@ export type Database = {
             foreignKeyName: "fk_user_roles_user"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "safe_users_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_user_roles_user"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "user_performance"
             referencedColumns: ["id"]
           },
@@ -897,6 +1044,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "safe_users_view"
             referencedColumns: ["id"]
           },
           {
@@ -951,6 +1105,13 @@ export type Database = {
             foreignKeyName: "fk_users_created_by"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "safe_users_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_users_created_by"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "user_performance"
             referencedColumns: ["id"]
           },
@@ -973,6 +1134,13 @@ export type Database = {
             columns: ["entity_id"]
             isOneToOne: false
             referencedRelation: "entity_statistics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "users_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "safe_users_view"
             referencedColumns: ["id"]
           },
           {
@@ -1065,6 +1233,107 @@ export type Database = {
           week_new_users: number | null
         }
         Relationships: []
+      }
+      safe_users_view: {
+        Row: {
+          created_at: string | null
+          created_by: number | null
+          entity_id: string | null
+          entity_name: string | null
+          full_name: string | null
+          id: number | null
+          username: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: number | null
+          entity_id?: string | null
+          entity_name?: string | null
+          full_name?: string | null
+          id?: number | null
+          username?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: number | null
+          entity_id?: string | null
+          entity_name?: string | null
+          full_name?: string | null
+          id?: number | null
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_users_created_by"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "safe_users_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_users_created_by"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_performance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_users_created_by"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_users_entity"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_users_entity"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entity_statistics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "users_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "safe_users_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "users_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_performance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "users_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "users_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "users_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entity_statistics"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       system_health: {
         Row: {
