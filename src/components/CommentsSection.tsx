@@ -49,7 +49,7 @@ export function CommentsSection({ correspondenceId, currentUserId }: CommentsSec
         .from('correspondence_comments')
         .select(`
           *,
-          user:users(full_name, username)
+          user:users!fk_comments_user(full_name, username)
         `)
         .eq('correspondence_id', correspondenceId)
         .order('created_at', { ascending: true });

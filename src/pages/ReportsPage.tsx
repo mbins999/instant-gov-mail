@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { getAuthenticatedSupabaseClient } from '@/lib/supabaseAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -27,6 +27,8 @@ export default function ReportsPage() {
   const fetchReports = async () => {
     setLoading(true);
     try {
+      const supabase = getAuthenticatedSupabaseClient();
+      
       // جلب الإحصائيات الشهرية
       const { data: monthly } = await supabase
         .from('correspondence_statistics')

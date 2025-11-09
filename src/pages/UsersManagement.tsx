@@ -92,7 +92,8 @@ export default function UsersManagement() {
 
   const fetchEntities = async () => {
     try {
-      const { data, error } = await supabase
+      const authenticatedSupabase = getAuthenticatedSupabaseClient();
+      const { data, error } = await authenticatedSupabase
         .from('entities')
         .select('*')
         .order('name');
@@ -176,7 +177,8 @@ export default function UsersManagement() {
     }
 
     try {
-      const { error } = await supabase
+      const authenticatedSupabase = getAuthenticatedSupabaseClient();
+      const { error } = await authenticatedSupabase
         .from('entities')
         .insert({ name: newEntityName, type: newEntityType });
 
@@ -201,7 +203,8 @@ export default function UsersManagement() {
 
   const handleDeleteEntity = async (id: string) => {
     try {
-      const { error } = await supabase
+      const authenticatedSupabase = getAuthenticatedSupabaseClient();
+      const { error } = await authenticatedSupabase
         .from('entities')
         .delete()
         .eq('id', id);

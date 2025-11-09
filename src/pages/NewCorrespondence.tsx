@@ -60,6 +60,7 @@ export default function NewCorrespondence() {
     // Fetch entities for dropdown
     const fetchEntities = async () => {
       try {
+        const supabase = getAuthenticatedSupabaseClient();
         const { data, error } = await supabase
           .from('entities')
           .select('*')
@@ -79,6 +80,7 @@ export default function NewCorrespondence() {
     if (isEditMode && id) {
       const fetchCorrespondence = async () => {
         try {
+          const supabase = getAuthenticatedSupabaseClient();
           const { data, error } = await supabase
             .from('correspondences')
             .select('*')
@@ -213,6 +215,7 @@ export default function NewCorrespondence() {
     // التحقق من الاتصال بالجهة الخارجية عند محاولة الإرسال الخارجي
     if (shouldSendExternal) {
       try {
+        const supabase = getAuthenticatedSupabaseClient();
         const { data: connection, error } = await supabase
           .from('external_connections')
           .select('is_active')
@@ -252,6 +255,7 @@ export default function NewCorrespondence() {
       
       // Upload new signature if provided
       if (signatureFile) {
+        const supabase = getAuthenticatedSupabaseClient();
         const fileExt = 'png';
         const fileName = `${Math.random()}.${fileExt}`;
         const filePath = `${fileName}`;
@@ -271,6 +275,7 @@ export default function NewCorrespondence() {
 
       // Upload attachments
       for (const file of attachmentFiles) {
+        const supabase = getAuthenticatedSupabaseClient();
         const fileExt = file.name.split('.').pop();
         const fileName = `${Math.random()}.${fileExt}`;
         const filePath = `${fileName}`;
@@ -306,12 +311,16 @@ export default function NewCorrespondence() {
             const userSession = localStorage.getItem('user_session');
             if (userSession) {
               const userData = JSON.parse(userSession);
-              return userData.id || null;
+              if (!userData.id) {
+                throw new Error('معرف المستخدم غير موجود في الجلسة');
+              }
+              return userData.id;
             }
+            throw new Error('لم يتم العثور على جلسة المستخدم');
           } catch (e) {
             console.error('Error getting user from session:', e);
+            throw new Error('يجب تسجيل الدخول أولاً');
           }
-          return null;
         })()
       };
 
