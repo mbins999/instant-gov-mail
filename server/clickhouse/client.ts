@@ -5,9 +5,9 @@ const CLICKHOUSE_PORT = 8123;
 
 export const clickhouse = createClient({
   host: `http://${CLICKHOUSE_HOST}:${CLICKHOUSE_PORT}`,
-  database: 'correspondence_system',
-  username: 'default',
-  password: '',
+  database: 'moi',
+  username: 'moi',
+  password: 'password123',
   compression: {
     request: false,
     response: false,
@@ -18,7 +18,7 @@ export async function initializeDatabase() {
   try {
     // Create database if not exists
     await clickhouse.command({
-      query: 'CREATE DATABASE IF NOT EXISTS correspondence_system',
+      query: 'CREATE DATABASE IF NOT EXISTS moi',
     });
 
     console.log('ClickHouse database initialized successfully');
