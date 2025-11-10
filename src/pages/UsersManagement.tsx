@@ -63,31 +63,18 @@ export default function UsersManagement() {
   const fetchUsers = async () => {
     try {
       console.log('[UsersManagement] Fetching users...');
-      const authenticatedSupabase = getAuthenticatedSupabaseClient();
-      const { data: usersList, error: usersError } = await authenticatedSupabase
-        .from('users')
-        .select('id, username, full_name, entity_id, entity_name');
+      const sessionToken = localStorage.getItem('session_token');
 
-      console.log('[UsersManagement] Users fetch result:', { usersList, usersError });
+      const { data, error } = await supabase.functions.invoke('admin-list-users', {
+        body: { sessionToken }
+      });
 
-      if (usersList) {
-        const usersWithRoles = await Promise.all(
-          usersList.map(async (user) => {
-            const { data: roleData } = await authenticatedSupabase
-              .from('user_roles')
-              .select('role')
-              .eq('user_id', user.id)
-              .maybeSingle();
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
-            return {
-              ...user,
-              role: roleData?.role || 'user'
-            };
-          })
-        );
-
-        setUsers(usersWithRoles);
-      }
+      const usersList = (data?.users || []) as User[];
+      console.log('[UsersManagement] Users fetch result:', { count: usersList.length });
+      setUsers(usersList);
     } catch (error) {
       console.error('Error fetching users:', error);
     }
