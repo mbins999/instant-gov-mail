@@ -33,8 +33,9 @@ export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { isAdmin } = useUserRole();
+  const { isAdmin, isManager } = useUserRole();
   const [userName, setUserName] = useState('');
+  const [userRole, setUserRole] = useState<string>('');
 
   useEffect(() => {
     const fetchUserProfile = () => {
@@ -43,10 +44,12 @@ export default function Sidebar() {
         if (userSession) {
           const userData = JSON.parse(userSession);
           setUserName(userData.full_name || userData.username || 'مستخدم');
+          setUserRole(userData.role || '');
         }
       } catch (error) {
         console.error('Error fetching user profile:', error);
         setUserName('مستخدم');
+        setUserRole('');
       }
     };
 
@@ -82,6 +85,12 @@ export default function Sidebar() {
               <span>مدير</span>
             </Badge>
           )}
+          {isManager && (
+            <Badge variant="outline" className="gap-1">
+              <Shield className="h-3 w-3" />
+              <span>مسؤول</span>
+            </Badge>
+          )}
         </div>
         <Button
           onClick={() => navigate('/new')}
@@ -115,29 +124,23 @@ export default function Sidebar() {
           );
         })}
         
-        {isAdmin && (
+        {(isAdmin || isManager) && (
           <>
             <div className="my-4 border-t border-border" />
-            {adminNavigationItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.path;
-              
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
-                    isActive 
-                      ? "bg-primary text-primary-foreground" 
-                      : "hover:bg-secondary text-foreground"
-                  )}
-                >
-                  <Icon className="h-5 w-5" />
-                  <span className="font-medium">{item.label}</span>
-                </Link>
-              );
-            })}
+            <Link
+              to="/users"
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
+                location.pathname === '/users'
+                  ? "bg-primary text-primary-foreground" 
+                  : "hover:bg-secondary text-foreground"
+              )}
+            >
+              <Users className="h-5 w-5" />
+              <span className="font-medium">
+                {isAdmin ? 'إدارة المستخدمين' : 'إدارة الجهات'}
+              </span>
+            </Link>
           </>
         )}
       </nav>
