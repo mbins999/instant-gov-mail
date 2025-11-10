@@ -35,6 +35,13 @@ export default function UsersManagement() {
   const [loading, setLoading] = useState(false);
   const [newEntityName, setNewEntityName] = useState('');
   const [newEntityType, setNewEntityType] = useState<'sender' | 'receiver' | 'both'>('both');
+  const [entitySearchQuery, setEntitySearchQuery] = useState('');
+  const [editingEntity, setEditingEntity] = useState<Entity | null>(null);
+  const [editEntityDialogOpen, setEditEntityDialogOpen] = useState(false);
+  const [editEntityFormData, setEditEntityFormData] = useState({
+    name: '',
+    type: 'both' as 'sender' | 'receiver' | 'both'
+  });
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -154,14 +161,10 @@ export default function UsersManagement() {
       return;
     }
 
+    setLoading(true);
+
     try {
-      // Note: Entity management needs to be implemented in ClickHouse API
-      toast({
-        title: 'قريباً',
-        description: 'وظيفة إضافة الجهات قيد التطوير',
-        variant: 'default',
-      });
-      return;
+      await clickhouseApi.createEntity(newEntityName, newEntityType);
 
       toast({
         title: 'تم بنجاح',
@@ -177,18 +180,20 @@ export default function UsersManagement() {
         description: error.message || 'فشل إضافة الجهة',
         variant: 'destructive',
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDeleteEntity = async (id: string) => {
-    try {
-      // Note: Entity deletion needs to be implemented in ClickHouse API
-      toast({
-        title: 'قريباً',
-        description: 'وظيفة حذف الجهات قيد التطوير',
-        variant: 'default',
-      });
+    if (!confirm('هل أنت متأكد من حذف هذه الجهة؟')) {
       return;
+    }
+
+    setLoading(true);
+
+    try {
+      await clickhouseApi.deleteEntity(id);
 
       toast({
         title: 'تم بنجاح',
@@ -202,8 +207,56 @@ export default function UsersManagement() {
         description: error.message || 'فشل حذف الجهة',
         variant: 'destructive',
       });
+    } finally {
+      setLoading(false);
     }
   };
+
+  const handleEditEntity = (entity: Entity) => {
+    setEditingEntity(entity);
+    setEditEntityFormData({
+      name: entity.name,
+      type: entity.type
+    });
+    setEditEntityDialogOpen(true);
+  };
+
+  const handleUpdateEntity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingEntity) return;
+
+    setLoading(true);
+
+    try {
+      await clickhouseApi.updateEntity(
+        editingEntity.id,
+        editEntityFormData.name,
+        editEntityFormData.type
+      );
+
+      toast({
+        title: 'تم بنجاح',
+        description: 'تم تحديث الجهة بنجاح',
+      });
+
+      setEditEntityDialogOpen(false);
+      setEditingEntity(null);
+      setEditEntityFormData({ name: '', type: 'both' });
+      fetchEntities();
+    } catch (error: any) {
+      toast({
+        title: 'خطأ',
+        description: error.message || 'فشل تحديث الجهة',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredEntities = entities.filter(entity =>
+    entity.name.toLowerCase().includes(entitySearchQuery.toLowerCase())
+  );
 
   const handleEditUser = (user: User) => {
     setEditingUser(user);
@@ -584,33 +637,104 @@ export default function UsersManagement() {
 
             <Card>
               <CardHeader>
-                <CardTitle>الجهات الموجودة</CardTitle>
+                <CardTitle>الجهات الموجودة ({filteredEntities.length})</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                  {entities.map((entity) => (
-                    <div key={entity.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div>
-                        <div className="font-medium">{entity.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {entity.type === 'both' ? 'مرسل ومستقبل' : 
-                           entity.type === 'sender' ? 'مرسل فقط' : 'مستقبل فقط'}
+                <div className="mb-4">
+                  <Input
+                    placeholder="ابحث عن جهة..."
+                    value={entitySearchQuery}
+                    onChange={(e) => setEntitySearchQuery(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+                {filteredEntities.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    {entitySearchQuery ? 'لا توجد نتائج' : 'لا توجد جهات بعد'}
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                    {filteredEntities.map((entity) => (
+                      <div key={entity.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex-1">
+                          <div className="font-medium">{entity.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {entity.type === 'both' ? 'مرسل ومستقبل' : 
+                             entity.type === 'sender' ? 'مرسل فقط' : 'مستقبل فقط'}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEditEntity(entity)}
+                            className="text-primary hover:text-primary hover:bg-primary/10"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteEntity(entity.id)}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeleteEntity(entity.id)}
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
+
+          <Dialog open={editEntityDialogOpen} onOpenChange={setEditEntityDialogOpen}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>تحرير الجهة</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleUpdateEntity} className="space-y-4">
+                <div>
+                  <Label htmlFor="edit-entityName">اسم الجهة</Label>
+                  <Input
+                    id="edit-entityName"
+                    value={editEntityFormData.name}
+                    onChange={(e) => setEditEntityFormData({ ...editEntityFormData, name: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="edit-entityType">نوع الجهة</Label>
+                  <Select
+                    value={editEntityFormData.type}
+                    onValueChange={(value: 'sender' | 'receiver' | 'both') => 
+                      setEditEntityFormData({ ...editEntityFormData, type: value })
+                    }
+                  >
+                    <SelectTrigger className="bg-background">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border shadow-lg z-50">
+                      <SelectItem value="both">مرسل ومستقبل</SelectItem>
+                      <SelectItem value="sender">مرسل فقط</SelectItem>
+                      <SelectItem value="receiver">مستقبل فقط</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button type="submit" disabled={loading} className="flex-1">
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'حفظ التغييرات'}
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => setEditEntityDialogOpen(false)}>
+                    إلغاء
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
       </Tabs>
     </div>

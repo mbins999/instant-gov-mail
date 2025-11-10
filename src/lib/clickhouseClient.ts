@@ -76,4 +76,21 @@ export const clickhouseApi = {
 
   // Entities
   listEntities: () => apiRequest('/entities'),
+  
+  createEntity: (name: string, type: string) =>
+    apiRequest('/entities/create', {
+      method: 'POST',
+      body: JSON.stringify({ name, type }),
+    }),
+  
+  updateEntity: (entityId: string, name: string, type: string) =>
+    apiRequest(`/entities/update/${entityId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ name, type }),
+    }),
+  
+  deleteEntity: (entityId: string) =>
+    apiRequest(`/entities/delete/${entityId}`, {
+      method: 'DELETE',
+    }),
 };
