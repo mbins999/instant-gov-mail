@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import bcrypt
 import uuid
 from models import LoginRequest, LoginResponse, SessionVerifyRequest
@@ -141,7 +141,11 @@ async def verify_session(request: SessionVerifyRequest):
         session = result.result_rows[0]
         user_id, expires_at, username, full_name, entity_id, entity_name = session
         
-        if expires_at < datetime.now():
+        # Make expires_at timezone-aware if it isn't already
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        
+        if expires_at < datetime.now(timezone.utc):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Session expired"
