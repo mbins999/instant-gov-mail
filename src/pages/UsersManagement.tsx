@@ -47,7 +47,7 @@ export default function UsersManagement() {
     password: '',
     fullName: '',
     entityId: '',
-    role: 'user' as 'admin' | 'user'
+    role: 'user' as 'admin' | 'moderator' | 'user'
   });
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -447,13 +447,14 @@ export default function UsersManagement() {
                     <Label htmlFor="role">الصلاحية</Label>
                     <Select
                       value={formData.role}
-                      onValueChange={(value: 'admin' | 'user') => setFormData({ ...formData, role: value })}
+                      onValueChange={(value: 'admin' | 'moderator' | 'user') => setFormData({ ...formData, role: value })}
                     >
                       <SelectTrigger className="bg-background">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-background border shadow-lg z-50">
                         <SelectItem value="user">مستخدم</SelectItem>
+                        <SelectItem value="moderator">مسؤول</SelectItem>
                         <SelectItem value="admin">مدير</SelectItem>
                       </SelectContent>
                     </Select>
@@ -486,8 +487,12 @@ export default function UsersManagement() {
                           <div className="text-sm text-muted-foreground">@{user.username}</div>
                           <div className="text-sm text-muted-foreground">{user.entity_name || 'لا توجد جهة'}</div>
                           <div className="text-xs mt-1">
-                            <span className={`px-2 py-1 rounded ${user.role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-secondary/10'}`}>
-                              {user.role === 'admin' ? 'مدير' : 'مستخدم'}
+                            <span className={`px-2 py-1 rounded ${
+                              user.role === 'admin' ? 'bg-primary/10 text-primary' : 
+                              user.role === 'moderator' ? 'bg-accent/10 text-accent-foreground' : 
+                              'bg-secondary/10'
+                            }`}>
+                              {user.role === 'admin' ? 'مدير' : user.role === 'moderator' ? 'مسؤول' : 'مستخدم'}
                             </span>
                           </div>
                         </div>

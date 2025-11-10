@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { clickhouseApi } from '@/lib/clickhouseClient';
 
-export type UserRole = 'admin' | 'user' | null;
+export type UserRole = 'admin' | 'moderator' | 'user' | null;
 
 export function useUserRole() {
   const [role, setRole] = useState<UserRole>(null);
@@ -60,5 +60,10 @@ export function useUserRole() {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  return { role, loading, isAdmin: role === 'admin' };
+  return { 
+    role, 
+    loading, 
+    isAdmin: role === 'admin',
+    isManager: role === 'moderator'
+  };
 }

@@ -52,7 +52,7 @@ export const clickhouseApi = {
       body: JSON.stringify({ userId, ...data }),
     }),
 
-  createUser: (username: string, password: string, fullName: string, entityId: string | null, role: 'admin' | 'user') =>
+  createUser: (username: string, password: string, fullName: string, entityId: string | null, role: 'admin' | 'moderator' | 'user') =>
     apiRequest('/users/create', {
       method: 'POST',
       body: JSON.stringify({ 

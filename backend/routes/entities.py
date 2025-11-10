@@ -41,10 +41,10 @@ async def verify_admin_session(session_token: Optional[str]):
         )
     
     role = result.result_rows[0][1] if len(result.result_rows[0]) > 1 else None
-    if role != 'admin':
+    if role not in ['admin', 'moderator']:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin access required"
+            detail="Admin or Moderator access required"
         )
 
 @router.get("")

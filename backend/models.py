@@ -20,7 +20,7 @@ class UserCreate(BaseModel):
     password: str
     full_name: str
     entity_id: Optional[str] = None
-    role: Optional[str] = 'user'
+    role: Optional[str] = 'user'  # 'user', 'moderator', or 'admin'
 
 class UserUpdate(BaseModel):
     userId: int
