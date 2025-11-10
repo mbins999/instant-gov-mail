@@ -39,16 +39,21 @@ async def login(credentials: LoginRequest):
         user = result.result_rows[0]
         user_id, username, password_hash, full_name, entity_id, entity_name = user
         
+        # Normalize hash (trim whitespace, handle $2y$ prefix)
+        hash_str = (password_hash or "").strip()
+        if hash_str.startswith("$2y$"):
+            hash_str = "$2b$" + hash_str[4:]
+        
         print(f"[DEBUG] Found user ID: {user_id}, username: {username}")
-        print(f"[DEBUG] Password hash length: {len(password_hash)}")
-        print(f"[DEBUG] Password hash starts with: {password_hash[:10]}")
+        print(f"[DEBUG] Password hash length (trimmed): {len(hash_str)}")
+        print(f"[DEBUG] Password hash starts with: {hash_str[:10]}")
         
         # Verify password
         try:
-            password_match = bcrypt.checkpw(credentials.password.encode('utf-8'), password_hash.encode('utf-8'))
+            password_match = bcrypt.checkpw(credentials.password.encode('utf-8'), hash_str.encode('utf-8'))
             print(f"[DEBUG] Password match: {password_match}")
         except Exception as e:
-            print(f"[DEBUG] Password verification error: {e}")
+            print(f"[DEBUG] Password verification exception: {e}")
             password_match = False
             
         if not password_match:
