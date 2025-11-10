@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { clickhouseApi } from '@/lib/clickhouseClient';
 import { Loader2, FileText } from 'lucide-react';
 
 export default function Auth() {
@@ -42,22 +42,8 @@ export default function Auth() {
       const username = loginUsername.trim();
       const password = loginPassword.trim();
 
-      // استدعاء edge function للتحقق من المستخدم باستخدام bcrypt
-      const { data, error } = await supabase.functions.invoke('simple-login', {
-        body: {
-          username,
-          password
-        }
-      });
-
-      if (error) {
-        toast({
-          title: "خطأ في تسجيل الدخول",
-          description: error.message || "اسم المستخدم أو كلمة المرور غير صحيحة",
-          variant: "destructive",
-        });
-        return;
-      }
+      // استدعاء API للتحقق من المستخدم
+      const data = await clickhouseApi.login(username, password);
 
       if (!data || !data.session) {
         toast({

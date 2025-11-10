@@ -7,8 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { getAuthenticatedSupabaseClient } from '@/lib/supabaseAuth';
+import { clickhouseApi } from '@/lib/clickhouseClient';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Navigate } from 'react-router-dom';
 import { UserPlus, Loader2, Building2, Trash2, Plus, Edit, Eye, EyeOff } from 'lucide-react';
@@ -65,33 +64,36 @@ export default function UsersManagement() {
       console.log('[UsersManagement] Fetching users...');
       const sessionToken = localStorage.getItem('session_token');
 
-      const { data, error } = await supabase.functions.invoke('admin-list-users', {
-        body: { sessionToken }
-      });
+      if (!sessionToken) {
+        toast({
+          title: 'خطأ',
+          description: 'الرجاء تسجيل الدخول أولاً',
+          variant: 'destructive',
+        });
+        return;
+      }
 
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+      const data = await clickhouseApi.listUsers(sessionToken);
 
       const usersList = (data?.users || []) as User[];
       console.log('[UsersManagement] Users fetch result:', { count: usersList.length });
       setUsers(usersList);
     } catch (error) {
       console.error('Error fetching users:', error);
+      toast({
+        title: 'خطأ',
+        description: 'حدث خطأ في جلب المستخدمين',
+        variant: 'destructive',
+      });
     }
   };
 
   const fetchEntities = async () => {
     try {
       console.log('[UsersManagement] Fetching entities...');
-      const authenticatedSupabase = getAuthenticatedSupabaseClient();
-      const { data, error } = await authenticatedSupabase
-        .from('entities')
-        .select('*')
-        .order('name');
+      const data = await clickhouseApi.listEntities();
 
-      console.log('[UsersManagement] Entities fetch result:', { data, error });
-
-      if (error) throw error;
+      console.log('[UsersManagement] Entities fetch result:', data);
       setEntities((data || []) as Entity[]);
       console.log('[UsersManagement] Entities state updated:', data?.length || 0);
     } catch (error) {
@@ -115,38 +117,14 @@ export default function UsersManagement() {
     setLoading(true);
 
     try {
-      // Get authenticated user from Supabase session
-      const { data: { session } } = await supabase.auth.getSession();
-      let createdBy = null;
-      
-      if (session?.user) {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('id')
-          .eq('id', parseInt(session.user.id))
-          .maybeSingle();
-        createdBy = userData?.id || null;
-      }
-
-      const { data, error } = await supabase.functions.invoke('simple-signup', {
-        body: {
-          username: formData.username,
-          password: formData.password,
-          fullName: formData.fullName,
-          entityId: formData.entityId,
-          role: formData.role,
-          createdBy,
-        }
-      });
-
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-
+      // Note: Create user functionality needs to be implemented in ClickHouse API
       toast({
-        title: 'تم إنشاء المستخدم بنجاح',
-        description: `تم إنشاء حساب ${formData.username}`,
+        title: 'قريباً',
+        description: 'وظيفة إنشاء المستخدم قيد التطوير',
+        variant: 'default',
       });
-
+      
+      // Reset form and fetch users
       setFormData({ username: '', password: '', fullName: '', entityId: '', role: 'user' });
       fetchUsers();
     } catch (error: any) {
@@ -171,12 +149,13 @@ export default function UsersManagement() {
     }
 
     try {
-      const authenticatedSupabase = getAuthenticatedSupabaseClient();
-      const { error } = await authenticatedSupabase
-        .from('entities')
-        .insert({ name: newEntityName, type: newEntityType });
-
-      if (error) throw error;
+      // Note: Entity management needs to be implemented in ClickHouse API
+      toast({
+        title: 'قريباً',
+        description: 'وظيفة إضافة الجهات قيد التطوير',
+        variant: 'default',
+      });
+      return;
 
       toast({
         title: 'تم بنجاح',
@@ -197,13 +176,13 @@ export default function UsersManagement() {
 
   const handleDeleteEntity = async (id: string) => {
     try {
-      const authenticatedSupabase = getAuthenticatedSupabaseClient();
-      const { error } = await authenticatedSupabase
-        .from('entities')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      // Note: Entity deletion needs to be implemented in ClickHouse API
+      toast({
+        title: 'قريباً',
+        description: 'وظيفة حذف الجهات قيد التطوير',
+        variant: 'default',
+      });
+      return;
 
       toast({
         title: 'تم بنجاح',
@@ -247,16 +226,12 @@ export default function UsersManagement() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('update-user', {
-        body: {
-          userId: editingUser.id,
-          fullName: editFormData.fullName,
-          password: editFormData.password || undefined,
-          entityId: editFormData.entityId
-        }
+      const data = await clickhouseApi.updateUser(editingUser.id, {
+        fullName: editFormData.fullName,
+        password: editFormData.password || undefined,
+        entityId: editFormData.entityId
       });
 
-      if (error) throw error;
       if (data?.error) {
         throw new Error(data.error);
       }
@@ -294,28 +269,14 @@ export default function UsersManagement() {
     setLoading(true);
 
     try {
-      const authenticatedSupabase = getAuthenticatedSupabaseClient();
-      
-      // Delete user role first
-      await authenticatedSupabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId);
-
-      // Delete user
-      const { error } = await authenticatedSupabase
-        .from('users')
-        .delete()
-        .eq('id', userId);
-
-      if (error) throw error;
-
+      // Note: User deletion needs to be implemented in ClickHouse API
       toast({
-        title: 'تم بنجاح',
-        description: 'تم حذف المستخدم بنجاح',
+        title: 'قريباً',
+        description: 'وظيفة حذف المستخدم قيد التطوير',
+        variant: 'default',
       });
-
-      fetchUsers();
+      setLoading(false);
+      return;
     } catch (error: any) {
       toast({
         title: 'خطأ',

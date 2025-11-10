@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getAuthenticatedSupabaseClient } from '@/lib/supabaseAuth';
+import { clickhouseApi } from '@/lib/clickhouseClient';
 import { Correspondence } from '@/types/correspondence';
 
 export function useCorrespondences() {
@@ -11,27 +11,9 @@ export function useCorrespondences() {
     try {
       setLoading(true);
       
-      const supabase = getAuthenticatedSupabaseClient();
-      
-      // RLS policies will automatically filter results based on user permissions
-      const { data, error } = await supabase
-        .from('correspondences')
-        .select('*')
-        .order('date', { ascending: false });
+      const data = await clickhouseApi.listCorrespondences();
 
-      if (error) throw error;
-
-      // تحويل from_entity إلى from
-      const transformedData = (data || []).map(item => ({
-        ...item,
-        from: item.from_entity,
-        greeting: item.greeting,
-        responsible_person: item.responsible_person,
-        signature_url: item.signature_url,
-        display_type: item.display_type,
-      }));
-
-      setCorrespondences(transformedData as any);
+      setCorrespondences(data as any);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'حدث خطأ في جلب البيانات');

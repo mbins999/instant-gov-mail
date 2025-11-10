@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { clickhouseApi } from '@/lib/clickhouseClient';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -20,12 +20,10 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
       // التحقق من صحة الجلسة من جانب الخادم
       try {
-        const { data, error } = await supabase.functions.invoke('verify-session', {
-          body: { sessionToken }
-        });
+        const data = await clickhouseApi.verifySession(sessionToken);
 
-        if (error || !data) {
-          console.error('Invalid session:', error);
+        if (!data) {
+          console.error('Invalid session');
           localStorage.removeItem('session_token');
           localStorage.removeItem('user_session');
           setIsAuthenticated(false);
