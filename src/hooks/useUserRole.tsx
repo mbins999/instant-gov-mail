@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { clickhouseApi } from '@/lib/clickhouseClient';
 
 export type UserRole = 'admin' | 'user' | null;
 
@@ -19,12 +19,10 @@ export function useUserRole() {
         }
 
         // التحقق من الجلسة من جانب الخادم
-        const { data, error } = await supabase.functions.invoke('verify-session', {
-          body: { sessionToken }
-        });
+        const data = await clickhouseApi.verifySession(sessionToken);
 
-        if (error || !data) {
-          console.error('Error verifying session:', error);
+        if (!data || !data.valid) {
+          console.error('Invalid session');
           // إذا كانت الجلسة غير صالحة، نحذف البيانات المحلية
           localStorage.removeItem('session_token');
           localStorage.removeItem('user_session');
@@ -35,14 +33,14 @@ export function useUserRole() {
 
         // تحديث معلومات المستخدم في localStorage (للعرض فقط)
         localStorage.setItem('user_session', JSON.stringify({
-          id: data.userId,
-          username: data.username,
-          full_name: data.fullName,
-          entity_name: data.entityName,
-          role: data.role
+          id: data.user.id,
+          username: data.user.username,
+          full_name: data.user.full_name,
+          entity_name: data.user.entity_name,
+          role: data.user.role
         }));
 
-        setRole((data.role as UserRole) || 'user');
+        setRole((data.user.role as UserRole) || 'user');
       } catch (error) {
         console.error('Error fetching user role:', error);
         setRole(null);

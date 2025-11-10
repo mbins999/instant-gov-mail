@@ -8,10 +8,12 @@ import {
   LogOut,
   Download,
   Users,
-  BarChart3
+  BarChart3,
+  Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useUserRole } from '@/hooks/useUserRole';
 
@@ -72,8 +74,14 @@ export default function Sidebar() {
     <aside className="w-64 bg-card border-l border-border h-screen sticky top-0 flex flex-col">
       {/* User name and new correspondence button section */}
       <div className="p-4 border-b border-border space-y-3">
-        <div className="text-right">
+        <div className="text-right space-y-1">
           <h2 className="text-lg font-bold text-primary">{userName}</h2>
+          {isAdmin && (
+            <Badge variant="default" className="gap-1">
+              <Shield className="h-3 w-3" />
+              <span>مدير</span>
+            </Badge>
+          )}
         </div>
         <Button
           onClick={() => navigate('/new')}
