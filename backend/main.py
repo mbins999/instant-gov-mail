@@ -1,10 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 import uvicorn
 
 from config import settings
 from database import init_database
-from routes import auth, users, correspondences, entities
+from routes import auth, users, correspondences, entities, templates, comments, notifications, upload, statistics
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -22,11 +24,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount static files for uploads
+uploads_path = Path("uploads")
+uploads_path.mkdir(exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 # Include routers
 app.include_router(auth.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
 app.include_router(correspondences.router, prefix="/api")
 app.include_router(entities.router, prefix="/api")
+app.include_router(templates.router, prefix="/api")
+app.include_router(comments.router, prefix="/api")
+app.include_router(notifications.router, prefix="/api")
+app.include_router(upload.router, prefix="/api")
+app.include_router(statistics.router, prefix="/api")
 
 @app.on_event("startup")
 async def startup_event():

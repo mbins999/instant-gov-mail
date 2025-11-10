@@ -84,6 +84,34 @@ uvicorn main:app --host 0.0.0.0 --port 3001 --reload
 ### Entities
 - `GET /api/entities` - List all entities
 
+### Templates
+- `GET /api/templates` - List all templates
+- `GET /api/templates/{id}` - Get template by ID
+- `POST /api/templates` - Create new template
+
+### Comments
+- `GET /api/comments/correspondence/{id}` - List comments for correspondence
+- `POST /api/comments` - Create new comment
+- `PUT /api/comments/{id}` - Update comment
+- `DELETE /api/comments/{id}` - Delete comment
+
+### Notifications
+- `GET /api/notifications` - List user notifications
+- `GET /api/notifications/unread/count` - Get unread count
+- `PUT /api/notifications/{id}` - Mark notification as read
+- `PUT /api/notifications/mark-all-read` - Mark all as read
+
+### File Upload
+- `POST /api/upload/attachment` - Upload attachment file
+- `POST /api/upload/signature` - Upload signature image
+- `POST /api/upload/pdf` - Upload PDF document
+
+### Statistics
+- `GET /api/statistics/dashboard` - Get dashboard statistics
+- `GET /api/statistics/correspondences/by-type` - Get counts by type
+- `GET /api/statistics/correspondences/by-entity` - Get counts by entity
+- `GET /api/statistics/correspondences/timeline` - Get timeline data
+
 ### System
 - `GET /health` - Health check
 - `GET /docs` - Interactive API documentation (Swagger UI)
