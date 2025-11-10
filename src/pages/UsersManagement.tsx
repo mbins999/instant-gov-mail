@@ -28,7 +28,7 @@ interface Entity {
 }
 
 export default function UsersManagement() {
-  const { isAdmin, loading: roleLoading } = useUserRole();
+  const { isAdmin, isModerator, loading: roleLoading } = useUserRole();
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [entities, setEntities] = useState<Entity[]>([]);
@@ -60,11 +60,13 @@ export default function UsersManagement() {
   const [showEditPassword, setShowEditPassword] = useState(false);
 
   useEffect(() => {
-    if (isAdmin) {
-      fetchUsers();
+    if (isAdmin || isModerator) {
+      if (isAdmin) {
+        fetchUsers();
+      }
       fetchEntities();
     }
-  }, [isAdmin]);
+  }, [isAdmin, isModerator]);
 
   const fetchUsers = async () => {
     try {
@@ -355,7 +357,7 @@ export default function UsersManagement() {
     );
   }
 
-  if (!isAdmin) {
+  if (!isAdmin && !isModerator) {
     return <Navigate to="/" replace />;
   }
 
@@ -363,11 +365,17 @@ export default function UsersManagement() {
     <div className="container mx-auto p-6 max-w-7xl">
       <h1 className="text-3xl font-bold mb-6">إدارة</h1>
 
-      <Tabs defaultValue="users" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger value="users">المستخدمين</TabsTrigger>
-          <TabsTrigger value="entities">الجهات</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue={isAdmin ? "users" : "entities"} className="w-full">
+        {isAdmin ? (
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="users">المستخدمين</TabsTrigger>
+            <TabsTrigger value="entities">الجهات</TabsTrigger>
+          </TabsList>
+        ) : (
+          <TabsList className="grid w-full grid-cols-1 mb-6">
+            <TabsTrigger value="entities">الجهات</TabsTrigger>
+          </TabsList>
+        )}
 
         <TabsContent value="users">
           <div className="grid md:grid-cols-2 gap-6">

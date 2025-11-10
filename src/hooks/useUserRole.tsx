@@ -64,6 +64,6 @@ export function useUserRole() {
     role, 
     loading, 
     isAdmin: role === 'admin',
-    isManager: role === 'moderator'
+    isModerator: role === 'moderator'
   };
 }

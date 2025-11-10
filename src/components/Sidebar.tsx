@@ -33,7 +33,7 @@ export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { isAdmin, isManager } = useUserRole();
+  const { isAdmin, isModerator } = useUserRole();
   const [userName, setUserName] = useState('');
   const [userRole, setUserRole] = useState<string>('');
 
@@ -85,7 +85,7 @@ export default function Sidebar() {
               <span>مدير</span>
             </Badge>
           )}
-          {isManager && (
+          {isModerator && (
             <Badge variant="outline" className="gap-1">
               <Shield className="h-3 w-3" />
               <span>مسؤول</span>
@@ -124,7 +124,7 @@ export default function Sidebar() {
           );
         })}
         
-        {(isAdmin || isManager) && (
+        {(isAdmin || isModerator) && (
           <>
             <div className="my-4 border-t border-border" />
             <Link
