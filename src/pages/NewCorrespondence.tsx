@@ -188,7 +188,7 @@ export default function NewCorrespondence() {
           const userSession = localStorage.getItem('user_session');
           if (userSession) {
             const userData = JSON.parse(userSession);
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/users/${userData.id}/signature`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://192.168.203.134:8000'}/api/users/${userData.id}/signature`, {
               method: 'PUT',
               headers: {
                 'Content-Type': 'application/json',
@@ -317,45 +317,30 @@ export default function NewCorrespondence() {
       const uploadedAttachments: string[] = [...existingAttachments];
       
       const authed = getAuthenticatedSupabaseClient();
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://192.168.203.134:8000';
       
-      // Upload new signature if provided
-      if (signatureFile) {
-        const supabase = getAuthenticatedSupabaseClient();
-        const fileExt = 'png';
-        const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('signatures')
-          .upload(filePath, signatureFile);
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('signatures')
-          .getPublicUrl(filePath);
-        
-        signatureUrl = publicUrl;
-      }
-
-      // Upload attachments
+      // Upload new signature if provided (already saved as base64 in handleSignatureChange)
+      // signatureUrl is already set to base64 preview
+      
+      // Upload attachments to local server with MD5 deduplication
       for (const file of attachmentFiles) {
-        const supabase = getAuthenticatedSupabaseClient();
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('attachments')
-          .upload(filePath, file);
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('attachments')
-          .getPublicUrl(filePath);
+        const formData = new FormData();
+        formData.append('file', file);
         
-        uploadedAttachments.push(publicUrl);
+        const uploadResponse = await fetch(`${apiUrl}/api/upload/attachment`, {
+          method: 'POST',
+          headers: {
+            'x-session-token': localStorage.getItem('session_token') || '',
+          },
+          body: formData
+        });
+        
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload attachment');
+        }
+        
+        const uploadData = await uploadResponse.json();
+        uploadedAttachments.push(uploadData.url);
       }
 
       const correspondenceData = {
