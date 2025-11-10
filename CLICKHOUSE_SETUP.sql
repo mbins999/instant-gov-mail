@@ -73,7 +73,7 @@ ORDER BY (date, id);
 -- Create Correspondence Comments Table
 CREATE TABLE IF NOT EXISTS moi.correspondence_comments (
     id String DEFAULT generateUUIDv4(),
-    correspondence_id Nullable(String),
+    correspondence_id String NOT NULL,
     user_id Nullable(UInt64),
     comment String NOT NULL,
     is_internal UInt8 DEFAULT 1,
@@ -89,7 +89,7 @@ ORDER BY (correspondence_id, created_at);
 -- Create Notifications Table
 CREATE TABLE IF NOT EXISTS moi.notifications (
     id String DEFAULT generateUUIDv4(),
-    user_id Nullable(UInt64),
+    user_id UInt64 NOT NULL,
     type String NOT NULL,
     title String NOT NULL,
     message String NOT NULL,
@@ -159,7 +159,7 @@ CREATE TABLE IF NOT EXISTS moi.sync_log (
     error_message Nullable(String),
     created_at DateTime DEFAULT now()
 ) ENGINE = MergeTree()
-ORDER BY (created_at, id);
+ORDER BY (created_at);
 
 -- Create Audit Log Table
 CREATE TABLE IF NOT EXISTS moi.audit_log (
@@ -189,7 +189,7 @@ ORDER BY (created_at);
 -- Create Password History Table
 CREATE TABLE IF NOT EXISTS moi.password_history (
     id String DEFAULT generateUUIDv4(),
-    user_id Nullable(UInt64),
+    user_id UInt64 NOT NULL,
     password_hash String NOT NULL,
     created_at DateTime DEFAULT now()
 ) ENGINE = MergeTree()
