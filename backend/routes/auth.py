@@ -16,10 +16,10 @@ async def login(credentials: LoginRequest):
     try:
         # Get user by username
         result = client.query(
-            f"""
+            """
             SELECT id, username, password_hash, full_name, entity_id, entity_name
             FROM users
-            WHERE username = %(username)s
+            WHERE username = {username:String}
             LIMIT 1
             """,
             parameters={"username": credentials.username}
@@ -43,10 +43,10 @@ async def login(credentials: LoginRequest):
         
         # Get user role
         role_result = client.query(
-            f"""
+            """
             SELECT role
             FROM user_roles
-            WHERE user_id = %(user_id)s
+            WHERE user_id = {user_id:UInt64}
             LIMIT 1
             """,
             parameters={"user_id": user_id}
@@ -60,9 +60,9 @@ async def login(credentials: LoginRequest):
         expires_at = datetime.now() + timedelta(days=settings.SESSION_EXPIRE_DAYS)
         
         client.command(
-            f"""
+            """
             INSERT INTO sessions (id, user_id, token, expires_at, created_at)
-            VALUES (%(id)s, %(user_id)s, %(token)s, %(expires_at)s, now())
+            VALUES ({id:String}, {user_id:UInt64}, {token:String}, {expires_at:DateTime}, now())
             """,
             parameters={
                 "id": session_id,
@@ -100,11 +100,11 @@ async def verify_session(request: SessionVerifyRequest):
     
     try:
         result = client.query(
-            f"""
+            """
             SELECT s.user_id, s.expires_at, u.username, u.full_name, u.entity_id, u.entity_name
             FROM sessions s
             JOIN users u ON s.user_id = u.id
-            WHERE s.token = %(token)s
+            WHERE s.token = {token:String}
             LIMIT 1
             """,
             parameters={"token": request.sessionToken}
@@ -127,10 +127,10 @@ async def verify_session(request: SessionVerifyRequest):
         
         # Get user role
         role_result = client.query(
-            f"""
+            """
             SELECT role
             FROM user_roles
-            WHERE user_id = %(user_id)s
+            WHERE user_id = {user_id:UInt64}
             LIMIT 1
             """,
             parameters={"user_id": user_id}
