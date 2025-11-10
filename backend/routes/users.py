@@ -151,9 +151,9 @@ async def update_user(
                 detail="No updates provided"
             )
         
-        # Note: ClickHouse doesn't support traditional UPDATE statements
-        # You may need to implement this differently based on your table engine
-        # For MergeTree tables, consider using ALTER TABLE UPDATE or recreating the row
+        # ClickHouse ALTER TABLE UPDATE syntax
+        update_query = f"ALTER TABLE users UPDATE {', '.join(updates)} WHERE id = %(user_id)s"
+        client.command(update_query, parameters=params)
         
         return {"message": "User updated successfully"}
         
@@ -259,4 +259,51 @@ async def create_user(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create user: {str(e)}"
+        )
+
+@router.delete("/delete/{user_id}")
+async def delete_user(
+    user_id: int,
+    x_session_token: Optional[str] = Header(None)
+):
+    """Delete a user (admin only)"""
+    client = get_client()
+    
+    try:
+        # Verify admin access
+        await verify_admin_session(x_session_token)
+        
+        # Delete user roles first
+        client.command(
+            """
+            ALTER TABLE user_roles DELETE WHERE user_id = %(user_id)s
+            """,
+            parameters={"user_id": user_id}
+        )
+        
+        # Delete user sessions
+        client.command(
+            """
+            ALTER TABLE sessions DELETE WHERE user_id = %(user_id)s
+            """,
+            parameters={"user_id": user_id}
+        )
+        
+        # Delete the user
+        client.command(
+            """
+            ALTER TABLE users DELETE WHERE id = %(user_id)s
+            """,
+            parameters={"user_id": user_id}
+        )
+        
+        return {"message": "تم حذف المستخدم بنجاح"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Delete user error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete user: {str(e)}"
         )

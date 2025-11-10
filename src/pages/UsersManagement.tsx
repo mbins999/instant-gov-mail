@@ -275,14 +275,14 @@ export default function UsersManagement() {
     setLoading(true);
 
     try {
-      // Note: User deletion needs to be implemented in ClickHouse API
+      await clickhouseApi.deleteUser(userId);
+      
       toast({
-        title: 'قريباً',
-        description: 'وظيفة حذف المستخدم قيد التطوير',
-        variant: 'default',
+        title: 'تم بنجاح',
+        description: 'تم حذف المستخدم بنجاح',
       });
-      setLoading(false);
-      return;
+
+      fetchUsers();
     } catch (error: any) {
       toast({
         title: 'خطأ',

@@ -64,6 +64,11 @@ export const clickhouseApi = {
       }),
     }),
 
+  deleteUser: (userId: number) =>
+    apiRequest(`/users/delete/${userId}`, {
+      method: 'DELETE',
+    }),
+
   // Correspondences
   listCorrespondences: () => apiRequest('/correspondences'),
 
