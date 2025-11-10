@@ -255,6 +255,144 @@ export default function NewCorrespondence() {
     input.click();
   };
 
+  const handleArchive = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // التحقق من الحقول الإجبارية
+    if (!formData.to) {
+      toast({
+        title: "خطأ",
+        description: "يجب اختيار الجهة المستلمة",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.from) {
+      toast({
+        title: "خطأ",
+        description: "يجب اختيار الجهة المرسلة",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      let signatureUrl = signaturePreview;
+      const uploadedAttachments: string[] = [...existingAttachments];
+      
+      const authed = getAuthenticatedSupabaseClient();
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://192.168.203.134:3001';
+      
+      // Upload attachments to local server with MD5 deduplication
+      for (const file of attachmentFiles) {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const uploadResponse = await fetch(`${apiUrl}/api/upload/attachment`, {
+          method: 'POST',
+          headers: {
+            'x-session-token': localStorage.getItem('session_token') || '',
+          },
+          body: formData
+        });
+        
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload attachment');
+        }
+        
+        const uploadData = await uploadResponse.json();
+        uploadedAttachments.push(uploadData.url);
+      }
+
+      const correspondenceData = {
+        number: formData.number,
+        type: formData.type,
+        date: formData.date,
+        from_entity: formData.from,
+        received_by_entity: formData.to,
+        subject: formData.displayType === 'content' ? formData.subject : 'مرفق',
+        greeting: formData.displayType === 'content' ? formData.greeting : '',
+        content: formData.displayType === 'content' ? formData.content : '',
+        responsible_person: formData.displayType === 'content' ? formData.responsiblePerson : '',
+        signature_url: formData.displayType === 'content' ? signatureUrl : '',
+        display_type: formData.displayType,
+        attachments: uploadedAttachments,
+        archived: true,
+        created_by: (() => {
+          try {
+            const userSession = localStorage.getItem('user_session');
+            if (userSession) {
+              const userData = JSON.parse(userSession);
+              if (!userData.id) {
+                throw new Error('معرف المستخدم غير موجود في الجلسة');
+              }
+              return userData.id;
+            }
+            throw new Error('لم يتم العثور على جلسة المستخدم');
+          } catch (e) {
+            console.error('Error getting user from session:', e);
+            throw new Error('يجب تسجيل الدخول أولاً');
+          }
+        })()
+      };
+
+      if (isEditMode && id) {
+        const { error } = await authed
+          .from('correspondences')
+          .update(correspondenceData)
+          .eq('id', id);
+
+        if (error) throw error;
+
+        toast({
+          title: "تمت أرشفة المراسلة",
+          description: "تم أرشفة المراسلة بنجاح",
+        });
+        
+        navigate(`/archive`);
+      } else {
+        const { error, data: insertedData } = await authed
+          .from('correspondences')
+          .insert([correspondenceData])
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        // Generate PDF for the correspondence
+        if (insertedData?.id) {
+          try {
+            await authed.functions.invoke('generate-correspondence-pdf', {
+              body: { correspondenceId: insertedData.id }
+            });
+            console.log('PDF generation started for correspondence:', insertedData.id);
+          } catch (pdfError) {
+            console.error('Error generating PDF:', pdfError);
+          }
+        }
+
+        toast({
+          title: "تمت أرشفة المراسلة",
+          description: "تم حفظ المراسلة في الأرشيف بنجاح",
+        });
+        
+        navigate('/archive');
+      }
+    } catch (error) {
+      console.error('Error archiving correspondence:', error);
+      toast({
+        title: "خطأ",
+        description: error instanceof Error ? error.message : "حدث خطأ في أرشفة المراسلة",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent, shouldSendExternal = false) => {
     e.preventDefault();
     
@@ -731,13 +869,13 @@ export default function NewCorrespondence() {
 
             <div className="flex gap-4">
               <Button 
-                type="submit" 
+                type="button" 
                 className="gap-2" 
                 disabled={loading}
-                onClick={(e) => handleSubmit(e, false)}
+                onClick={handleArchive}
               >
                 <Save className="h-4 w-4" />
-                {loading ? (isEditMode ? 'جاري التحديث...' : 'جاري الحفظ...') : (isEditMode ? 'تحديث المراسلة' : 'حفظ المراسلة')}
+                {loading ? 'جاري الأرشفة...' : 'أرشفة'}
               </Button>
               
               {!isEditMode && (
