@@ -6,7 +6,7 @@ import uvicorn
 
 from config import settings
 from database import init_database
-from routes import auth, users, correspondences, entities, templates, comments, notifications, upload, statistics
+from routes import auth, correspondences, entities, templates, comments, notifications, upload, statistics, users
 
 # Initialize FastAPI app
 app = FastAPI(

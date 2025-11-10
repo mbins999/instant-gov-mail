@@ -10,6 +10,8 @@ export async function createTables() {
       full_name String,
       entity_id String,
       entity_name String,
+      signature_base64 Nullable(String),
+      job_title Nullable(String),
       created_at DateTime DEFAULT now(),
       created_by Nullable(Int64)
     ) ENGINE = MergeTree()
@@ -125,6 +127,28 @@ export async function createTables() {
       updated_at DateTime DEFAULT now()
     ) ENGINE = MergeTree()
     ORDER BY (is_active, created_at)`,
+
+    // Attachments table with MD5 deduplication
+    `CREATE TABLE IF NOT EXISTS attachments (
+      id String,
+      file_name String,
+      file_path String,
+      file_size Int64,
+      file_md5 String,
+      mime_type String,
+      uploaded_by Nullable(Int64),
+      created_at DateTime DEFAULT now()
+    ) ENGINE = MergeTree()
+    ORDER BY (file_md5, created_at)`,
+
+    // Correspondence attachments mapping
+    `CREATE TABLE IF NOT EXISTS correspondence_attachments (
+      id String,
+      correspondence_id String,
+      attachment_id String,
+      created_at DateTime DEFAULT now()
+    ) ENGINE = MergeTree()
+    ORDER BY (correspondence_id, created_at)`,
   ];
 
   for (const query of queries) {

@@ -43,9 +43,12 @@ export default function NewCorrespondence() {
   const [signaturePreview, setSignaturePreview] = useState<string>('');
   const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
   const [existingAttachments, setExistingAttachments] = useState<string[]>([]);
+  const [userSignature, setUserSignature] = useState<string>('');
+  const [userJobTitle, setUserJobTitle] = useState<string>('');
+  const [userFullName, setUserFullName] = useState<string>('');
 
   useEffect(() => {
-    // تعيين جهة المستخدم تلقائياً كجهة مرسلة
+    // تعيين جهة المستخدم تلقائياً كجهة مرسلة وتحميل التوقيع
     const userSession = localStorage.getItem('user_session');
     if (userSession && !isEditMode) {
       const userData = JSON.parse(userSession);
@@ -53,6 +56,41 @@ export default function NewCorrespondence() {
         ...prev,
         from: userData.entity_name || ''
       }));
+      
+      // Load user signature and info from ClickHouse
+      const loadUserData = async () => {
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/users/${userData.id}`, {
+            headers: {
+              'x-session-token': localStorage.getItem('session_token') || '',
+            }
+          });
+          
+          if (response.ok) {
+            const userDetails = await response.json();
+            if (userDetails.signature_base64) {
+              setUserSignature(userDetails.signature_base64);
+              setSignaturePreview(userDetails.signature_base64);
+            }
+            if (userDetails.job_title) {
+              setUserJobTitle(userDetails.job_title);
+            }
+            if (userDetails.full_name) {
+              setUserFullName(userDetails.full_name);
+              // Auto-fill responsible person field
+              const responsibleText = `السيد/\n${userDetails.full_name}\n${userDetails.job_title || 'مدير مكتب المكاتب'}`;
+              setFormData(prev => ({
+                ...prev,
+                responsiblePerson: responsibleText
+              }));
+            }
+          }
+        } catch (error) {
+          console.error('Error loading user data:', error);
+        }
+      };
+      
+      loadUserData();
     }
   }, [isEditMode]);
 
@@ -136,13 +174,40 @@ export default function NewCorrespondence() {
     }).format(date);
   }, [formData.date]);
 
-  const handleSignatureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSignatureChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && file.type === 'image/png') {
       setSignatureFile(file);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setSignaturePreview(reader.result as string);
+      reader.onloadend = async () => {
+        const base64 = reader.result as string;
+        setSignaturePreview(base64);
+        
+        // Save signature to user profile in ClickHouse
+        try {
+          const userSession = localStorage.getItem('user_session');
+          if (userSession) {
+            const userData = JSON.parse(userSession);
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/users/${userData.id}/signature`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-session-token': localStorage.getItem('session_token') || '',
+              },
+              body: JSON.stringify({ signature_base64: base64 })
+            });
+            
+            if (response.ok) {
+              setUserSignature(base64);
+              toast({
+                title: "تم الحفظ",
+                description: "تم حفظ التوقيع بنجاح",
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Error saving signature:', error);
+        }
       };
       reader.readAsDataURL(file);
     } else {
@@ -586,12 +651,15 @@ export default function NewCorrespondence() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="responsiblePerson">المسؤول</Label>
-                  <Input
+                  <Label htmlFor="responsiblePerson">اعتماد بواسطة</Label>
+                  <Textarea
                     id="responsiblePerson"
                     value={formData.responsiblePerson}
                     onChange={(e) => setFormData({ ...formData, responsiblePerson: e.target.value })}
                     disabled={loading}
+                    rows={3}
+                    className="font-bold"
+                    placeholder="السيد/&#10;عبدالله خالد المال&#10;مدير مكتب المكاتب"
                   />
                 </div>
 

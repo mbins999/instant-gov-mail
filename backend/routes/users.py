@@ -1,10 +1,14 @@
 from fastapi import APIRouter, HTTPException, status, Header
 from typing import Optional
 import bcrypt
+from pydantic import BaseModel
 from models import UserListRequest, UserUpdate, UserCreate
 from database import get_client
 
 router = APIRouter(prefix="/users", tags=["Users"])
+
+class SignatureUpdate(BaseModel):
+    signature_base64: str
 
 async def verify_admin_session(x_session_token: Optional[str] = Header(None)):
     """Verify that the session belongs to an admin user"""
@@ -306,4 +310,135 @@ async def delete_user(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete user: {str(e)}"
+        )
+
+@router.get("/{user_id}")
+async def get_user(
+    user_id: int,
+    x_session_token: Optional[str] = Header(None)
+):
+    """Get user details including signature"""
+    if not x_session_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
+        )
+    
+    try:
+        client = get_client()
+        result = client.query(
+            """
+            SELECT id, username, full_name, entity_id, entity_name, 
+                   signature_base64, job_title, created_at
+            FROM users
+            WHERE id = %(user_id)s
+            LIMIT 1
+            """,
+            parameters={"user_id": user_id}
+        )
+        
+        if result.row_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        row = result.first_row
+        return {
+            "id": row[0],
+            "username": row[1],
+            "full_name": row[2],
+            "entity_id": row[3],
+            "entity_name": row[4],
+            "signature_base64": row[5],
+            "job_title": row[6],
+            "created_at": row[7]
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Get user error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch user"
+        )
+
+@router.put("/{user_id}/signature")
+async def update_user_signature(
+    user_id: int,
+    signature_data: SignatureUpdate,
+    x_session_token: Optional[str] = Header(None)
+):
+    """Update user signature (base64)"""
+    if not x_session_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
+        )
+    
+    try:
+        client = get_client()
+        
+        # Escape single quotes in base64 string for SQL
+        escaped_signature = signature_data.signature_base64.replace("'", "''")
+        
+        # Update signature in ClickHouse using ALTER TABLE UPDATE
+        client.command(
+            f"""
+            ALTER TABLE users
+            UPDATE signature_base64 = '{escaped_signature}'
+            WHERE id = {user_id}
+            """
+        )
+        
+        return {
+            "success": True,
+            "message": "Signature updated successfully"
+        }
+        
+    except Exception as e:
+        print(f"Update signature error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update signature"
+        )
+
+@router.put("/{user_id}/job-title")
+async def update_user_job_title(
+    user_id: int,
+    job_title: str,
+    x_session_token: Optional[str] = Header(None)
+):
+    """Update user job title"""
+    if not x_session_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
+        )
+    
+    try:
+        client = get_client()
+        
+        # Escape single quotes for SQL
+        escaped_title = job_title.replace("'", "''")
+        
+        client.command(
+            f"""
+            ALTER TABLE users
+            UPDATE job_title = '{escaped_title}'
+            WHERE id = {user_id}
+            """
+        )
+        
+        return {
+            "success": True,
+            "message": "Job title updated successfully"
+        }
+        
+    except Exception as e:
+        print(f"Update job title error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update job title"
         )
