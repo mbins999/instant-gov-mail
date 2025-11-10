@@ -14,6 +14,8 @@ async def login(credentials: LoginRequest):
     client = get_client()
     
     try:
+        print(f"[DEBUG] Login attempt for username: {credentials.username}")
+        
         # Get user by username
         result = client.query(
             """
@@ -25,7 +27,10 @@ async def login(credentials: LoginRequest):
             parameters={"username": credentials.username}
         )
         
+        print(f"[DEBUG] Query returned {len(result.result_rows)} rows")
+        
         if not result.result_rows:
+            print(f"[DEBUG] User not found: {credentials.username}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid username or password"
@@ -34,8 +39,20 @@ async def login(credentials: LoginRequest):
         user = result.result_rows[0]
         user_id, username, password_hash, full_name, entity_id, entity_name = user
         
+        print(f"[DEBUG] Found user ID: {user_id}, username: {username}")
+        print(f"[DEBUG] Password hash length: {len(password_hash)}")
+        print(f"[DEBUG] Password hash starts with: {password_hash[:10]}")
+        
         # Verify password
-        if not bcrypt.checkpw(credentials.password.encode('utf-8'), password_hash.encode('utf-8')):
+        try:
+            password_match = bcrypt.checkpw(credentials.password.encode('utf-8'), password_hash.encode('utf-8'))
+            print(f"[DEBUG] Password match: {password_match}")
+        except Exception as e:
+            print(f"[DEBUG] Password verification error: {e}")
+            password_match = False
+            
+        if not password_match:
+            print(f"[DEBUG] Password verification failed for user: {username}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid username or password"
