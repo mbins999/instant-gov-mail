@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Header
 from typing import Optional
 import bcrypt
-from models import UserListRequest, UserUpdate
+from models import UserListRequest, UserUpdate, UserCreate
 from database import get_client
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -67,7 +67,7 @@ async def list_users(request: UserListRequest):
             SELECT 
                 u.id, u.username, u.full_name, u.entity_id, u.entity_name,
                 u.created_at, u.created_by,
-                groupArray(ur.role) as roles
+                any(ur.role) as role
             FROM users u
             LEFT JOIN user_roles ur ON u.id = ur.user_id
             GROUP BY u.id, u.username, u.full_name, u.entity_id, u.entity_name, u.created_at, u.created_by
@@ -85,7 +85,7 @@ async def list_users(request: UserListRequest):
                 "entity_name": row[4],
                 "created_at": row[5],
                 "created_by": row[6],
-                "roles": row[7] if row[7] else []
+                "role": row[7] if row[7] else 'user'
             })
         
         return {"users": users}
@@ -164,4 +164,99 @@ async def update_user(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to update user"
+        )
+
+@router.post("/create")
+async def create_user(
+    user_create: UserCreate,
+    x_session_token: Optional[str] = Header(None)
+):
+    """Create a new user (admin only)"""
+    client = get_client()
+    
+    try:
+        # Verify admin access
+        admin_user_id = await verify_admin_session(x_session_token)
+        
+        # Check if username already exists
+        existing_user = client.query(
+            """
+            SELECT id FROM users WHERE username = %(username)s LIMIT 1
+            """,
+            parameters={"username": user_create.username}
+        )
+        
+        if existing_user.result_rows:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="اسم المستخدم موجود بالفعل"
+            )
+        
+        # Hash password
+        password_hash = bcrypt.hashpw(
+            user_create.password.encode('utf-8'),
+            bcrypt.gensalt()
+        ).decode('utf-8')
+        
+        # Get entity name if entity_id is provided
+        entity_name = None
+        if user_create.entity_id:
+            entity_result = client.query(
+                """
+                SELECT name FROM entities WHERE id = %(entity_id)s LIMIT 1
+                """,
+                parameters={"entity_id": user_create.entity_id}
+            )
+            if entity_result.result_rows:
+                entity_name = entity_result.result_rows[0][0]
+        
+        # Get next user ID
+        max_id_result = client.query("SELECT max(id) FROM users")
+        next_id = (max_id_result.result_rows[0][0] or 0) + 1
+        
+        # Insert new user
+        client.command(
+            """
+            INSERT INTO users (id, username, password_hash, full_name, entity_id, entity_name, created_by)
+            VALUES (%(id)s, %(username)s, %(password_hash)s, %(full_name)s, %(entity_id)s, %(entity_name)s, %(created_by)s)
+            """,
+            parameters={
+                "id": next_id,
+                "username": user_create.username,
+                "password_hash": password_hash,
+                "full_name": user_create.full_name,
+                "entity_id": user_create.entity_id,
+                "entity_name": entity_name,
+                "created_by": admin_user_id
+            }
+        )
+        
+        # Create user role (note: role parameter needs to be added to UserCreate model if not present)
+        # For now, default to 'user' role
+        import uuid
+        role_id = str(uuid.uuid4())
+        client.command(
+            """
+            INSERT INTO user_roles (id, user_id, role)
+            VALUES (%(id)s, %(user_id)s, %(role)s)
+            """,
+            parameters={
+                "id": role_id,
+                "user_id": next_id,
+                "role": getattr(user_create, 'role', 'user')  # Use role from request or default to 'user'
+            }
+        )
+        
+        return {
+            "message": "تم إنشاء المستخدم بنجاح",
+            "user_id": next_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Create user error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create user: {str(e)}"
         )

@@ -117,11 +117,17 @@ export default function UsersManagement() {
     setLoading(true);
 
     try {
-      // Note: Create user functionality needs to be implemented in ClickHouse API
+      const data = await clickhouseApi.createUser(
+        formData.username,
+        formData.password,
+        formData.fullName,
+        formData.entityId || null,
+        formData.role
+      );
+
       toast({
-        title: 'قريباً',
-        description: 'وظيفة إنشاء المستخدم قيد التطوير',
-        variant: 'default',
+        title: 'تم بنجاح',
+        description: 'تم إنشاء المستخدم بنجاح',
       });
       
       // Reset form and fetch users
@@ -130,7 +136,7 @@ export default function UsersManagement() {
     } catch (error: any) {
       toast({
         title: 'خطأ',
-        description: error.message,
+        description: error.message || 'حدث خطأ أثناء إنشاء المستخدم',
         variant: 'destructive',
       });
     } finally {
