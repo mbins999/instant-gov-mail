@@ -45,7 +45,7 @@ export default function Auth() {
       // استدعاء API للتحقق من المستخدم
       const data = await clickhouseApi.login(username, password);
 
-      if (!data || !data.session) {
+      if (!data || !data.access_token || !data.user) {
         toast({
           title: "خطأ في تسجيل الدخول",
           description: "اسم المستخدم أو كلمة المرور غير صحيحة",
@@ -55,20 +55,20 @@ export default function Auth() {
       }
 
       // حفظ session token فقط (بدون بيانات المستخدم)
-      localStorage.setItem('session_token', data.session.access_token);
+      localStorage.setItem('session_token', data.access_token);
       
       // تخزين معلومات أساسية للعرض (سيتم التحقق منها من الخادم)
       localStorage.setItem('user_session', JSON.stringify({
-        id: data.session.user.id,  // ✅ إضافة ID للمستخدم
-        username: data.session.user.username,
-        full_name: data.session.user.full_name,
-        entity_name: data.session.user.entity_name,
-        role: data.session.user.role,
+        id: data.user.id,
+        username: data.user.username,
+        full_name: data.user.full_name,
+        entity_name: data.user.entity_name,
+        role: data.user.role,
       }));
       
       toast({
         title: "تم تسجيل الدخول",
-        description: `أهلاً بك ${data.session.user.full_name}`,
+        description: `أهلاً بك ${data.user.full_name}`,
       });
 
       navigate('/');
