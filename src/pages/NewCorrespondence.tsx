@@ -60,7 +60,7 @@ export default function NewCorrespondence() {
       // Load user signature and info from ClickHouse
       const loadUserData = async () => {
         try {
-          const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/users/${userData.id}`, {
+          const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://192.168.203.134:3001'}/api/users/${userData.id}`, {
             headers: {
               'x-session-token': localStorage.getItem('session_token') || '',
             }
@@ -188,7 +188,7 @@ export default function NewCorrespondence() {
           const userSession = localStorage.getItem('user_session');
           if (userSession) {
             const userData = JSON.parse(userSession);
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://192.168.203.134:8000'}/api/users/${userData.id}/signature`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://192.168.203.134:3001'}/api/users/${userData.id}/signature`, {
               method: 'PUT',
               headers: {
                 'Content-Type': 'application/json',
@@ -317,7 +317,7 @@ export default function NewCorrespondence() {
       const uploadedAttachments: string[] = [...existingAttachments];
       
       const authed = getAuthenticatedSupabaseClient();
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://192.168.203.134:8000';
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://192.168.203.134:3001';
       
       // Upload new signature if provided (already saved as base64 in handleSignatureChange)
       // signatureUrl is already set to base64 preview
