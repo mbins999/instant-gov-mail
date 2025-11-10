@@ -44,6 +44,10 @@ export default function Auth() {
 
       // استدعاء API للتحقق من المستخدم
       const data = await clickhouseApi.login(username, password);
+      
+      console.log('[Auth] Login response:', data);
+      console.log('[Auth] Has access_token:', !!data?.access_token);
+      console.log('[Auth] Has user:', !!data?.user);
 
       if (!data || !data.access_token || !data.user) {
         toast({
