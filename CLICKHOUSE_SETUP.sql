@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS moi.correspondences (
     signature_url Nullable(String),
     pdf_url Nullable(String),
     notes Nullable(String),
-    attachments Array(String),
+    attachments Array(String) DEFAULT [],
     external_connection_id Nullable(String),
     external_doc_id Nullable(String)
 ) ENGINE = MergeTree()
@@ -78,8 +78,8 @@ CREATE TABLE IF NOT EXISTS moi.correspondence_comments (
     comment String NOT NULL,
     is_internal UInt8 DEFAULT 1,
     parent_comment_id Nullable(String),
-    mentioned_users Array(UInt64),
-    attachments Array(String),
+    mentioned_users Array(UInt64) DEFAULT [],
+    attachments Array(String) DEFAULT [],
     is_edited UInt8 DEFAULT 0,
     created_at DateTime DEFAULT now(),
     updated_at DateTime DEFAULT now()
