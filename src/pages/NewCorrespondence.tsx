@@ -120,15 +120,21 @@ export default function NewCorrespondence() {
           console.log('Fetched correspondence data:', data);
 
           if (data) {
+            const rawDate = data.date;
+            const dateIso = typeof rawDate === 'string'
+              ? (rawDate.includes('T') ? rawDate : new Date(rawDate).toISOString())
+              : new Date(rawDate).toISOString();
+            const dateOnly = dateIso.split('T')[0];
+
             setFormData({
-              type: data.type,
-              number: data.number,
-              date: data.date.split('T')[0],
-              from: data.from_entity,
+              type: data.type || 'outgoing',
+              number: data.number || '',
+              date: dateOnly,
+              from: data.from_entity || '',
               to: data.received_by_entity || '',
-              subject: data.subject,
-              greeting: data.greeting,
-              content: data.content,
+              subject: data.subject || '',
+              greeting: data.greeting || 'السيد/',
+              content: data.content || '',
               responsiblePerson: data.responsible_person || '',
               displayType: (data.display_type || 'content') as 'content' | 'attachment_only',
             });
@@ -156,7 +162,6 @@ export default function NewCorrespondence() {
             description: "فشل تحميل بيانات المراسلة",
             variant: "destructive",
           });
-          navigate('/');
         } finally {
           console.log('Setting fetchingData to false');
           setFetchingData(false);
