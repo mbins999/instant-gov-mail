@@ -118,6 +118,11 @@ export default function NewCorrespondence() {
           const { clickhouseApi } = await import('@/lib/clickhouseClient');
           const data = await clickhouseApi.getCorrespondence(id);
           console.log('Fetched correspondence data:', data);
+          console.log('Data type:', data?.type);
+          console.log('Data number:', data?.number);
+          console.log('Data date:', data?.date);
+          console.log('Data from_entity:', data?.from_entity);
+          console.log('Data attachments:', data?.attachments, 'is array?', Array.isArray(data?.attachments));
 
           if (data) {
             // Normalize date to YYYY-MM-DD safely across formats
@@ -169,8 +174,16 @@ export default function NewCorrespondence() {
               setSignaturePreview(data.signature_url);
             }
             
-            if (data.attachments && data.attachments.length > 0) {
-              setExistingAttachments(data.attachments);
+            // Ensure attachments is always an array
+            if (data.attachments) {
+              if (Array.isArray(data.attachments)) {
+                setExistingAttachments(data.attachments);
+              } else {
+                console.warn('Attachments is not an array, resetting to empty:', data.attachments);
+                setExistingAttachments([]);
+              }
+            } else {
+              setExistingAttachments([]);
             }
           } else {
             console.error('No data returned from API');
