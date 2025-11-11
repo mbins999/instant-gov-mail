@@ -17,7 +17,7 @@ export default function ArchivePage() {
   }, []);
   
   // عرض المراسلات المؤرشفة فقط (تشمل المسودات)
-  const archivedCorrespondences = correspondences.filter((c: any) => c.archived === true);
+  const archivedCorrespondences = (correspondences as any[]).filter((c: any) => c.archived === true || c.status === 'draft');
 
   if (loading) {
     return (
