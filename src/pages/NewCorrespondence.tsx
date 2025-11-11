@@ -100,6 +100,7 @@ export default function NewCorrespondence() {
         const { clickhouseApi } = await import('@/lib/clickhouseClient');
         const data = await clickhouseApi.listEntities();
         console.log('Fetched entities:', data);
+        console.log('Entities count:', data?.length);
         setEntities((data || []) as Entity[]);
       } catch (error) {
         console.error('Error fetching entities:', error);
@@ -605,13 +606,15 @@ export default function NewCorrespondence() {
                     <SelectValue placeholder="اختر الجهة المستلمة" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border shadow-lg z-50">
-                    {entities
-                      .filter(e => e.type === 'receiver' || e.type === 'both')
-                      .map((entity) => (
+                    {entities.length === 0 ? (
+                      <div className="p-2 text-sm text-muted-foreground">لا توجد جهات</div>
+                    ) : (
+                      entities.map((entity) => (
                         <SelectItem key={entity.id} value={entity.name}>
                           {entity.name}
                         </SelectItem>
-                      ))}
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
