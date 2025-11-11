@@ -322,11 +322,20 @@ export default function NewCorrespondence() {
   const handleArchive = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // التحقق من رقم الكتاب فقط
+    // التحقق من رقم الكتاب والجهة المستلمة
     if (!formData.number) {
       toast({
         title: "خطأ",
         description: "يجب إدخال رقم الكتاب",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.to) {
+      toast({
+        title: "خطأ",
+        description: "يجب اختيار الجهة المستلمة",
         variant: "destructive",
       });
       return;
@@ -419,11 +428,20 @@ export default function NewCorrespondence() {
   const handleSubmit = async (e: React.FormEvent, shouldSendExternal = false) => {
     e.preventDefault();
     
-    // التحقق من رقم الكتاب فقط
+    // التحقق من رقم الكتاب والجهة المستلمة
     if (!formData.number) {
       toast({
         title: "خطأ",
         description: "يجب إدخال رقم الكتاب",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.to) {
+      toast({
+        title: "خطأ",
+        description: "يجب اختيار الجهة المستلمة",
         variant: "destructive",
       });
       return;
@@ -611,7 +629,7 @@ export default function NewCorrespondence() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="to">الجهة المستلمة</Label>
+                <Label htmlFor="to">الجهة المستلمة *</Label>
                 <Select
                   value={formData.to}
                   onValueChange={(value) => setFormData({ ...formData, to: value })}
