@@ -121,6 +121,78 @@ async def get_correspondence(correspondence_id: str):
             detail="Failed to fetch correspondence"
         )
 
+@router.put("/update/{correspondence_id}")
+async def update_correspondence(correspondence_id: str, data: dict):
+    """Update an existing correspondence"""
+    client = get_client()
+    
+    try:
+        now = datetime.utcnow()
+        
+        # Convert date string to datetime object if needed
+        date_value = data.get('date')
+        if isinstance(date_value, str):
+            date_value = datetime.fromisoformat(date_value.replace('Z', '+00:00'))
+        
+        # Build UPDATE query
+        update_fields = []
+        params = {'id': correspondence_id}
+        
+        field_mappings = {
+            'number': 'number',
+            'type': 'type',
+            'subject': 'subject',
+            'from_entity': 'from_entity',
+            'received_by_entity': 'received_by_entity',
+            'content': 'content',
+            'greeting': 'greeting',
+            'responsible_person': 'responsible_person',
+            'signature_url': 'signature_url',
+            'display_type': 'display_type',
+            'notes': 'notes',
+            'status': 'status',
+            'archived': 'archived'
+        }
+        
+        for data_key, db_field in field_mappings.items():
+            if data_key in data:
+                value = data[data_key]
+                if data_key == 'archived' and isinstance(value, bool):
+                    value = 1 if value else 0
+                update_fields.append(f"{db_field} = %({data_key})s")
+                params[data_key] = value
+        
+        if 'attachments' in data:
+            update_fields.append("attachments = %(attachments)s")
+            params['attachments'] = data['attachments']
+        
+        if date_value:
+            update_fields.append("date = %(date)s")
+            params['date'] = date_value
+        
+        update_fields.append("updated_at = %(updated_at)s")
+        params['updated_at'] = now
+        
+        query = f"""
+            ALTER TABLE correspondences
+            UPDATE {', '.join(update_fields)}
+            WHERE id = %(id)s
+        """
+        
+        client.command(query, parameters=params)
+        
+        return {
+            "id": correspondence_id,
+            "message": "Correspondence updated successfully"
+        }
+        
+    except Exception as e:
+        print(f"Update correspondence error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update correspondence: {str(e)}"
+        )
+
 @router.post("/create")
 async def create_correspondence(data: dict):
     """Create a new correspondence"""

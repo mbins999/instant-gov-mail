@@ -8,9 +8,10 @@ import { useToast } from '@/hooks/use-toast';
 interface CorrespondenceTableProps {
   correspondences: Correspondence[];
   onReceive?: () => void;
+  showEditDraft?: boolean;
 }
 
-export default function CorrespondenceTable({ correspondences, onReceive }: CorrespondenceTableProps) {
+export default function CorrespondenceTable({ correspondences, onReceive, showEditDraft = false }: CorrespondenceTableProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -97,7 +98,14 @@ export default function CorrespondenceTable({ correspondences, onReceive }: Corr
               >
                 <td 
                   className="p-4 font-mono text-sm text-primary hover:underline cursor-pointer"
-                  onClick={() => navigate(`/correspondence/${item.id}`)}
+                  onClick={() => {
+                    const isDraft = (item as any).status === 'draft';
+                    if (showEditDraft && isDraft) {
+                      navigate(`/new-correspondence/${item.id}`);
+                    } else {
+                      navigate(`/correspondence/${item.id}`);
+                    }
+                  }}
                 >
                   {item.number}
                 </td>

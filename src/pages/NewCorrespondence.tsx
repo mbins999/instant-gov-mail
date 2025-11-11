@@ -46,6 +46,7 @@ export default function NewCorrespondence() {
   const [userSignature, setUserSignature] = useState<string>('');
   const [userJobTitle, setUserJobTitle] = useState<string>('');
   const [userFullName, setUserFullName] = useState<string>('');
+  const [isDraft, setIsDraft] = useState(false);
 
   useEffect(() => {
     // تعيين جهة المستخدم تلقائياً كجهة مرسلة وتحميل التوقيع
@@ -118,14 +119,9 @@ export default function NewCorrespondence() {
     if (isEditMode && id) {
       const fetchCorrespondence = async () => {
         try {
-          const supabase = getAuthenticatedSupabaseClient();
-          const { data, error } = await supabase
-            .from('correspondences')
-            .select('*')
-            .eq('id', id)
-            .single();
-
-          if (error) throw error;
+          // Try fetching from ClickHouse first (for drafts)
+          const { clickhouseApi } = await import('@/lib/clickhouseClient');
+          const data = await clickhouseApi.getCorrespondence(id);
 
           if (data) {
             setFormData({
@@ -141,6 +137,11 @@ export default function NewCorrespondence() {
               displayType: (data.display_type || 'content') as 'content' | 'attachment_only',
             });
             
+            // Check if it's a draft
+            if ((data as any).status === 'draft') {
+              setIsDraft(true);
+            }
+            
             if (data.signature_url) {
               setSignaturePreview(data.signature_url);
             }
@@ -150,6 +151,7 @@ export default function NewCorrespondence() {
             }
           }
         } catch (err) {
+          console.error('Error fetching correspondence:', err);
           toast({
             title: "خطأ",
             description: "فشل تحميل بيانات المراسلة",
@@ -481,19 +483,38 @@ export default function NewCorrespondence() {
       };
 
       if (isEditMode && id) {
-        const { error } = await authed
-          .from('correspondences')
-          .update(correspondenceData)
-          .eq('id', id);
+        // Check if it's a draft being edited
+        if (isDraft) {
+          // Update draft in ClickHouse
+          const { clickhouseApi } = await import('@/lib/clickhouseClient');
+          await clickhouseApi.updateCorrespondence(id, {
+            ...correspondenceData,
+            status: 'sent',
+            archived: false
+          });
+          
+          toast({
+            title: "تم الإرسال بنجاح",
+            description: "تم تحديث المسودة وإرسال المراسلة",
+          });
+          
+          navigate('/sent');
+        } else {
+          // Regular update in Supabase
+          const { error } = await authed
+            .from('correspondences')
+            .update(correspondenceData)
+            .eq('id', id);
 
-        if (error) throw error;
+          if (error) throw error;
 
-        toast({
-          title: "تم التحديث بنجاح",
-          description: "تم تحديث المراسلة",
-        });
-        
-        navigate(`/correspondence/${id}`);
+          toast({
+            title: "تم التحديث بنجاح",
+            description: "تم تحديث المراسلة",
+          });
+          
+          navigate(`/correspondence/${id}`);
+        }
       } else {
         const { error, data: insertedData } = await authed
           .from('correspondences')

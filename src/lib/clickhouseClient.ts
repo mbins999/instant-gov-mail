@@ -74,6 +74,12 @@ export const clickhouseApi = {
 
   getCorrespondence: (id: string) => apiRequest(`/correspondences/${id}`),
 
+  updateCorrespondence: (id: string, data: any) =>
+    apiRequest(`/correspondences/update/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
   createCorrespondence: (data: any) =>
     apiRequest('/correspondences/create', {
       method: 'POST',

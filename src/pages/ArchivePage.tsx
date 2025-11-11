@@ -16,7 +16,7 @@ export default function ArchivePage() {
     }
   }, []);
   
-  // عرض المراسلات المؤرشفة فقط
+  // عرض المراسلات المؤرشفة فقط (تشمل المسودات)
   const archivedCorrespondences = correspondences.filter((c: any) => c.archived === true);
 
   if (loading) {
@@ -43,7 +43,11 @@ export default function ArchivePage() {
         </CardHeader>
         <CardContent>
           {archivedCorrespondences.length > 0 ? (
-            <CorrespondenceTable correspondences={archivedCorrespondences} onReceive={refetch} />
+            <CorrespondenceTable 
+              correspondences={archivedCorrespondences} 
+              onReceive={refetch}
+              showEditDraft={true}
+            />
           ) : (
             <div className="text-center py-12">
               <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
