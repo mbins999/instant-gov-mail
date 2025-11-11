@@ -14,7 +14,7 @@ async def list_correspondences():
     try:
         result = client.query(
             f"""
-            SELECT *, '' as status
+            SELECT *
             FROM correspondences
             ORDER BY date DESC
             """
@@ -48,7 +48,7 @@ async def list_correspondences():
                 "pdf_url": row[20],
                 "external_doc_id": row[21],
                 "external_connection_id": row[22],
-                "status": row[23] if len(row) > 23 else ''
+                "status": row[23] if len(row) > 23 else 'sent'
             })
         
         return correspondences
@@ -68,7 +68,7 @@ async def get_correspondence(correspondence_id: str):
     try:
         result = client.query(
             f"""
-            SELECT *, '' as status
+            SELECT *
             FROM correspondences
             WHERE id = %(id)s
             LIMIT 1
@@ -109,7 +109,7 @@ async def get_correspondence(correspondence_id: str):
             "pdf_url": row[20],
             "external_doc_id": row[21],
             "external_connection_id": row[22],
-            "status": row[23] if len(row) > 23 else ''
+            "status": row[23] if len(row) > 23 else 'sent'
         }
         
     except HTTPException:
