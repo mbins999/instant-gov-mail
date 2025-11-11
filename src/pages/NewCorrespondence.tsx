@@ -119,9 +119,11 @@ export default function NewCorrespondence() {
     if (isEditMode && id) {
       const fetchCorrespondence = async () => {
         try {
+          console.log('Fetching correspondence for edit mode, id:', id);
           // Try fetching from ClickHouse first (for drafts)
           const { clickhouseApi } = await import('@/lib/clickhouseClient');
           const data = await clickhouseApi.getCorrespondence(id);
+          console.log('Fetched correspondence data:', data);
 
           if (data) {
             setFormData({
@@ -140,6 +142,7 @@ export default function NewCorrespondence() {
             // Check if it's a draft
             if ((data as any).status === 'draft') {
               setIsDraft(true);
+              console.log('Draft detected, isDraft set to true');
             }
             
             if (data.signature_url) {
@@ -149,6 +152,8 @@ export default function NewCorrespondence() {
             if (data.attachments && data.attachments.length > 0) {
               setExistingAttachments(data.attachments);
             }
+          } else {
+            console.error('No data returned from API');
           }
         } catch (err) {
           console.error('Error fetching correspondence:', err);
@@ -159,11 +164,15 @@ export default function NewCorrespondence() {
           });
           navigate('/');
         } finally {
+          console.log('Setting fetchingData to false');
           setFetchingData(false);
         }
       };
 
       fetchCorrespondence();
+    } else if (!isEditMode) {
+      // Not in edit mode, make sure fetchingData is false
+      setFetchingData(false);
     }
   }, [id, isEditMode, navigate, toast]);
 
