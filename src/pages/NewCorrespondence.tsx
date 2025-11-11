@@ -322,20 +322,11 @@ export default function NewCorrespondence() {
   const handleArchive = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // التحقق من الحقول الإجبارية
-    if (!formData.to) {
+    // التحقق من رقم الكتاب فقط
+    if (!formData.number) {
       toast({
         title: "خطأ",
-        description: "يجب اختيار الجهة المستلمة",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!formData.from) {
-      toast({
-        title: "خطأ",
-        description: "يجب اختيار الجهة المرسلة",
+        description: "يجب إدخال رقم الكتاب",
         variant: "destructive",
       });
       return;
@@ -428,20 +419,11 @@ export default function NewCorrespondence() {
   const handleSubmit = async (e: React.FormEvent, shouldSendExternal = false) => {
     e.preventDefault();
     
-    // التحقق من الحقول الإجبارية
-    if (!formData.to) {
+    // التحقق من رقم الكتاب فقط
+    if (!formData.number) {
       toast({
         title: "خطأ",
-        description: "يجب اختيار الجهة المستلمة",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!formData.from) {
-      toast({
-        title: "خطأ",
-        description: "يجب اختيار الجهة المرسلة",
+        description: "يجب إدخال رقم الكتاب",
         variant: "destructive",
       });
       return;
@@ -574,7 +556,7 @@ export default function NewCorrespondence() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="displayType">نوع عرض الكتاب *</Label>
+              <Label htmlFor="displayType">نوع عرض الكتاب</Label>
               <Select
                 value={formData.displayType}
                 onValueChange={(value: 'content' | 'attachment_only') => 
@@ -605,18 +587,31 @@ export default function NewCorrespondence() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="from">الجهة المرسلة *</Label>
-                <Input
-                  id="from"
+                <Label htmlFor="from">الجهة المرسلة</Label>
+                <Select
                   value={formData.from}
-                  disabled
-                  className="bg-muted"
-                  placeholder="جهتك"
-                />
+                  onValueChange={(value) => setFormData({ ...formData, from: value })}
+                  disabled={loading}
+                >
+                  <SelectTrigger className="bg-background">
+                    <SelectValue placeholder="اختر الجهة المرسلة" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border shadow-lg z-50">
+                    {entities.length === 0 ? (
+                      <div className="p-2 text-sm text-muted-foreground">لا توجد جهات</div>
+                    ) : (
+                      entities.map((entity) => (
+                        <SelectItem key={entity.id} value={entity.name}>
+                          {entity.name}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="to">الجهة المستلمة *</Label>
+                <Label htmlFor="to">الجهة المستلمة</Label>
                 <Select
                   value={formData.to}
                   onValueChange={(value) => setFormData({ ...formData, to: value })}
@@ -641,13 +636,12 @@ export default function NewCorrespondence() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="date">التاريخ *</Label>
+              <Label htmlFor="date">التاريخ</Label>
               <Input
                 id="date"
                 type="date"
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                required
                 disabled={loading}
               />
               <div className="text-sm space-y-1 mt-2">
@@ -678,36 +672,33 @@ export default function NewCorrespondence() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="greeting">التحية *</Label>
+                  <Label htmlFor="greeting">التحية</Label>
                   <Textarea
                     id="greeting"
                     value={formData.greeting}
                     onChange={(e) => setFormData({ ...formData, greeting: e.target.value })}
                     rows={3}
-                    required
                     disabled={loading}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="subject">الموضوع *</Label>
+                  <Label htmlFor="subject">الموضوع</Label>
                   <Input
                     id="subject"
                     value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    required
                     disabled={loading}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="content">المحتوى *</Label>
+                  <Label htmlFor="content">المحتوى</Label>
                   <Textarea
                     id="content"
                     value={formData.content}
                     onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                     rows={8}
-                    required
                     disabled={loading}
                   />
                 </div>
@@ -744,7 +735,7 @@ export default function NewCorrespondence() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="attachments">المرفقات {formData.displayType === 'attachment_only' && '*'}</Label>
+              <Label htmlFor="attachments">المرفقات</Label>
               <div className="flex gap-2">
                 <Input
                   id="attachments"
@@ -752,7 +743,6 @@ export default function NewCorrespondence() {
                   multiple
                   onChange={handleAttachmentChange}
                   disabled={loading}
-                  required={formData.displayType === 'attachment_only' && attachmentFiles.length === 0 && existingAttachments.length === 0}
                   className="flex-1"
                 />
                 <Button
