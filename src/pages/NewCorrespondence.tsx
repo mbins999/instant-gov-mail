@@ -103,15 +103,25 @@ export default function NewCorrespondence() {
         console.log('Entities count:', data?.length);
         
         // Remove duplicates by id
-        const uniqueEntities = data?.reduce((acc: Entity[], entity: Entity) => {
-          if (!acc.find(e => e.id === entity.id)) {
-            acc.push(entity);
-          }
-          return acc;
-        }, []) || [];
+        const byId: Record<string, Entity> = {} as any;
+        (data || []).forEach((e: any) => {
+          if (e?.id && !byId[e.id]) byId[e.id] = e;
+        });
+        const uniqueById = Object.values(byId) as Entity[];
         
-        console.log('Unique entities count:', uniqueEntities.length);
-        setEntities(uniqueEntities as Entity[]);
+        // Then remove duplicates by name (Radix Select uses value for keys internally)
+        const seenNames = new Set<string>();
+        const uniqueByName: Entity[] = [];
+        uniqueById.forEach((e) => {
+          const name = e?.name?.trim?.() || e?.name;
+          if (name && !seenNames.has(name)) {
+            seenNames.add(name);
+            uniqueByName.push(e);
+          }
+        });
+        
+        console.log('Unique by id:', uniqueById.length, 'Unique by name:', uniqueByName.length);
+        setEntities(uniqueByName);
       } catch (error) {
         console.error('Error fetching entities:', error);
       }
