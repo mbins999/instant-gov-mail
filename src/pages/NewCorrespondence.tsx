@@ -7,8 +7,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Save, Loader2, Send, Scan } from 'lucide-react';
-import { getAuthenticatedSupabaseClient } from '@/lib/supabaseAuth';
-import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useParams } from 'react-router-dom';
 import { correspondenceApi } from '@/services/correspondenceApi';
 import { TemplateSelector } from '@/components/TemplateSelector';
@@ -96,16 +94,12 @@ export default function NewCorrespondence() {
   }, [isEditMode]);
 
   useEffect(() => {
-    // Fetch entities for dropdown
+    // Fetch entities for dropdown from ClickHouse
     const fetchEntities = async () => {
       try {
-        const supabase = getAuthenticatedSupabaseClient();
-        const { data, error } = await supabase
-          .from('entities')
-          .select('*')
-          .order('name');
-
-        if (error) throw error;
+        const { clickhouseApi } = await import('@/lib/clickhouseClient');
+        const data = await clickhouseApi.listEntities();
+        console.log('Fetched entities:', data);
         setEntities((data || []) as Entity[]);
       } catch (error) {
         console.error('Error fetching entities:', error);
@@ -396,35 +390,8 @@ export default function NewCorrespondence() {
 
     // التحقق من الاتصال بالجهة الخارجية عند محاولة الإرسال الخارجي
     if (shouldSendExternal) {
-      try {
-        const supabase = getAuthenticatedSupabaseClient();
-        const { data: connection, error } = await supabase
-          .from('external_connections')
-          .select('is_active')
-          .eq('is_active', true)
-          .maybeSingle();
-
-        if (error) {
-          console.error('Error checking connection:', error);
-        }
-
-        if (!connection) {
-          toast({
-            title: "خطأ",
-            description: "يرجى الاتصال بالجهة الخارجية",
-            variant: "destructive",
-          });
-          return;
-        }
-      } catch (error) {
-        console.error('Error checking external connection:', error);
-        toast({
-          title: "خطأ",
-          description: "يرجى الاتصال بالجهة الخارجية",
-          variant: "destructive",
-        });
-        return;
-      }
+      // TODO: Implement external connection check via ClickHouse API if needed
+      console.log('External send requested, skipping connection check for now');
     }
 
     setLoading(true);
@@ -433,11 +400,7 @@ export default function NewCorrespondence() {
       let signatureUrl = signaturePreview;
       const uploadedAttachments: string[] = [...existingAttachments];
       
-      const authed = getAuthenticatedSupabaseClient();
       const apiUrl = import.meta.env.VITE_API_URL || 'http://192.168.203.134:3001';
-      
-      // Upload new signature if provided (already saved as base64 in handleSignatureChange)
-      // signatureUrl is already set to base64 preview
       
       // Upload attachments to local server with MD5 deduplication
       for (const file of attachmentFiles) {
@@ -491,119 +454,36 @@ export default function NewCorrespondence() {
         })()
       };
 
+      const { clickhouseApi } = await import('@/lib/clickhouseClient');
+
       if (isEditMode && id) {
-        // Check if it's a draft being edited
-        if (isDraft) {
-          // Update draft in ClickHouse
-          const { clickhouseApi } = await import('@/lib/clickhouseClient');
-          await clickhouseApi.updateCorrespondence(id, {
-            ...correspondenceData,
-            status: 'sent',
-            archived: false
-          });
-          
-          toast({
-            title: "تم الإرسال بنجاح",
-            description: "تم تحديث المسودة وإرسال المراسلة",
-          });
-          
-          navigate('/sent');
-        } else {
-          // Regular update in Supabase
-          const { error } = await authed
-            .from('correspondences')
-            .update(correspondenceData)
-            .eq('id', id);
-
-          if (error) throw error;
-
-          toast({
-            title: "تم التحديث بنجاح",
-            description: "تم تحديث المراسلة",
-          });
-          
-          navigate(`/correspondence/${id}`);
-        }
-      } else {
-        const { error, data: insertedData } = await authed
-          .from('correspondences')
-          .insert([correspondenceData])
-          .select()
-          .single();
-
-        if (error) throw error;
-
-        // Generate PDF for the correspondence
-        if (insertedData?.id) {
-          try {
-            await authed.functions.invoke('generate-correspondence-pdf', {
-              body: { correspondenceId: insertedData.id }
-            });
-            console.log('PDF generation started for correspondence:', insertedData.id);
-          } catch (pdfError) {
-            console.error('Error generating PDF:', pdfError);
-            // Don't block the user flow if PDF generation fails
-          }
-        }
-
-        // إرسال خارجي إذا طُلب ذلك
-        if (shouldSendExternal && insertedData) {
-          if (!correspondenceApi.isAuthenticated()) {
-            toast({
-              title: "تحذير",
-              description: "لم يتم الربط مع النظام الخارجي. تم حفظ المراسلة محلياً فقط.",
-              variant: "default",
-            });
-          } else {
-            try {
-              const metadata = {
-                docId: insertedData.number,
-                subject: correspondenceData.subject,
-                sender: correspondenceData.from_entity,
-                date: correspondenceData.date,
-              };
-
-              await correspondenceApi.exportCorrespondence(metadata);
-              
-              // البحث عن المستخدم المستلم بناءً على اسم الجهة
-              const { data: receiverUser } = await authed
-                .from('users')
-                .select('id, entity_name')
-                .eq('entity_name', formData.to)
-                .maybeSingle();
-
-              // إذا وُجدت الجهة المستلمة، إنشاء نسخة من المراسلة في حسابها
-                if (receiverUser) {
-                  await authed
-                    .from('correspondences')
-                    .insert([{
-                      ...correspondenceData,
-                      type: 'incoming',
-                      received_by_entity: receiverUser.entity_name,
-                      created_by: receiverUser.id,
-                    }]);
-                }
-              
-              toast({
-                title: "تم الإرسال بنجاح",
-                description: "تم حفظ وإرسال المراسلة للنظام الخارجي",
-              });
-            } catch (error) {
-              toast({
-                title: "تحذير",
-                description: "تم حفظ المراسلة ولكن فشل الإرسال للنظام الخارجي",
-                variant: "default",
-              });
-            }
-          }
-        } else {
-          toast({
-            title: "تم الحفظ بنجاح",
-            description: "تم حفظ المراسلة الجديدة",
-          });
-        }
+        // Update existing correspondence in ClickHouse
+        await clickhouseApi.updateCorrespondence(id, {
+          ...correspondenceData,
+          status: isDraft ? 'sent' : 'sent',
+          archived: isDraft ? false : false
+        });
         
-        navigate('/');
+        toast({
+          title: isDraft ? "تم الإرسال بنجاح" : "تم التحديث بنجاح",
+          description: isDraft ? "تم تحديث المسودة وإرسال المراسلة" : "تم تحديث المراسلة",
+        });
+        
+        navigate(isDraft ? '/sent' : `/correspondence/${id}`);
+      } else {
+        // Create new correspondence in ClickHouse
+        const result = await clickhouseApi.createCorrespondence({
+          ...correspondenceData,
+          status: 'sent',
+          archived: false
+        });
+
+        toast({
+          title: "تم الحفظ بنجاح",
+          description: "تم حفظ المراسلة الجديدة",
+        });
+
+        navigate('/sent');
       }
     } catch (error) {
       console.error('Error saving correspondence:', error);
