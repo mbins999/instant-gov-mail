@@ -74,6 +74,12 @@ export const clickhouseApi = {
 
   getCorrespondence: (id: string) => apiRequest(`/correspondences/${id}`),
 
+  createCorrespondence: (data: any) =>
+    apiRequest('/correspondences/create', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
   // Entities
   listEntities: () => apiRequest('/entities'),
   

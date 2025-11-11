@@ -83,42 +83,53 @@ export default function CorrespondenceTable({ correspondences, onReceive }: Corr
             <th className="text-right p-4 font-semibold">من</th>
             <th className="text-right p-4 font-semibold">استلام بواسطة</th>
             <th className="text-right p-4 font-semibold">التاريخ</th>
+            <th className="text-right p-4 font-semibold">الحالة</th>
             <th className="text-right p-4 font-semibold">الإجراءات</th>
           </tr>
         </thead>
         <tbody>
-          {correspondences.map((item, index) => (
-            <tr 
-              key={item.id} 
-              className={index % 2 === 0 ? 'bg-background' : 'bg-muted/30'}
-            >
-              <td 
-                className="p-4 font-mono text-sm text-primary hover:underline cursor-pointer"
-                onClick={() => navigate(`/correspondence/${item.id}`)}
+          {correspondences.map((item, index) => {
+            const isDraft = (item as any).status === 'draft';
+            return (
+              <tr 
+                key={item.id} 
+                className={`${isDraft ? 'bg-red-50 dark:bg-red-950/20' : index % 2 === 0 ? 'bg-background' : 'bg-muted/30'}`}
               >
-                {item.number}
-              </td>
-              <td className="p-4 font-semibold">{item.subject}</td>
-              <td className="p-4 text-sm">{item.from}</td>
-              <td className="p-4 text-sm">
-                {item.received_by_profile ? item.received_by_profile.full_name : '-'}
-              </td>
-              <td className="p-4 text-sm">{new Date(item.date).toLocaleDateString('en-GB')}</td>
-              <td className="p-4">
-                {!item.received_by && (
-                  <Button 
-                    size="sm" 
-                    variant="default"
-                    onClick={(e) => handleReceive(item.id, e)}
-                    className="gap-2"
-                  >
-                    <Check className="h-4 w-4" />
-                    استلام
-                  </Button>
-                )}
-              </td>
-            </tr>
-          ))}
+                <td 
+                  className="p-4 font-mono text-sm text-primary hover:underline cursor-pointer"
+                  onClick={() => navigate(`/correspondence/${item.id}`)}
+                >
+                  {item.number}
+                </td>
+                <td className="p-4 font-semibold">{item.subject}</td>
+                <td className="p-4 text-sm">{item.from}</td>
+                <td className="p-4 text-sm">
+                  {item.received_by_profile ? item.received_by_profile.full_name : '-'}
+                </td>
+                <td className="p-4 text-sm">{new Date(item.date).toLocaleDateString('en-GB')}</td>
+                <td className="p-4">
+                  {isDraft && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                      مسودة
+                    </span>
+                  )}
+                </td>
+                <td className="p-4">
+                  {!item.received_by && !isDraft && (
+                    <Button 
+                      size="sm" 
+                      variant="default"
+                      onClick={(e) => handleReceive(item.id, e)}
+                      className="gap-2"
+                    >
+                      <Check className="h-4 w-4" />
+                      استلام
+                    </Button>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

@@ -283,7 +283,6 @@ export default function NewCorrespondence() {
       let signatureUrl = signaturePreview;
       const uploadedAttachments: string[] = [...existingAttachments];
       
-      const authed = getAuthenticatedSupabaseClient();
       const apiUrl = import.meta.env.VITE_API_URL || 'http://192.168.203.134:3001';
       
       // Upload attachments to local server with MD5 deduplication
@@ -321,6 +320,7 @@ export default function NewCorrespondence() {
         display_type: formData.displayType,
         attachments: uploadedAttachments,
         archived: true,
+        status: 'draft',
         created_by: (() => {
           try {
             const userSession = localStorage.getItem('user_session');
@@ -339,48 +339,16 @@ export default function NewCorrespondence() {
         })()
       };
 
-      if (isEditMode && id) {
-        const { error } = await authed
-          .from('correspondences')
-          .update(correspondenceData)
-          .eq('id', id);
+      // Save to ClickHouse instead of Supabase
+      const { clickhouseApi } = await import('@/lib/clickhouseClient');
+      await clickhouseApi.createCorrespondence(correspondenceData);
 
-        if (error) throw error;
-
-        toast({
-          title: "تمت أرشفة المراسلة",
-          description: "تم أرشفة المراسلة بنجاح",
-        });
-        
-        navigate(`/archive`);
-      } else {
-        const { error, data: insertedData } = await authed
-          .from('correspondences')
-          .insert([correspondenceData])
-          .select()
-          .single();
-
-        if (error) throw error;
-
-        // Generate PDF for the correspondence
-        if (insertedData?.id) {
-          try {
-            await authed.functions.invoke('generate-correspondence-pdf', {
-              body: { correspondenceId: insertedData.id }
-            });
-            console.log('PDF generation started for correspondence:', insertedData.id);
-          } catch (pdfError) {
-            console.error('Error generating PDF:', pdfError);
-          }
-        }
-
-        toast({
-          title: "تمت أرشفة المراسلة",
-          description: "تم حفظ المراسلة في الأرشيف بنجاح",
-        });
-        
-        navigate('/archive');
-      }
+      toast({
+        title: "تمت أرشفة المراسلة",
+        description: "تم حفظ المراسلة كمسودة في الأرشيف بنجاح",
+      });
+      
+      navigate('/archive');
     } catch (error) {
       console.error('Error archiving correspondence:', error);
       toast({
