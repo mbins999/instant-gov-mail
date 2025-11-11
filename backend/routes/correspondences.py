@@ -128,7 +128,12 @@ async def create_correspondence(data: dict):
     
     try:
         correspondence_id = str(uuid.uuid4())
-        now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        now = datetime.utcnow()
+        
+        # Convert date string to datetime object
+        date_value = data.get('date')
+        if isinstance(date_value, str):
+            date_value = datetime.fromisoformat(date_value.replace('Z', '+00:00'))
         
         # Insert into ClickHouse
         client.insert(
@@ -140,7 +145,7 @@ async def create_correspondence(data: dict):
                 data.get('subject'),
                 data.get('from_entity'),
                 data.get('received_by_entity', ''),
-                data.get('date'),
+                date_value,
                 data.get('content', ''),
                 data.get('greeting', 'السيد/'),
                 data.get('responsible_person', ''),
