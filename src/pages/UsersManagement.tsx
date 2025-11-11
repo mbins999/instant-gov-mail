@@ -102,9 +102,28 @@ export default function UsersManagement() {
       console.log('[UsersManagement] Fetching entities...');
       const data = await clickhouseApi.listEntities();
 
-      console.log('[UsersManagement] Entities fetch result:', data);
-      setEntities((data || []) as Entity[]);
-      console.log('[UsersManagement] Entities state updated:', data?.length || 0);
+      // Normalize and deduplicate by name to avoid repeated entries in the dropdown
+      const normalize = (s: string) =>
+        (s || '')
+          .trim()
+          .replace(/[\u064B-\u0652]/g, '') // remove Arabic diacritics
+          .replace(/[ـ]+/g, '') // remove tatweel
+          .replace(/\s+/g, ' ') // collapse spaces
+          .toLowerCase();
+
+      const seen = new Set<string>();
+      const unique = ((data || []) as Entity[]).filter((e) => {
+        const key = normalize(e.name);
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+      unique.sort((a, b) => a.name.localeCompare(b.name, 'ar'));
+
+      console.log('[UsersManagement] Entities fetch result (deduped):', unique.length);
+      setEntities(unique);
+      console.log('[UsersManagement] Entities state updated:', unique.length);
     } catch (error) {
       console.error('[UsersManagement] Error fetching entities:', error);
     }
