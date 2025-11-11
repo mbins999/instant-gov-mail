@@ -101,7 +101,17 @@ export default function NewCorrespondence() {
         const data = await clickhouseApi.listEntities();
         console.log('Fetched entities:', data);
         console.log('Entities count:', data?.length);
-        setEntities((data || []) as Entity[]);
+        
+        // Remove duplicates by id
+        const uniqueEntities = data?.reduce((acc: Entity[], entity: Entity) => {
+          if (!acc.find(e => e.id === entity.id)) {
+            acc.push(entity);
+          }
+          return acc;
+        }, []) || [];
+        
+        console.log('Unique entities count:', uniqueEntities.length);
+        setEntities(uniqueEntities as Entity[]);
       } catch (error) {
         console.error('Error fetching entities:', error);
       }

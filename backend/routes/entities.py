@@ -55,20 +55,24 @@ async def list_entities():
     try:
         result = client.query(
             """
-            SELECT id, name, type, created_at
+            SELECT DISTINCT id, name, type, created_at
             FROM entities
             ORDER BY name ASC
             """
         )
         
         entities = []
+        seen_ids = set()
         for row in result.result_rows:
-            entities.append({
-                "id": row[0],
-                "name": row[1],
-                "type": row[2],
-                "created_at": row[3]
-            })
+            entity_id = row[0]
+            if entity_id not in seen_ids:
+                seen_ids.add(entity_id)
+                entities.append({
+                    "id": entity_id,
+                    "name": row[1],
+                    "type": row[2],
+                    "created_at": row[3]
+                })
         
         return entities
         
