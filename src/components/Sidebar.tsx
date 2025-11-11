@@ -93,7 +93,10 @@ export default function Sidebar() {
           )}
         </div>
         <Button
-          onClick={() => navigate('/new')}
+          onClick={() => {
+            console.log('كتاب جديد button clicked, navigating to /new');
+            navigate('/new');
+          }}
           className="w-full justify-center gap-2"
           size="lg"
         >

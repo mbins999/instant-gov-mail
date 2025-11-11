@@ -34,43 +34,250 @@ function App() {
             <Toaster />
             <Sonner />
             <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route
-              path="/*"
-              element={
-                <ProtectedRoute>
-                  <div className="flex min-h-screen" dir="rtl">
-                    <div className="print:hidden">
-                      <Sidebar />
-                    </div>
-                    <div className="flex-1 flex flex-col">
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route
+                path="/incoming"
+                element={
+                  <ProtectedRoute>
+                    <div className="flex min-h-screen" dir="rtl">
                       <div className="print:hidden">
-                        <TopBar />
+                        <Sidebar />
                       </div>
-                      <main className="flex-1 p-8 overflow-auto bg-background print:p-0 print:overflow-visible">
-                        <Routes>
-                          <Route path="/incoming" element={<Incoming />} />
-                          <Route path="/sent" element={<Sent />} />
-                          <Route path="/outgoing" element={<Outgoing />} />
-                          <Route path="/new" element={<NewCorrespondence />} />
-                          <Route path="/edit/:id" element={<NewCorrespondence />} />
-                          <Route path="/correspondence/:id" element={<CorrespondenceDetail />} />
-                          <Route path="/search" element={<SearchPage />} />
-                          <Route path="/advanced-search" element={<AdvancedSearchPage />} />
-                          <Route path="/archive" element={<ArchivePage />} />
-                          <Route path="/import" element={<ImportCorrespondence />} />
-                          <Route path="/users" element={<UsersManagement />} />
-                          <Route path="/reports" element={<ReportsPage />} />
-                          <Route path="*" element={<NotFound />} />
-                        </Routes>
-                      </main>
+                      <div className="flex-1 flex flex-col">
+                        <div className="print:hidden">
+                          <TopBar />
+                        </div>
+                        <main className="flex-1 p-8 overflow-auto bg-background print:p-0 print:overflow-visible">
+                          <Incoming />
+                        </main>
+                      </div>
                     </div>
-                  </div>
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/sent"
+                element={
+                  <ProtectedRoute>
+                    <div className="flex min-h-screen" dir="rtl">
+                      <div className="print:hidden">
+                        <Sidebar />
+                      </div>
+                      <div className="flex-1 flex flex-col">
+                        <div className="print:hidden">
+                          <TopBar />
+                        </div>
+                        <main className="flex-1 p-8 overflow-auto bg-background print:p-0 print:overflow-visible">
+                          <Sent />
+                        </main>
+                      </div>
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/outgoing"
+                element={
+                  <ProtectedRoute>
+                    <div className="flex min-h-screen" dir="rtl">
+                      <div className="print:hidden">
+                        <Sidebar />
+                      </div>
+                      <div className="flex-1 flex flex-col">
+                        <div className="print:hidden">
+                          <TopBar />
+                        </div>
+                        <main className="flex-1 p-8 overflow-auto bg-background print:p-0 print:overflow-visible">
+                          <Outgoing />
+                        </main>
+                      </div>
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/new"
+                element={
+                  <ProtectedRoute>
+                    <div className="flex min-h-screen" dir="rtl">
+                      <div className="print:hidden">
+                        <Sidebar />
+                      </div>
+                      <div className="flex-1 flex flex-col">
+                        <div className="print:hidden">
+                          <TopBar />
+                        </div>
+                        <main className="flex-1 p-8 overflow-auto bg-background print:p-0 print:overflow-visible">
+                          <NewCorrespondence />
+                        </main>
+                      </div>
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/edit/:id"
+                element={
+                  <ProtectedRoute>
+                    <div className="flex min-h-screen" dir="rtl">
+                      <div className="print:hidden">
+                        <Sidebar />
+                      </div>
+                      <div className="flex-1 flex flex-col">
+                        <div className="print:hidden">
+                          <TopBar />
+                        </div>
+                        <main className="flex-1 p-8 overflow-auto bg-background print:p-0 print:overflow-visible">
+                          <NewCorrespondence />
+                        </main>
+                      </div>
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/correspondence/:id"
+                element={
+                  <ProtectedRoute>
+                    <div className="flex min-h-screen" dir="rtl">
+                      <div className="print:hidden">
+                        <Sidebar />
+                      </div>
+                      <div className="flex-1 flex flex-col">
+                        <div className="print:hidden">
+                          <TopBar />
+                        </div>
+                        <main className="flex-1 p-8 overflow-auto bg-background print:p-0 print:overflow-visible">
+                          <CorrespondenceDetail />
+                        </main>
+                      </div>
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/search"
+                element={
+                  <ProtectedRoute>
+                    <div className="flex min-h-screen" dir="rtl">
+                      <div className="print:hidden">
+                        <Sidebar />
+                      </div>
+                      <div className="flex-1 flex flex-col">
+                        <div className="print:hidden">
+                          <TopBar />
+                        </div>
+                        <main className="flex-1 p-8 overflow-auto bg-background print:p-0 print:overflow-visible">
+                          <SearchPage />
+                        </main>
+                      </div>
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/advanced-search"
+                element={
+                  <ProtectedRoute>
+                    <div className="flex min-h-screen" dir="rtl">
+                      <div className="print:hidden">
+                        <Sidebar />
+                      </div>
+                      <div className="flex-1 flex flex-col">
+                        <div className="print:hidden">
+                          <TopBar />
+                        </div>
+                        <main className="flex-1 p-8 overflow-auto bg-background print:p-0 print:overflow-visible">
+                          <AdvancedSearchPage />
+                        </main>
+                      </div>
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/archive"
+                element={
+                  <ProtectedRoute>
+                    <div className="flex min-h-screen" dir="rtl">
+                      <div className="print:hidden">
+                        <Sidebar />
+                      </div>
+                      <div className="flex-1 flex flex-col">
+                        <div className="print:hidden">
+                          <TopBar />
+                        </div>
+                        <main className="flex-1 p-8 overflow-auto bg-background print:p-0 print:overflow-visible">
+                          <ArchivePage />
+                        </main>
+                      </div>
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/import"
+                element={
+                  <ProtectedRoute>
+                    <div className="flex min-h-screen" dir="rtl">
+                      <div className="print:hidden">
+                        <Sidebar />
+                      </div>
+                      <div className="flex-1 flex flex-col">
+                        <div className="print:hidden">
+                          <TopBar />
+                        </div>
+                        <main className="flex-1 p-8 overflow-auto bg-background print:p-0 print:overflow-visible">
+                          <ImportCorrespondence />
+                        </main>
+                      </div>
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/users"
+                element={
+                  <ProtectedRoute>
+                    <div className="flex min-h-screen" dir="rtl">
+                      <div className="print:hidden">
+                        <Sidebar />
+                      </div>
+                      <div className="flex-1 flex flex-col">
+                        <div className="print:hidden">
+                          <TopBar />
+                        </div>
+                        <main className="flex-1 p-8 overflow-auto bg-background print:p-0 print:overflow-visible">
+                          <UsersManagement />
+                        </main>
+                      </div>
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/reports"
+                element={
+                  <ProtectedRoute>
+                    <div className="flex min-h-screen" dir="rtl">
+                      <div className="print:hidden">
+                        <Sidebar />
+                      </div>
+                      <div className="flex-1 flex flex-col">
+                        <div className="print:hidden">
+                          <TopBar />
+                        </div>
+                        <main className="flex-1 p-8 overflow-auto bg-background print:p-0 print:overflow-visible">
+                          <ReportsPage />
+                        </main>
+                      </div>
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
         </TooltipProvider>
       </BrowserRouter>
       </ThemeProvider>
