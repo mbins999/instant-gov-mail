@@ -128,42 +128,43 @@ async def create_correspondence(data: dict):
     
     try:
         correspondence_id = str(uuid.uuid4())
-        now = datetime.utcnow()
+        now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         
         # Insert into ClickHouse
-        client.command(
-            """
-            INSERT INTO correspondences (
-                id, number, type, subject, from_entity, received_by_entity, 
-                date, content, greeting, responsible_person, signature_url, 
-                display_type, attachments, notes, received_by, received_at, 
-                created_by, created_at, updated_at, archived, status
-            ) VALUES
-            """,
-            [
-                (
-                    correspondence_id,
-                    data.get('number'),
-                    data.get('type'),
-                    data.get('subject'),
-                    data.get('from_entity'),
-                    data.get('received_by_entity'),
-                    data.get('date'),
-                    data.get('content', ''),
-                    data.get('greeting', ''),
-                    data.get('responsible_person', ''),
-                    data.get('signature_url', ''),
-                    data.get('display_type', 'content'),
-                    data.get('attachments', []),
-                    data.get('notes', ''),
-                    data.get('received_by', 0),
-                    data.get('received_at', None),
-                    data.get('created_by'),
-                    now,
-                    now,
-                    1 if data.get('archived', False) else 0,
-                    data.get('status', '')
-                )
+        client.insert(
+            'correspondences',
+            [[
+                correspondence_id,
+                data.get('number'),
+                data.get('type'),
+                data.get('subject'),
+                data.get('from_entity'),
+                data.get('received_by_entity', ''),
+                data.get('date'),
+                data.get('content', ''),
+                data.get('greeting', 'السيد/'),
+                data.get('responsible_person', ''),
+                data.get('signature_url', ''),
+                data.get('display_type', 'content'),
+                data.get('attachments', []),
+                data.get('notes', ''),
+                data.get('received_by', 0),
+                data.get('received_at'),
+                data.get('created_by'),
+                now,
+                now,
+                1 if data.get('archived', False) else 0,
+                data.get('pdf_url', ''),
+                data.get('external_doc_id', ''),
+                data.get('external_connection_id', ''),
+                data.get('status', 'draft')
+            ]],
+            column_names=[
+                'id', 'number', 'type', 'subject', 'from_entity', 'received_by_entity',
+                'date', 'content', 'greeting', 'responsible_person', 'signature_url',
+                'display_type', 'attachments', 'notes', 'received_by', 'received_at',
+                'created_by', 'created_at', 'updated_at', 'archived', 'pdf_url',
+                'external_doc_id', 'external_connection_id', 'status'
             ]
         )
         
