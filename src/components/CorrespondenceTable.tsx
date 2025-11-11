@@ -101,7 +101,7 @@ export default function CorrespondenceTable({ correspondences, onReceive, showEd
                   onClick={() => {
                     const isDraft = (item as any).status === 'draft';
                     if (showEditDraft && isDraft) {
-                      navigate(`/new-correspondence/${item.id}`);
+                      navigate(`/edit/${item.id}`);
                     } else {
                       navigate(`/correspondence/${item.id}`);
                     }
