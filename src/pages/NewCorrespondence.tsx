@@ -120,11 +120,31 @@ export default function NewCorrespondence() {
           console.log('Fetched correspondence data:', data);
 
           if (data) {
-            const rawDate = data.date;
-            const dateIso = typeof rawDate === 'string'
-              ? (rawDate.includes('T') ? rawDate : new Date(rawDate).toISOString())
-              : new Date(rawDate).toISOString();
-            const dateOnly = dateIso.split('T')[0];
+            // Normalize date to YYYY-MM-DD safely across formats
+            const computeDateOnly = (raw: any) => {
+              try {
+                if (!raw) return new Date().toISOString().split('T')[0];
+                if (typeof raw === 'string') {
+                  const justDate = raw.match(/^\d{4}-\d{2}-\d{2}$/);
+                  if (justDate) return raw;
+                  let s = raw.trim();
+                  if (s.includes(' ') && !s.includes('T')) s = s.replace(' ', 'T');
+                  const d1 = new Date(s);
+                  if (!isNaN(d1.getTime())) return d1.toISOString().split('T')[0];
+                } else if (typeof raw === 'number') {
+                  const dSec = new Date(raw * 1000);
+                  if (!isNaN(dSec.getTime())) return dSec.toISOString().split('T')[0];
+                  const dMs = new Date(raw);
+                  if (!isNaN(dMs.getTime())) return dMs.toISOString().split('T')[0];
+                }
+                const d = new Date(raw);
+                if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+              } catch (e) {
+                console.warn('Failed to parse date, defaulting to today. Raw:', raw);
+              }
+              return new Date().toISOString().split('T')[0];
+            };
+            const dateOnly = computeDateOnly((data as any).date);
 
             setFormData({
               type: data.type || 'outgoing',
