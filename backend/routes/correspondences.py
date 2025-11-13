@@ -129,10 +129,45 @@ async def update_correspondence(correspondence_id: str, data: dict):
     try:
         now = datetime.utcnow()
         
+        # Fetch current state to enforce locking rules for display_type
+        try:
+            current = client.query(
+                f"""
+                SELECT display_type, archived, status
+                FROM correspondences
+                WHERE id = %(id)s
+                LIMIT 1
+                """,
+                parameters={"id": correspondence_id}
+            )
+        except Exception as e:
+            print(f"Pre-check query error: {e}")
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to validate correspondence state")
+        
+        if not current.result_rows:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Correspondence not found")
+        
+        curr_display_type = current.result_rows[0][0]
+        curr_archived = current.result_rows[0][1] == 1
+        curr_status = current.result_rows[0][2] if len(current.result_rows[0]) > 2 else None
+        
         # Convert date string to datetime object if needed
         date_value = data.get('date')
         if isinstance(date_value, str):
             date_value = datetime.fromisoformat(date_value.replace('Z', '+00:00'))
+        
+        # Validate and enforce immutability rules for display_type
+        allowed_display_types = {"content", "attachment_only"}
+        if 'display_type' in data:
+            new_display_type = data.get('display_type')
+            if new_display_type not in allowed_display_types:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid display_type. Must be 'content' or 'attachment_only'")
+            # If archived already, or already sent, or this update archives/sends it, disallow changing display_type
+            will_archive = bool(data.get('archived') is True)
+            will_send = data.get('status') in ('sent',)
+            locked_now = curr_archived or (curr_status in ('sent',))
+            if new_display_type != curr_display_type and (locked_now or will_archive or will_send):
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="display_type cannot be modified after archiving or external send")
         
         # Build UPDATE query
         update_fields = []
@@ -206,6 +241,15 @@ async def create_correspondence(data: dict):
         date_value = data.get('date')
         if isinstance(date_value, str):
             date_value = datetime.fromisoformat(date_value.replace('Z', '+00:00'))
+        
+        # Validate required and allowed display_type
+        allowed_display_types = {"content", "attachment_only"}
+        display_type = data.get('display_type')
+        if display_type not in allowed_display_types:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="display_type is required and must be 'content' or 'attachment_only'"
+            )
         
         # Insert into ClickHouse
         client.insert(

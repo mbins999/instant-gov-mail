@@ -45,6 +45,7 @@ export default function NewCorrespondence() {
   const [userJobTitle, setUserJobTitle] = useState<string>('');
   const [userFullName, setUserFullName] = useState<string>('');
   const [isDraft, setIsDraft] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
 
   useEffect(() => {
     // تعيين جهة المستخدم تلقائياً كجهة مرسلة وتحميل التوقيع
@@ -190,6 +191,10 @@ export default function NewCorrespondence() {
               setIsDraft(true);
               console.log('Draft detected, isDraft set to true');
             }
+            
+            // Lock display type after archive or external send
+            const locked = (data.archived === true) || ((data as any).status && (data as any).status !== 'draft');
+            setIsLocked(Boolean(locked));
             
             if (data.signature_url) {
               setSignaturePreview(data.signature_url);
@@ -590,7 +595,7 @@ export default function NewCorrespondence() {
                 onValueChange={(value: 'content' | 'attachment_only') => 
                   setFormData({ ...formData, displayType: value })
                 }
-                disabled={loading}
+                disabled={loading || isLocked}
               >
                 <SelectTrigger id="displayType">
                   <SelectValue />
@@ -600,6 +605,9 @@ export default function NewCorrespondence() {
                   <SelectItem value="attachment_only">مرفق فقط</SelectItem>
                 </SelectContent>
               </Select>
+              {isLocked && (
+                <p className="text-sm text-muted-foreground mt-1">لا يمكن تغيير نوع العرض بعد الأرشفة أو الإرسال الخارجي</p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
