@@ -51,6 +51,10 @@ export default function NewCorrespondence() {
     const userSession = localStorage.getItem('user_session');
     if (userSession && !isEditMode) {
       const userData = JSON.parse(userSession);
+      setFormData(prev => ({
+        ...prev,
+        from: userData.entity_name || ''
+      }));
       
       // Load user signature and info from ClickHouse
       const loadUserData = async () => {
@@ -63,15 +67,6 @@ export default function NewCorrespondence() {
           
           if (response.ok) {
             const userDetails = await response.json();
-            
-            // تعيين الجهة المرسلة تلقائياً من جهة المستخدم
-            if (userDetails.entity_name) {
-              setFormData(prev => ({
-                ...prev,
-                from: userDetails.entity_name
-              }));
-            }
-            
             if (userDetails.signature_base64) {
               setUserSignature(userDetails.signature_base64);
               setSignaturePreview(userDetails.signature_base64);
