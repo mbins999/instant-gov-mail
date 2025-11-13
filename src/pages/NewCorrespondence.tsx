@@ -973,10 +973,10 @@ const [isLocked, setIsLocked] = useState(false);
                 type="button" 
                 className="gap-2" 
                 disabled={loading}
-                onClick={handleArchive}
+                onClick={isEditMode ? handleSubmit : handleArchive}
               >
                 <Save className="h-4 w-4" />
-                {loading ? 'جاري الأرشفة...' : 'أرشفة'}
+                {loading ? (isEditMode ? 'جاري الحفظ...' : 'جاري الأرشفة...') : (isEditMode ? 'حفظ التغييرات' : 'أرشفة')}
               </Button>
               
               {!isEditMode && (
