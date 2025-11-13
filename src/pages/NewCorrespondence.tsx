@@ -53,33 +53,19 @@ const [isLocked, setIsLocked] = useState(false);
   useEffect(() => {
     if (isEditMode && initialCorrespondence) {
       try {
-        const computeDateOnly = (raw: any) => {
-          try {
-            if (!raw) return new Date().toISOString().split('T')[0];
-            if (typeof raw === 'string') {
-              const justDate = raw.match(/^\d{4}-\d{2}-\d{2}$/);
-              if (justDate) return raw;
-              let s = raw.trim();
-              if (s.includes(' ') && !s.includes('T')) s = s.replace(' ', 'T');
-              const d1 = new Date(s);
-              if (!isNaN(d1.getTime())) return d1.toISOString().split('T')[0];
-            } else if (typeof raw === 'number') {
-              const dSec = new Date(raw * 1000);
-              if (!isNaN(dSec.getTime())) return dSec.toISOString().split('T')[0];
-              const dMs = new Date(raw);
-              if (!isNaN(dMs.getTime())) return dMs.toISOString().split('T')[0];
-            }
-            const d = new Date(raw);
-            if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
-          } catch {}
-          return new Date().toISOString().split('T')[0];
-        };
-        const dateOnly = computeDateOnly(initialCorrespondence.date);
+        // Get current user's entity for from field
+        const userSession = localStorage.getItem('user_session');
+        let userEntityName = '';
+        if (userSession) {
+          const userData = JSON.parse(userSession);
+          userEntityName = userData.entity_name || '';
+        }
+        
         setFormData({
           type: initialCorrespondence.type || 'outgoing',
           number: initialCorrespondence.number || '',
-          date: dateOnly,
-          from: initialCorrespondence.from_entity || initialCorrespondence.from || '',
+          date: new Date().toISOString().split('T')[0], // Always use current date
+          from: userEntityName, // Always use current user's entity
           to: initialCorrespondence.received_by_entity || initialCorrespondence.to || '',
           subject: initialCorrespondence.subject || '',
           greeting: initialCorrespondence.greeting || 'السيد/',
@@ -199,43 +185,25 @@ const [isLocked, setIsLocked] = useState(false);
             console.log('Data attachments:', data?.attachments, 'is array?', Array.isArray(data?.attachments));
 
           if (data) {
-            // Normalize date to YYYY-MM-DD safely across formats
-            const computeDateOnly = (raw: any) => {
-              try {
-                if (!raw) return new Date().toISOString().split('T')[0];
-                if (typeof raw === 'string') {
-                  const justDate = raw.match(/^\d{4}-\d{2}-\d{2}$/);
-                  if (justDate) return raw;
-                  let s = raw.trim();
-                  if (s.includes(' ') && !s.includes('T')) s = s.replace(' ', 'T');
-                  const d1 = new Date(s);
-                  if (!isNaN(d1.getTime())) return d1.toISOString().split('T')[0];
-                } else if (typeof raw === 'number') {
-                  const dSec = new Date(raw * 1000);
-                  if (!isNaN(dSec.getTime())) return dSec.toISOString().split('T')[0];
-                  const dMs = new Date(raw);
-                  if (!isNaN(dMs.getTime())) return dMs.toISOString().split('T')[0];
-                }
-                const d = new Date(raw);
-                if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
-              } catch (e) {
-                console.warn('Failed to parse date, defaulting to today. Raw:', raw);
-              }
-              return new Date().toISOString().split('T')[0];
-            };
-            const dateOnly = computeDateOnly((data as any).date);
-
+            // Get current user's entity for from field
+            const userSession = localStorage.getItem('user_session');
+            let userEntityName = '';
+            if (userSession) {
+              const userData = JSON.parse(userSession);
+              userEntityName = userData.entity_name || '';
+            }
+            
             setFormData({
               type: data.type || 'outgoing',
               number: data.number || '',
-              date: dateOnly,
-              from: data.from_entity || '',
+              date: new Date().toISOString().split('T')[0], // Always use current date
+              from: userEntityName, // Always use current user's entity
               to: data.received_by_entity || '',
               subject: data.subject || '',
               greeting: data.greeting || 'السيد/',
               content: data.content || '',
               responsiblePerson: data.responsible_person || '',
-              displayType: 'content' as 'content' | 'attachment_only',
+              displayType: data.display_type || 'content' as 'content' | 'attachment_only',
             });
             
             // Check if it's a draft

@@ -35,30 +35,7 @@ export async function getCorrespondence(req: Request, res: Response) {
 
     const result = await clickhouse.query({
       query: `
-        SELECT 
-          id,
-          number,
-          type,
-          subject,
-          date,
-          from_entity,
-          received_by_entity,
-          greeting,
-          content,
-          responsible_person,
-          signature_url,
-          attachments,
-          notes,
-          received_by,
-          received_at,
-          created_by,
-          created_at,
-          updated_at,
-          archived,
-          status,
-          pdf_url,
-          external_doc_id,
-          external_connection_id
+        SELECT *
         FROM correspondences
         WHERE id = {id:String}
         LIMIT 1
@@ -67,40 +44,47 @@ export async function getCorrespondence(req: Request, res: Response) {
       query_params: { id },
     });
 
-    const correspondences = await result.json();
+    const rows = await result.json();
 
-    if (!correspondences || correspondences.length === 0) {
+    if (!rows || rows.length === 0) {
       return res.status(404).json({ error: 'Correspondence not found' });
     }
 
-    const c = correspondences[0];
+    const row = rows[0];
     
-    // Transform response to match expected format
-    res.json({
-      id: c.id,
-      number: c.number,
-      type: c.type,
-      subject: c.subject,
-      date: c.date,
-      from_entity: c.from_entity,
-      received_by_entity: c.received_by_entity,
-      greeting: c.greeting,
-      content: c.content,
-      responsible_person: c.responsible_person,
-      signature_url: c.signature_url || '',
-      attachments: c.attachments || [],
-      notes: c.notes,
-      received_by: c.received_by,
-      received_at: c.received_at,
-      created_by: c.created_by,
-      created_at: c.created_at,
-      updated_at: c.updated_at,
-      archived: c.archived === 1,
-      status: c.status,
-      pdf_url: c.pdf_url,
-      external_doc_id: c.external_doc_id,
-      external_connection_id: c.external_connection_id
-    });
+    console.log('Raw ClickHouse row:', row);
+    
+    // Explicitly map each field to ensure correct parsing
+    const response = {
+      id: row.id,
+      number: row.number,
+      type: row.type,
+      subject: row.subject,
+      date: row.date, // Keep original date from DB
+      from_entity: row.from_entity,
+      received_by_entity: row.received_by_entity,
+      greeting: row.greeting || '',
+      content: row.content || '',
+      responsible_person: row.responsible_person || '',
+      signature_url: row.signature_url || '',
+      attachments: Array.isArray(row.attachments) ? row.attachments : [],
+      notes: row.notes || '',
+      received_by: row.received_by,
+      received_at: row.received_at,
+      created_by: row.created_by,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      archived: row.archived === 1 || row.archived === true,
+      status: row.status || 'draft',
+      pdf_url: row.pdf_url,
+      external_doc_id: row.external_doc_id,
+      external_connection_id: row.external_connection_id,
+      display_type: row.display_type || 'content'
+    };
+    
+    console.log('Mapped response:', response);
+    
+    res.json(response);
   } catch (error) {
     console.error('Get correspondence error:', error);
     res.status(500).json({ error: 'Failed to fetch correspondence' });
