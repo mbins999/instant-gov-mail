@@ -127,28 +127,6 @@ async def update_correspondence(correspondence_id: str, data: dict):
     client = get_client()
     
     try:
-        # Enforce immutability for archived records
-        check = client.query(
-            """
-            SELECT archived
-            FROM correspondences
-            WHERE id = %(id)s
-            LIMIT 1
-            """,
-            parameters={"id": correspondence_id}
-        )
-        if not check.result_rows:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Correspondence not found"
-            )
-        archived_flag = check.result_rows[0][0]
-        if archived_flag == 1:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Archived correspondences are read-only and cannot be modified"
-            )
-
         now = datetime.utcnow()
         
         # Convert date string to datetime object if needed
@@ -208,8 +186,6 @@ async def update_correspondence(correspondence_id: str, data: dict):
             "message": "Correspondence updated successfully"
         }
         
-    except HTTPException:
-        raise
     except Exception as e:
         print(f"Update correspondence error: {e}")
         raise HTTPException(

@@ -105,27 +105,23 @@ export default function CorrespondenceDetail() {
 
   const handleToggleArchive = async () => {
     if (!correspondence) return;
-
-    // Prevent any modification on archived records
-    if (isArchived) {
-      toast({
-        title: "سجل مؤرشف",
-        description: "لا يمكن تعديل كتاب مُؤرشف. لإنشاء تغييرات، أنشئ نسخة جديدة.",
-        variant: "destructive",
-      });
-      return;
-    }
     
     setArchiving(true);
     try {
-      // Only allow archiving (one-way)
+      const newArchivedStatus = !isArchived;
+      
       const { clickhouseApi } = await import('@/lib/clickhouseClient');
-      await clickhouseApi.updateCorrespondence(id!, { archived: true });
+      await clickhouseApi.updateCorrespondence(id!, { 
+        archived: newArchivedStatus 
+      });
 
-      setIsArchived(true);
+      setIsArchived(newArchivedStatus);
+      
       toast({
-        title: "تم الأرشفة",
-        description: "تم أرشفة الكتاب بنجاح. أصبح الآن نسخة مقفلة للعرض فقط.",
+        title: newArchivedStatus ? "تم الأرشفة" : "تم إلغاء الأرشفة",
+        description: newArchivedStatus 
+          ? "تم أرشفة الكتاب بنجاح" 
+          : "تم إعادة توجيه الكتاب بنجاح",
       });
     } catch (error) {
       console.error('Archive error:', error);
@@ -290,48 +286,38 @@ export default function CorrespondenceDetail() {
           </div>
         </div>
         <div className="flex gap-2">
-          {isArchived ? (
-            <>
-              <Button variant="outline" size="icon" onClick={handlePrint} title="طباعة">
-                <Printer className="h-4 w-4" />
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button 
-                variant="default" 
-                size="icon"
-                onClick={handleSendToExternal}
-                disabled={sendingToExternal}
-                title="إرسال للنظام الخارجي"
-              >
-                {sendingToExternal ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-              </Button>
-              <Button variant="outline" size="icon" onClick={() => navigate(`/edit/${id}`)}>
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon" onClick={handlePrint} title="طباعة">
-                <Printer className="h-4 w-4" />
-              </Button>
-              <Button 
-                variant={isArchived ? "default" : "outline"} 
-                size="icon"
-                onClick={handleToggleArchive}
-                disabled={archiving}
-                title={isArchived ? "إلغاء الأرشفة" : "أرشفة"}
-              >
-                {archiving ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Archive className="h-4 w-4" />
-                )}
-              </Button>
-            </>
-          )}
+          <Button 
+            variant="default" 
+            size="icon"
+            onClick={handleSendToExternal}
+            disabled={sendingToExternal}
+            title="إرسال للنظام الخارجي"
+          >
+            {sendingToExternal ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+          </Button>
+          <Button variant="outline" size="icon" onClick={() => navigate(`/edit/${id}`)} title="تحرير">
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon" onClick={handlePrint} title="طباعة">
+            <Printer className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant={isArchived ? "default" : "outline"} 
+            size="icon"
+            onClick={handleToggleArchive}
+            disabled={archiving}
+            title={isArchived ? "إلغاء الأرشفة" : "أرشفة"}
+          >
+            {archiving ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Archive className="h-4 w-4" />
+            )}
+          </Button>
         </div>
       </div>
 
