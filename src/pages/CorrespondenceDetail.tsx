@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Edit, Printer, Archive, Loader2, Send } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { Correspondence } from '@/types/correspondence';
 import { correspondenceApi } from '@/services/correspondenceApi';
 import { useToast } from '@/hooks/use-toast';
@@ -36,21 +35,12 @@ export default function CorrespondenceDetail() {
   useEffect(() => {
     const fetchCorrespondence = async () => {
       try {
-        const { data, error } = await supabase
-          .from('correspondences')
-          .select(`
-            *,
-            received_by_user:users!received_by(
-              id,
-              full_name,
-              username,
-              entity_name
-            )
-          `)
-          .eq('id', id)
-          .single();
+        // Fetch from ClickHouse instead of Supabase
+        const { clickhouseApi } = await import('@/lib/clickhouseClient');
+        const data = await clickhouseApi.getCorrespondence(id!);
 
-        if (error) throw error;
+        console.log('Fetched correspondence:', data);
+        console.log('Display type from DB:', data.display_type);
 
         if (data) {
           setCorrespondence({
@@ -59,7 +49,7 @@ export default function CorrespondenceDetail() {
             greeting: data.greeting,
             responsible_person: data.responsible_person,
             signature_url: data.signature_url,
-            display_type: data.display_type,
+            display_type: data.display_type || 'content', // Ensure default value
           } as any);
           setIsArchived(data.archived || false);
         }
@@ -120,12 +110,11 @@ export default function CorrespondenceDetail() {
     try {
       const newArchivedStatus = !isArchived;
       
-      const { error } = await supabase
-        .from('correspondences')
-        .update({ archived: newArchivedStatus })
-        .eq('id', id);
-
-      if (error) throw error;
+      // Update in ClickHouse instead of Supabase
+      const { clickhouseApi } = await import('@/lib/clickhouseClient');
+      await clickhouseApi.updateCorrespondence(id!, { 
+        archived: newArchivedStatus 
+      });
 
       setIsArchived(newArchivedStatus);
       

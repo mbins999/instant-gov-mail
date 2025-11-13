@@ -327,6 +327,8 @@ export default function NewCorrespondence() {
   const handleArchive = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('Archiving with displayType:', formData.displayType);
+    
     // التحقق من رقم الكتاب والجهة المستلمة
     if (!formData.number) {
       toast({
@@ -408,6 +410,9 @@ export default function NewCorrespondence() {
         })()
       };
 
+      console.log('Correspondence data being saved:', correspondenceData);
+      console.log('Display type in data:', correspondenceData.display_type);
+
       // Save to ClickHouse instead of Supabase
       const { clickhouseApi } = await import('@/lib/clickhouseClient');
       await clickhouseApi.createCorrespondence(correspondenceData);
@@ -432,6 +437,8 @@ export default function NewCorrespondence() {
 
   const handleSubmit = async (e: React.FormEvent, shouldSendExternal = false) => {
     e.preventDefault();
+    
+    console.log('Submitting with displayType:', formData.displayType);
     
     // التحقق من رقم الكتاب والجهة المستلمة
     if (!formData.number) {
@@ -517,6 +524,9 @@ export default function NewCorrespondence() {
           }
         })()
       };
+
+      console.log('Correspondence data being saved:', correspondenceData);
+      console.log('Display type in data:', correspondenceData.display_type);
 
       const { clickhouseApi } = await import('@/lib/clickhouseClient');
 
