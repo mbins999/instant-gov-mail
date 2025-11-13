@@ -3,7 +3,7 @@ import cors from 'cors';
 import { initializeDatabase, clickhouse } from './clickhouse/client';
 import { createTables } from './clickhouse/schema';
 import { login, verifySession } from './api/auth';
-import { listUsers, updateUser } from './api/users';
+import { listUsers, updateUser, getUser } from './api/users';
 import { listCorrespondences, getCorrespondence } from './api/correspondences';
 import { listEntities } from './api/entities';
 
@@ -28,6 +28,7 @@ app.post('/api/auth/verify-session', verifySession);
 
 // User routes
 app.post('/api/users/list', listUsers);
+app.get('/api/users/:id', getUser);
 app.post('/api/users/update', updateUser);
 
 // Correspondence routes

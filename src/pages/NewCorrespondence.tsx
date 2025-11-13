@@ -192,8 +192,11 @@ const [isLocked, setIsLocked] = useState(false);
           console.log('Data type:', data?.type);
           console.log('Data number:', data?.number);
           console.log('Data date:', data?.date);
-          console.log('Data from_entity:', data?.from_entity);
-          console.log('Data attachments:', data?.attachments, 'is array?', Array.isArray(data?.attachments));
+            console.log('Data greeting:', data?.greeting);
+            console.log('Data content:', data?.content);
+            console.log('Data responsible_person:', data?.responsible_person);
+            console.log('Data signature_url:', data?.signature_url);
+            console.log('Data attachments:', data?.attachments, 'is array?', Array.isArray(data?.attachments));
 
           if (data) {
             // Normalize date to YYYY-MM-DD safely across formats
@@ -245,19 +248,27 @@ const [isLocked, setIsLocked] = useState(false);
             const locked = (data.archived === true) || ((data as any).status && (data as any).status !== 'draft');
             setIsLocked(Boolean(locked));
             
+            // Set signature from correspondence record
+            console.log('Setting signature from data.signature_url:', data.signature_url);
             if (data.signature_url) {
               setSignaturePreview(data.signature_url);
+              console.log('Signature preview set to:', data.signature_url);
+            } else {
+              console.log('No signature_url in correspondence data');
             }
             
             // Ensure attachments is always an array
+            console.log('Processing attachments:', data.attachments);
             if (data.attachments) {
               if (Array.isArray(data.attachments)) {
                 setExistingAttachments(data.attachments);
+                console.log('Set existing attachments:', data.attachments);
               } else {
                 console.warn('Attachments is not an array, resetting to empty:', data.attachments);
                 setExistingAttachments([]);
               }
             } else {
+              console.log('No attachments in data');
               setExistingAttachments([]);
             }
           } else {

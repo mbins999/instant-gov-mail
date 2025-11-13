@@ -56,6 +56,43 @@ export async function listUsers(req: Request, res: Response) {
   }
 }
 
+export async function getUser(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    
+    const result = await clickhouse.query({
+      query: `
+        SELECT 
+          u.id,
+          u.username,
+          u.full_name,
+          u.entity_id,
+          u.entity_name,
+          u.signature_base64,
+          u.job_title,
+          ur.role
+        FROM users u
+        LEFT JOIN user_roles ur ON u.id = ur.user_id
+        WHERE u.id = {id:Int64}
+        LIMIT 1
+      `,
+      format: 'JSONEachRow',
+      query_params: { id: parseInt(id) },
+    });
+
+    const users = await result.json();
+
+    if (!users || users.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(users[0]);
+  } catch (error) {
+    console.error('Get user error:', error);
+    res.status(500).json({ error: 'Failed to fetch user' });
+  }
+}
+
 export async function updateUser(req: Request, res: Response) {
   try {
     const { userId, fullName, entityId, password } = req.body;

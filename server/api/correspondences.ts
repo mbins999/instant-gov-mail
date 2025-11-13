@@ -52,11 +52,15 @@ export async function getCorrespondence(req: Request, res: Response) {
 
     const correspondence = correspondences[0];
     
+    // Transform response to match expected format
     res.json({
       ...correspondence,
       from: correspondence.from_entity,
+      to: correspondence.received_by_entity,
       attachments: correspondence.attachments || [],
       archived: correspondence.archived === 1,
+      // Ensure signature_url is included
+      signature_url: correspondence.signature_url || '',
     });
   } catch (error) {
     console.error('Get correspondence error:', error);
