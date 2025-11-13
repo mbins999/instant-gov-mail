@@ -171,18 +171,17 @@ const [isLocked, setIsLocked] = useState(false);
       const fetchCorrespondence = async () => {
         try {
           console.log('Fetching correspondence for edit mode, id:', id);
-          // Try fetching from ClickHouse first (for drafts)
           const { clickhouseApi } = await import('@/lib/clickhouseClient');
           const data = await clickhouseApi.getCorrespondence(id);
           console.log('Fetched correspondence data:', data);
           console.log('Data type:', data?.type);
           console.log('Data number:', data?.number);
-          console.log('Data date:', data?.date);
-            console.log('Data greeting:', data?.greeting);
-            console.log('Data content:', data?.content);
-            console.log('Data responsible_person:', data?.responsible_person);
-            console.log('Data signature_url:', data?.signature_url);
-            console.log('Data attachments:', data?.attachments, 'is array?', Array.isArray(data?.attachments));
+          console.log('Data greeting:', data?.greeting);
+          console.log('Data content (المحتوى):', data?.content);
+          console.log('Data subject (الموضوع):', data?.subject);
+          console.log('Data responsible_person:', data?.responsible_person);
+          console.log('Data signature_url:', data?.signature_url);
+          console.log('Data attachments:', data?.attachments, 'is array?', Array.isArray(data?.attachments));
 
           if (data) {
             // Get current user's entity for from field
