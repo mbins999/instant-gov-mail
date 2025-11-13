@@ -14,7 +14,13 @@ async def list_correspondences():
     try:
         result = client.query(
             f"""
-            SELECT *
+            SELECT 
+                id, number, type, subject, content, from_entity, 
+                received_by_entity, date, received_at, received_by, 
+                created_by, created_at, updated_at, archived, 
+                display_type, greeting, responsible_person, signature_url, 
+                pdf_url, notes, attachments, external_connection_id, 
+                external_doc_id, status
             FROM correspondences
             ORDER BY date DESC
             """
@@ -22,33 +28,33 @@ async def list_correspondences():
         
         correspondences = []
         for row in result.result_rows:
-            # Map row to correspondence object
+            # Map row using correct column positions
             correspondences.append({
-                "id": row[0],
-                "number": row[1],
-                "type": row[2],
-                "subject": row[3],
-                "from": row[4],
-                "from_entity": row[4],
-                "received_by_entity": row[5],
-                "date": row[6],
-                "content": row[7],
-                "greeting": row[8],
-                "responsible_person": row[9],
-                "signature_url": row[10],
-                "display_type": row[11],
-                "attachments": row[12] if row[12] else [],
-                "notes": row[13],
-                "received_by": row[14],
-                "received_at": row[15],
-                "created_by": row[16],
-                "created_at": row[17],
-                "updated_at": row[18],
-                "archived": row[19] == 1,
-                "pdf_url": row[20],
-                "external_doc_id": row[21],
-                "external_connection_id": row[22],
-                "status": row[23] if len(row) > 23 else 'sent'
+                "id": row[0],                        # id
+                "number": row[1],                    # number
+                "type": row[2],                      # type
+                "subject": row[3],                   # subject
+                "content": row[4],                   # content ✓
+                "from": row[5],                      # from_entity
+                "from_entity": row[5],              # from_entity
+                "received_by_entity": row[6],       # received_by_entity
+                "date": row[7],                      # date
+                "received_at": row[8],              # received_at
+                "received_by": row[9],              # received_by
+                "created_by": row[10],              # created_by
+                "created_at": row[11],              # created_at
+                "updated_at": row[12],              # updated_at
+                "archived": row[13] == 1,           # archived
+                "display_type": row[14],            # display_type
+                "greeting": row[15],                # greeting ✓
+                "responsible_person": row[16],      # responsible_person ✓
+                "signature_url": row[17],           # signature_url ✓
+                "pdf_url": row[18],                 # pdf_url
+                "notes": row[19],                   # notes
+                "attachments": row[20] if row[20] else [],  # attachments
+                "external_connection_id": row[21],  # external_connection_id
+                "external_doc_id": row[22],         # external_doc_id
+                "status": row[23] if len(row) > 23 else 'sent'  # status
             })
         
         return correspondences
@@ -68,7 +74,13 @@ async def get_correspondence(correspondence_id: str):
     try:
         result = client.query(
             f"""
-            SELECT *
+            SELECT 
+                id, number, type, subject, content, from_entity, 
+                received_by_entity, date, received_at, received_by, 
+                created_by, created_at, updated_at, archived, 
+                display_type, greeting, responsible_person, signature_url, 
+                pdf_url, notes, attachments, external_connection_id, 
+                external_doc_id, status
             FROM correspondences
             WHERE id = %(id)s
             LIMIT 1
@@ -85,31 +97,31 @@ async def get_correspondence(correspondence_id: str):
         row = result.result_rows[0]
         
         return {
-            "id": row[0],
-            "number": row[1],
-            "type": row[2],
-            "subject": row[3],
-            "from": row[4],
-            "from_entity": row[4],
-            "received_by_entity": row[5],
-            "date": row[6],
-            "content": row[7],
-            "greeting": row[8],
-            "responsible_person": row[9],
-            "signature_url": row[10],
-            "display_type": row[11],
-            "attachments": row[12] if row[12] else [],
-            "notes": row[13],
-            "received_by": row[14],
-            "received_at": row[15],
-            "created_by": row[16],
-            "created_at": row[17],
-            "updated_at": row[18],
-            "archived": row[19] == 1,
-            "pdf_url": row[20],
-            "external_doc_id": row[21],
-            "external_connection_id": row[22],
-            "status": row[23] if len(row) > 23 else 'sent'
+            "id": row[0],                        # id
+            "number": row[1],                    # number
+            "type": row[2],                      # type
+            "subject": row[3],                   # subject
+            "content": row[4],                   # content ✓
+            "from": row[5],                      # from_entity
+            "from_entity": row[5],              # from_entity
+            "received_by_entity": row[6],       # received_by_entity
+            "date": row[7],                      # date
+            "received_at": row[8],              # received_at
+            "received_by": row[9],              # received_by
+            "created_by": row[10],              # created_by
+            "created_at": row[11],              # created_at
+            "updated_at": row[12],              # updated_at
+            "archived": row[13] == 1,           # archived
+            "display_type": row[14],            # display_type
+            "greeting": row[15],                # greeting ✓
+            "responsible_person": row[16],      # responsible_person ✓
+            "signature_url": row[17],           # signature_url ✓
+            "pdf_url": row[18],                 # pdf_url
+            "notes": row[19],                   # notes
+            "attachments": row[20] if row[20] else [],  # attachments
+            "external_connection_id": row[21],  # external_connection_id
+            "external_doc_id": row[22],         # external_doc_id
+            "status": row[23] if len(row) > 23 else 'sent'  # status
         }
         
     except HTTPException:
