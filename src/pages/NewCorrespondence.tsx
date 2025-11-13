@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Save, Loader2, Send, Scan } from 'lucide-react';
+import { Save, Loader2, Send, Scan, Printer } from 'lucide-react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { correspondenceApi } from '@/services/correspondenceApi';
 import { TemplateSelector } from '@/components/TemplateSelector';
@@ -617,6 +617,100 @@ const [isLocked, setIsLocked] = useState(false);
     }
   };
 
+  const handlePrint = () => {
+    // If attachment-only type with attachments, open them directly
+    if (formData.displayType === 'attachment_only' && (attachmentFiles.length > 0 || existingAttachments.length > 0)) {
+      // Open each attachment in a new window for printing
+      existingAttachments.forEach((url, index) => {
+        setTimeout(() => {
+          window.open(url, '_blank');
+        }, index * 300); // Delay between opening windows
+      });
+      return;
+    }
+    
+    // For content type, use the browser's print dialog with the current page
+    window.print();
+  };
+
+  useEffect(() => {
+    // Add print styles
+    const style = document.createElement('style');
+    style.id = 'print-styles-new-correspondence';
+    style.textContent = `
+      @media print {
+        /* Hide everything by default */
+        body * {
+          visibility: hidden;
+        }
+        
+        /* Show only the printable content */
+        #printable-preview,
+        #printable-preview * {
+          visibility: visible !important;
+        }
+        
+        /* Make the preview visible and positioned properly */
+        #printable-preview {
+          display: block !important;
+        }
+        
+        /* Position printable content at top */
+        #printable-preview {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+        }
+        
+        /* Remove Card styling for print */
+        #printable-preview {
+          border: none !important;
+          box-shadow: none !important;
+          background: white !important;
+          padding: 0 !important;
+        }
+        
+        /* Page margins */
+        @page {
+          margin: 1.5cm;
+          size: A4;
+        }
+        
+        /* Hide buttons and navigation */
+        button,
+        nav,
+        .print\\:hidden {
+          display: none !important;
+        }
+        
+        /* Better text rendering for print */
+        #printable-preview {
+          color: black !important;
+          font-size: 13pt !important;
+          line-height: 1.8 !important;
+        }
+        
+        /* Official header styling for print */
+        #printable-preview h1,
+        #printable-preview h2 {
+          color: #1e40af !important;
+        }
+      }
+    `;
+    
+    if (!document.getElementById('print-styles-new-correspondence')) {
+      document.head.appendChild(style);
+    }
+    
+    return () => {
+      const existingStyle = document.getElementById('print-styles-new-correspondence');
+      if (existingStyle) {
+        document.head.removeChild(existingStyle);
+      }
+    };
+  }, []);
+
   if (fetchingData) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -900,6 +994,18 @@ const [isLocked, setIsLocked] = useState(false);
               
               <Button 
                 type="button" 
+                variant="outline"
+                className="gap-2" 
+                onClick={handlePrint}
+                disabled={loading}
+                title="معاينة وطباعة"
+              >
+                <Printer className="h-4 w-4" />
+                طباعة
+              </Button>
+              
+              <Button 
+                type="button" 
                 variant="outline" 
                 onClick={() => isEditMode ? navigate(`/correspondence/${id}`) : navigate('/')} 
                 disabled={loading}
@@ -910,6 +1016,119 @@ const [isLocked, setIsLocked] = useState(false);
           </form>
         </CardContent>
       </Card>
+
+      {/* Hidden preview section for printing */}
+      <div className="hidden print:block">
+        <Card id="printable-preview" className="max-w-4xl mx-auto">
+          <CardContent className="p-0">
+            {formData.displayType === 'attachment_only' ? (
+              <div className="p-12 space-y-6">
+                {/* Document Info */}
+                <div className="flex justify-between items-start pb-6">
+                  <div className="text-right space-y-2">
+                    <div className="flex items-center gap-3">
+                      <span className="text-foreground/70 font-semibold">الإشارة:</span>
+                      <span className="font-bold text-foreground text-lg">{formData.number}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-foreground/70 font-semibold">من:</span>
+                      <span className="font-semibold text-foreground">{formData.from}</span>
+                    </div>
+                  </div>
+                  <div className="text-left space-y-2">
+                    <div className="text-sm">
+                      <div className="font-semibold text-foreground/70">التاريخ:</div>
+                      <div className="font-bold text-foreground">{hijriDate}</div>
+                    </div>
+                    <div className="text-sm">
+                      <div className="font-semibold text-foreground/70">الموافق:</div>
+                      <div className="font-bold text-foreground">
+                        {new Date(formData.date).toLocaleDateString('en-GB')}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="p-12 space-y-6">
+                {/* Header with number and date */}
+                <div className="flex justify-between items-start pb-6 border-b-2 border-primary">
+                  <div className="text-right space-y-2">
+                    <div className="flex items-center gap-3">
+                      <span className="text-foreground/70 font-semibold">الإشارة:</span>
+                      <span className="font-bold text-primary text-lg">{formData.number}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-foreground/70 font-semibold">من:</span>
+                      <span className="font-semibold text-foreground">{formData.from}</span>
+                    </div>
+                  </div>
+                  <div className="text-left space-y-2">
+                    <div className="text-sm">
+                      <div className="font-semibold text-foreground/70">التاريخ:</div>
+                      <div className="font-bold text-foreground">{hijriDate}</div>
+                    </div>
+                    <div className="text-sm">
+                      <div className="font-semibold text-foreground/70">الموافق:</div>
+                      <div className="font-bold text-foreground">
+                        {new Date(formData.date).toLocaleDateString('en-GB')}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Subject */}
+                <div className="py-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="text-foreground/70 font-semibold">الموضوع:</span>
+                    <span className="font-bold text-foreground text-lg">{formData.subject}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-foreground/70 font-semibold">إلى:</span>
+                    <span className="font-semibold text-foreground">{formData.to}</span>
+                  </div>
+                </div>
+
+                {/* Greeting */}
+                <div className="py-4">
+                  <div className="text-foreground whitespace-pre-wrap leading-loose text-right">
+                    {formData.greeting}
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="py-6">
+                  <div className="text-foreground whitespace-pre-wrap leading-loose text-right">
+                    {formData.content}
+                  </div>
+                </div>
+
+                {/* Signature section */}
+                <div className="pt-8 space-y-6">
+                  <div className="flex justify-start items-start gap-8">
+                    <div className="flex-1 text-right space-y-4">
+                      {formData.responsiblePerson && (
+                        <div className="text-foreground font-bold whitespace-pre-wrap leading-relaxed">
+                          {formData.responsiblePerson}
+                        </div>
+                      )}
+                    </div>
+                    {signaturePreview && (
+                      <div className="flex-shrink-0">
+                        <img 
+                          src={signaturePreview} 
+                          alt="توقيع المسؤول" 
+                          className="max-h-24 max-w-32 object-contain" 
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
