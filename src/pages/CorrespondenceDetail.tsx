@@ -43,26 +43,13 @@ export default function CorrespondenceDetail() {
         console.log('Display type from DB:', data.display_type);
 
         if (data) {
-          // Normalize display type: if content fields exist, force 'content'
-          const hasContentFields = Boolean(
-            (data.content && String(data.content).trim().length > 0) ||
-            (data.subject && String(data.subject).trim().length > 0) ||
-            (data.greeting && String(data.greeting).trim().length > 0) ||
-            (data.responsible_person && String(data.responsible_person).trim().length > 0) ||
-            (data.signature_url && String(data.signature_url).trim().length > 0)
-          );
-
-          const effectiveDisplayType = (data.display_type === 'attachment_only' && hasContentFields)
-            ? 'content'
-            : (data.display_type || 'content');
-
           setCorrespondence({
             ...data,
             from: data.from_entity,
             greeting: data.greeting,
             responsible_person: data.responsible_person,
             signature_url: data.signature_url,
-            display_type: effectiveDisplayType,
+            display_type: data.display_type || 'content',
           } as any);
           setIsArchived(data.archived || false);
         }
@@ -118,24 +105,27 @@ export default function CorrespondenceDetail() {
 
   const handleToggleArchive = async () => {
     if (!correspondence) return;
+
+    // Prevent any modification on archived records
+    if (isArchived) {
+      toast({
+        title: "سجل مؤرشف",
+        description: "لا يمكن تعديل كتاب مُؤرشف. لإنشاء تغييرات، أنشئ نسخة جديدة.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setArchiving(true);
     try {
-      const newArchivedStatus = !isArchived;
-      
-      // Update in ClickHouse instead of Supabase
+      // Only allow archiving (one-way)
       const { clickhouseApi } = await import('@/lib/clickhouseClient');
-      await clickhouseApi.updateCorrespondence(id!, { 
-        archived: newArchivedStatus 
-      });
+      await clickhouseApi.updateCorrespondence(id!, { archived: true });
 
-      setIsArchived(newArchivedStatus);
-      
+      setIsArchived(true);
       toast({
-        title: newArchivedStatus ? "تم الأرشفة" : "تم إلغاء الأرشفة",
-        description: newArchivedStatus 
-          ? "تم أرشفة الكتاب بنجاح" 
-          : "تم إعادة توجيه الكتاب بنجاح",
+        title: "تم الأرشفة",
+        description: "تم أرشفة الكتاب بنجاح. أصبح الآن نسخة مقفلة للعرض فقط.",
       });
     } catch (error) {
       console.error('Archive error:', error);
@@ -300,38 +290,48 @@ export default function CorrespondenceDetail() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button 
-            variant="default" 
-            size="icon"
-            onClick={handleSendToExternal}
-            disabled={sendingToExternal}
-            title="إرسال للنظام الخارجي"
-          >
-            {sendingToExternal ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-          </Button>
-          <Button variant="outline" size="icon" onClick={() => navigate(`/edit/${id}`)}>
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon" onClick={handlePrint} title="طباعة">
-            <Printer className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant={isArchived ? "default" : "outline"} 
-            size="icon"
-            onClick={handleToggleArchive}
-            disabled={archiving}
-            title={isArchived ? "إلغاء الأرشفة" : "أرشفة"}
-          >
-            {archiving ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Archive className="h-4 w-4" />
-            )}
-          </Button>
+          {isArchived ? (
+            <>
+              <Button variant="outline" size="icon" onClick={handlePrint} title="طباعة">
+                <Printer className="h-4 w-4" />
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button 
+                variant="default" 
+                size="icon"
+                onClick={handleSendToExternal}
+                disabled={sendingToExternal}
+                title="إرسال للنظام الخارجي"
+              >
+                {sendingToExternal ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </Button>
+              <Button variant="outline" size="icon" onClick={() => navigate(`/edit/${id}`)}>
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" onClick={handlePrint} title="طباعة">
+                <Printer className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant={isArchived ? "default" : "outline"} 
+                size="icon"
+                onClick={handleToggleArchive}
+                disabled={archiving}
+                title={isArchived ? "إلغاء الأرشفة" : "أرشفة"}
+              >
+                {archiving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Archive className="h-4 w-4" />
+                )}
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
