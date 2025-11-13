@@ -232,7 +232,7 @@ const [isLocked, setIsLocked] = useState(false);
               greeting: data.greeting || 'السيد/',
               content: data.content || '',
               responsiblePerson: data.responsible_person || '',
-              displayType: (data.display_type || 'content') as 'content' | 'attachment_only',
+              displayType: 'content' as 'content' | 'attachment_only',
             });
             
             // Check if it's a draft
@@ -869,18 +869,27 @@ const [isLocked, setIsLocked] = useState(false);
                   <p className="text-sm font-semibold">المرفقات الحالية:</p>
                   {existingAttachments.map((url, index) => (
                     <div key={index} className="flex items-center justify-between p-2 bg-muted rounded">
-                      <a href={url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
-                        مرفق {index + 1}
-                      </a>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeExistingAttachment(url)}
-                        disabled={loading}
-                      >
-                        حذف
-                      </Button>
+                      <span className="text-sm">مرفق {index + 1}</span>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => window.open(url, '_blank')}
+                          disabled={loading}
+                        >
+                          عرض
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeExistingAttachment(url)}
+                          disabled={loading}
+                        >
+                          حذف
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
