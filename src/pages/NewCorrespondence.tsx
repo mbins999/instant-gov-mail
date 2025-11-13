@@ -378,11 +378,20 @@ const [isLocked, setIsLocked] = useState(false);
     
     console.log('Archiving with displayType:', formData.displayType);
     
-    // التحقق من رقم الكتاب والجهة المستلمة
-    if (!formData.number) {
+    // التحقق من رقم الكتاب والجهة المستلمة والجهة المرسلة
+    if (!formData.number || formData.number.trim() === '') {
       toast({
         title: "خطأ",
         description: "يجب إدخال رقم الكتاب",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.from || formData.from.trim() === '') {
+      toast({
+        title: "خطأ",
+        description: "الجهة المرسلة غير محددة",
         variant: "destructive",
       });
       return;
@@ -489,11 +498,20 @@ const [isLocked, setIsLocked] = useState(false);
     
     console.log('Submitting with displayType:', formData.displayType);
     
-    // التحقق من رقم الكتاب والجهة المستلمة
-    if (!formData.number) {
+    // التحقق من رقم الكتاب والجهة المستلمة والجهة المرسلة
+    if (!formData.number || formData.number.trim() === '') {
       toast({
         title: "خطأ",
         description: "يجب إدخال رقم الكتاب",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.from || formData.from.trim() === '') {
+      toast({
+        title: "خطأ",
+        description: "الجهة المرسلة غير محددة",
         variant: "destructive",
       });
       return;
@@ -660,40 +678,28 @@ const [isLocked, setIsLocked] = useState(false);
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="number">رقم الكتاب *</Label>
-                <Input
-                  id="number"
-                  value={formData.number}
-                  onChange={(e) => setFormData({ ...formData, number: e.target.value })}
-                  required
-                  disabled={loading}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="number">رقم الكتاب *</Label>
+              <Input
+                id="number"
+                value={formData.number}
+                onChange={(e) => setFormData({ ...formData, number: e.target.value })}
+                required
+                disabled={loading}
+                placeholder="يجب إدخال رقم الكتاب"
+              />
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="from">الجهة المرسلة</Label>
-                <Select
-                  value={formData.from}
-                  onValueChange={(value) => setFormData({ ...formData, from: value })}
-                  disabled={loading}
-                >
-                  <SelectTrigger className="bg-background">
-                    <SelectValue placeholder="اختر الجهة المرسلة" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background border shadow-lg z-50">
-                    {entities.length === 0 ? (
-                      <div className="p-2 text-sm text-muted-foreground">لا توجد جهات</div>
-                    ) : (
-                      entities.map((entity) => (
-                        <SelectItem key={entity.id} value={entity.name}>
-                          {entity.name}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="from">الجهة المرسلة</Label>
+              <Input
+                id="from"
+                value={formData.from}
+                disabled={true}
+                className="bg-muted cursor-not-allowed"
+                placeholder="سيتم تعيين جهتك تلقائياً"
+              />
+            </div>
 
               <div className="space-y-2">
                 <Label htmlFor="to">الجهة المستلمة *</Label>
