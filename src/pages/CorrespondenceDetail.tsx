@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,12 +11,14 @@ import { CommentsSection } from '@/components/CommentsSection';
 export default function CorrespondenceDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
-  const [correspondence, setCorrespondence] = useState<Correspondence | null>(null);
-  const [loading, setLoading] = useState(true);
+  const initial = (location.state as Correspondence | undefined) || null;
+  const [correspondence, setCorrespondence] = useState<Correspondence | null>(initial);
+  const [loading, setLoading] = useState(!initial);
   const [sendingToExternal, setSendingToExternal] = useState(false);
   const [archiving, setArchiving] = useState(false);
-  const [isArchived, setIsArchived] = useState(false);
+  const [isArchived, setIsArchived] = useState<boolean>(Boolean((initial as any)?.archived));
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -55,6 +57,11 @@ export default function CorrespondenceDetail() {
         }
       } catch (err) {
         console.error('Error fetching correspondence:', err);
+        toast({
+          title: 'تعذر تحميل التفاصيل',
+          description: 'تحقق من الاتصال وحاول مرة أخرى',
+          variant: 'destructive',
+        });
       } finally {
         setLoading(false);
       }

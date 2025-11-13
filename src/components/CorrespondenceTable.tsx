@@ -103,7 +103,7 @@ export default function CorrespondenceTable({ correspondences, onReceive, showEd
                     if (showEditDraft && isDraft) {
                       navigate(`/edit/${item.id}`);
                     } else {
-                      navigate(`/correspondence/${item.id}`);
+                      navigate(`/correspondence/${item.id}`, { state: item });
                     }
                   }}
                 >
