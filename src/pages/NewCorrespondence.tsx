@@ -37,7 +37,7 @@ const navigate = useNavigate();
     greeting: 'السيد/   المحترم\nالسلام عليكم ورحمة الله وبركاته ,,,',
     content: '\nوتفضلوا بقبول فائق الاحترام ,,,',
     responsiblePerson: '',
-    displayType: 'content' as 'content' | 'attachment_only',
+    displayType: 'content' as 'content' | 'attachment_only', // Always default to content
   });
   const [signatureFile, setSignatureFile] = useState<File | null>(null);
   const [signaturePreview, setSignaturePreview] = useState<string>('');
@@ -71,7 +71,7 @@ const [isLocked, setIsLocked] = useState(false);
           greeting: initialCorrespondence.greeting || 'السيد/',
           content: initialCorrespondence.content || '',
           responsiblePerson: initialCorrespondence.responsible_person || initialCorrespondence.responsiblePerson || '',
-          displayType: (initialCorrespondence.display_type || 'content') as 'content' | 'attachment_only',
+          displayType: 'content' as 'content' | 'attachment_only', // Always default to content
         });
         setIsDraft((initialCorrespondence as any).status === 'draft');
         setIsLocked(Boolean(initialCorrespondence.archived === true || ((initialCorrespondence as any).status && (initialCorrespondence as any).status !== 'draft')));
@@ -203,7 +203,7 @@ const [isLocked, setIsLocked] = useState(false);
               greeting: data.greeting || 'السيد/',
               content: data.content || '',
               responsiblePerson: data.responsible_person || '',
-              displayType: data.display_type || 'content' as 'content' | 'attachment_only',
+              displayType: 'content' as 'content' | 'attachment_only', // Always default to content
             });
             
             // Check if it's a draft
