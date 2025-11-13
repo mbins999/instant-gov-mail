@@ -43,13 +43,26 @@ export default function CorrespondenceDetail() {
         console.log('Display type from DB:', data.display_type);
 
         if (data) {
+          // Normalize display type: if content fields exist, force 'content'
+          const hasContentFields = Boolean(
+            (data.content && String(data.content).trim().length > 0) ||
+            (data.subject && String(data.subject).trim().length > 0) ||
+            (data.greeting && String(data.greeting).trim().length > 0) ||
+            (data.responsible_person && String(data.responsible_person).trim().length > 0) ||
+            (data.signature_url && String(data.signature_url).trim().length > 0)
+          );
+
+          const effectiveDisplayType = (data.display_type === 'attachment_only' && hasContentFields)
+            ? 'content'
+            : (data.display_type || 'content');
+
           setCorrespondence({
             ...data,
             from: data.from_entity,
             greeting: data.greeting,
             responsible_person: data.responsible_person,
             signature_url: data.signature_url,
-            display_type: data.display_type || 'content', // Ensure default value
+            display_type: effectiveDisplayType,
           } as any);
           setIsArchived(data.archived || false);
         }
