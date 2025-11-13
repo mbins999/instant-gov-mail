@@ -576,19 +576,19 @@ const [isLocked, setIsLocked] = useState(false);
       const { clickhouseApi } = await import('@/lib/clickhouseClient');
 
       if (isEditMode && id) {
-        // Update existing correspondence in ClickHouse
+        // Update existing correspondence in ClickHouse - keep as draft
         await clickhouseApi.updateCorrespondence(id, {
           ...correspondenceData,
-          status: isDraft ? 'sent' : 'sent',
-          archived: isDraft ? false : false
+          status: 'draft', // Keep as draft when saving in edit mode
+          archived: false  // Keep in archive
         });
         
         toast({
-          title: isDraft ? "تم الإرسال بنجاح" : "تم التحديث بنجاح",
-          description: isDraft ? "تم تحديث المسودة وإرسال المراسلة" : "تم تحديث المراسلة",
+          title: "تم الحفظ بنجاح",
+          description: "تم حفظ التغييرات في المسودة",
         });
         
-        navigate(isDraft ? '/sent' : `/correspondence/${id}`);
+        navigate('/archive'); // Navigate back to archive
       } else {
         // Create new correspondence in ClickHouse
         const result = await clickhouseApi.createCorrespondence({
