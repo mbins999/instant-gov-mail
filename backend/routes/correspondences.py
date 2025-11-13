@@ -181,9 +181,9 @@ async def update_correspondence(correspondence_id: str, data: dict):
             if new_display_type != curr_display_type and (locked_now or will_archive or will_send):
                 raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="display_type cannot be modified after archiving or external send")
         
-        # Build UPDATE query
+        # Build UPDATE query - ClickHouse ALTER TABLE UPDATE doesn't support parameterized queries well
+        # We'll build the query with proper value formatting
         update_fields = []
-        params = {'id': correspondence_id}
         
         field_mappings = {
             'number': 'number',
@@ -201,32 +201,53 @@ async def update_correspondence(correspondence_id: str, data: dict):
             'archived': 'archived'
         }
         
+        def format_value(value):
+            """Format value for ClickHouse query"""
+            if value is None:
+                return 'NULL'
+            elif isinstance(value, bool):
+                return '1' if value else '0'
+            elif isinstance(value, (int, float)):
+                return str(value)
+            elif isinstance(value, list):
+                # Format array of strings
+                escaped_items = [f"'{str(item).replace(chr(39), chr(39)+chr(39))}'" for item in value]
+                return f"[{', '.join(escaped_items)}]"
+            else:
+                # Escape single quotes by doubling them
+                escaped = str(value).replace("'", "''")
+                return f"'{escaped}'"
+        
         for data_key, db_field in field_mappings.items():
             if data_key in data:
                 value = data[data_key]
                 if data_key == 'archived' and isinstance(value, bool):
                     value = 1 if value else 0
-                update_fields.append(f"{db_field} = %({data_key})s")
-                params[data_key] = value
+                formatted_value = format_value(value)
+                update_fields.append(f"{db_field} = {formatted_value}")
         
         if 'attachments' in data:
-            update_fields.append("attachments = %(attachments)s")
-            params['attachments'] = data['attachments']
+            formatted_attachments = format_value(data['attachments'])
+            update_fields.append(f"attachments = {formatted_attachments}")
         
         if date_value:
-            update_fields.append("date = %(date)s")
-            params['date'] = date_value
+            formatted_date = f"'{date_value.strftime('%Y-%m-%d %H:%M:%S')}'"
+            update_fields.append(f"date = {formatted_date}")
         
-        update_fields.append("updated_at = %(updated_at)s")
-        params['updated_at'] = now
+        formatted_now = f"'{now.strftime('%Y-%m-%d %H:%M:%S')}'"
+        update_fields.append(f"updated_at = {formatted_now}")
+        
+        # Escape single quotes in correspondence_id
+        escaped_id = correspondence_id.replace("'", "''")
         
         query = f"""
             ALTER TABLE correspondences
             UPDATE {', '.join(update_fields)}
-            WHERE id = %(id)s
+            WHERE id = '{escaped_id}'
         """
         
-        client.command(query, parameters=params)
+        print(f"Executing update query: {query}")
+        client.command(query)
         
         return {
             "id": correspondence_id,
