@@ -306,9 +306,12 @@ export default function CorrespondenceDetail() {
               <Send className="h-4 w-4" />
             )}
           </Button>
-          <Button variant="outline" size="icon" onClick={() => navigate(`/edit/${id}`)} title="تحرير">
-            <Edit className="h-4 w-4" />
-          </Button>
+          {/* Hide edit button for sent correspondences */}
+          {(correspondence as any).status !== 'sent' && (
+            <Button variant="outline" size="icon" onClick={() => navigate(`/edit/${id}`)} title="تحرير">
+              <Edit className="h-4 w-4" />
+            </Button>
+          )}
           <Button variant="outline" size="icon" onClick={handlePrint} title="طباعة">
             <Printer className="h-4 w-4" />
           </Button>

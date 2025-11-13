@@ -4,7 +4,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye, FileText, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { getAuthenticatedSupabaseClient } from '@/lib/supabaseAuth';
 import { useToast } from '@/hooks/use-toast';
 
 interface Correspondence {
@@ -28,8 +27,6 @@ export default function Sent() {
   useEffect(() => {
     const fetchSentCorrespondences = async () => {
       try {
-        const supabase = getAuthenticatedSupabaseClient();
-        
         // Get current user entity
         const userSession = localStorage.getItem('user_session');
         if (!userSession) {
@@ -45,17 +42,18 @@ export default function Sent() {
           return;
         }
 
-        // Fetch correspondences created by this user (sent by this user) - جميع الكتب بما فيها المؤرشفة
-        const { data, error } = await supabase
-          .from('correspondences')
-          .select('*')
-          .eq('created_by', userId)
-          .eq('type', 'outgoing')
-          .order('date', { ascending: false });
+        // Fetch correspondences with status='sent' from ClickHouse
+        const { clickhouseApi } = await import('@/lib/clickhouseClient');
+        const allData = await clickhouseApi.listCorrespondences();
+        
+        // Filter for sent correspondences (status='sent', created by user, outgoing)
+        const sentCorrespondences = allData.filter((c: any) => 
+          c.created_by === userId && 
+          c.type === 'outgoing' && 
+          c.status === 'sent'
+        );
 
-        if (error) throw error;
-
-        setCorrespondences(data || []);
+        setCorrespondences(sentCorrespondences || []);
       } catch (error) {
         console.error('Error fetching sent correspondences:', error);
         toast({
