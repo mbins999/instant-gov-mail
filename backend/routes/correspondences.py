@@ -163,11 +163,6 @@ async def update_correspondence(correspondence_id: str, data: dict):
         curr_archived = current.result_rows[0][1] == 1
         curr_status = current.result_rows[0][2] if len(current.result_rows[0]) > 2 else None
         
-        # Convert date string to datetime object if needed
-        date_value = data.get('date')
-        if isinstance(date_value, str):
-            date_value = datetime.fromisoformat(date_value.replace('Z', '+00:00'))
-        
         # Validate and enforce immutability rules for display_type
         allowed_display_types = {"content", "attachment_only"}
         if 'display_type' in data:
@@ -230,9 +225,8 @@ async def update_correspondence(correspondence_id: str, data: dict):
             formatted_attachments = format_value(data['attachments'])
             update_fields.append(f"attachments = {formatted_attachments}")
         
-        if date_value:
-            formatted_date = f"'{date_value.strftime('%Y-%m-%d %H:%M:%S')}'"
-            update_fields.append(f"date = {formatted_date}")
+        # Note: date field cannot be updated in ClickHouse as it's part of ORDER BY
+        # So we skip it even if provided in the data
         
         formatted_now = f"'{now.strftime('%Y-%m-%d %H:%M:%S')}'"
         update_fields.append(f"updated_at = {formatted_now}")
