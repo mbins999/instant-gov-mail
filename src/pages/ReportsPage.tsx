@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getAuthenticatedSupabaseClient } from '@/lib/supabaseAuth';
+import { clickhouseApi } from '@/lib/clickhouseClient';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -27,35 +27,20 @@ export default function ReportsPage() {
   const fetchReports = async () => {
     setLoading(true);
     try {
-      const supabase = getAuthenticatedSupabaseClient();
-      
-      // جلب الإحصائيات الشهرية
-      const { data: monthly } = await supabase
-        .from('correspondence_statistics')
-        .select('*')
-        .limit(12);
+      // جلب الإحصائيات الشهرية من ClickHouse
+      const monthly = await clickhouseApi.getMonthlyStats();
       setMonthlyStats(monthly || []);
 
-      // جلب أداء المستخدمين
-      const { data: users } = await supabase
-        .from('user_performance')
-        .select('*')
-        .order('total_correspondences', { ascending: false })
-        .limit(20);
+      // جلب أداء المستخدمين من ClickHouse
+      const users = await clickhouseApi.getUserPerformance();
       setUserPerformance(users || []);
 
-      // جلب إحصائيات الجهات
-      const { data: entities } = await supabase
-        .from('entity_statistics')
-        .select('*')
-        .order('total_correspondences', { ascending: false });
+      // جلب إحصائيات الجهات من ClickHouse
+      const entities = await clickhouseApi.getEntityStats();
       setEntityStats(entities || []);
 
-      // جلب النشاط اليومي
-      const { data: daily } = await supabase
-        .from('daily_activity')
-        .select('*')
-        .limit(parseInt(selectedPeriod));
+      // جلب النشاط اليومي من ClickHouse
+      const daily = await clickhouseApi.getDailyActivity(parseInt(selectedPeriod));
       setDailyActivity(daily || []);
     } catch (error) {
       console.error('Error fetching reports:', error);

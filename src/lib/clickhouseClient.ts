@@ -105,4 +105,14 @@ export const clickhouseApi = {
     apiRequest(`/entities/delete/${entityId}`, {
       method: 'DELETE',
     }),
+
+  // Statistics
+  getMonthlyStats: () => apiRequest('/statistics/monthly-stats'),
+  
+  getUserPerformance: () => apiRequest('/statistics/user-performance'),
+  
+  getEntityStats: () => apiRequest('/statistics/entity-stats'),
+  
+  getDailyActivity: (days: number = 30) => 
+    apiRequest(`/statistics/daily-activity?days=${days}`),
 };

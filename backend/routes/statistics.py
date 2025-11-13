@@ -186,3 +186,219 @@ async def get_correspondences_timeline(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch timeline"
         )
+
+@router.get("/monthly-stats")
+async def get_monthly_stats(x_session_token: Optional[str] = Header(None)):
+    """Get monthly correspondence statistics"""
+    if not x_session_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
+        )
+    
+    client = get_client()
+    
+    try:
+        result = client.query("""
+            SELECT 
+                toStartOfMonth(date) as month,
+                type,
+                COUNT(*) as total_count,
+                countIf(received_at IS NOT NULL) as received_count,
+                countIf(archived = 1) as archived_count,
+                countIf(content != '') as with_content_count,
+                countIf(signature_url != '') as with_signature_count,
+                countIf(content = '' AND arrayExists(x -> true, attachments)) as attachment_only_count,
+                avg(date_diff('hour', created_at, received_at)) as avg_hours_to_receive,
+                from_entity,
+                received_by_entity
+            FROM correspondences
+            WHERE date >= today() - INTERVAL 12 MONTH
+            GROUP BY month, type, from_entity, received_by_entity
+            ORDER BY month DESC
+        """)
+        
+        stats = []
+        for row in result.result_rows:
+            stats.append({
+                "month": row[0],
+                "type": row[1],
+                "total_count": row[2],
+                "received_count": row[3],
+                "archived_count": row[4],
+                "with_content_count": row[5],
+                "with_signature_count": row[6],
+                "attachment_only_count": row[7],
+                "avg_hours_to_receive": float(row[8]) if row[8] else None,
+                "from_entity": row[9],
+                "received_by_entity": row[10]
+            })
+        
+        return stats
+        
+    except Exception as e:
+        print(f"Get monthly stats error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch monthly statistics"
+        )
+
+@router.get("/user-performance")
+async def get_user_performance(x_session_token: Optional[str] = Header(None)):
+    """Get user performance statistics"""
+    if not x_session_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
+        )
+    
+    client = get_client()
+    
+    try:
+        result = client.query("""
+            SELECT 
+                u.id,
+                u.username,
+                u.full_name,
+                u.entity_name,
+                ur.role,
+                COUNT(c.id) as total_correspondences,
+                countIf(c.created_by = u.id) as created_count,
+                countIf(c.received_by = u.id) as received_count,
+                (SELECT COUNT(*) FROM correspondence_comments WHERE user_id = u.id) as comments_count,
+                avg(date_diff('hour', c.created_at, c.received_at)) as avg_response_hours,
+                max(c.created_at) as last_activity
+            FROM users u
+            LEFT JOIN user_roles ur ON u.id = ur.user_id
+            LEFT JOIN correspondences c ON (c.created_by = u.id OR c.received_by = u.id)
+            GROUP BY u.id, u.username, u.full_name, u.entity_name, ur.role
+            HAVING total_correspondences > 0
+            ORDER BY total_correspondences DESC
+            LIMIT 20
+        """)
+        
+        performance = []
+        for row in result.result_rows:
+            performance.append({
+                "id": row[0],
+                "username": row[1],
+                "full_name": row[2],
+                "entity_name": row[3],
+                "role": row[4],
+                "total_correspondences": row[5],
+                "created_count": row[6],
+                "received_count": row[7],
+                "comments_count": row[8],
+                "avg_response_hours": float(row[9]) if row[9] else None,
+                "last_activity": row[10]
+            })
+        
+        return performance
+        
+    except Exception as e:
+        print(f"Get user performance error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch user performance"
+        )
+
+@router.get("/entity-stats")
+async def get_entity_stats(x_session_token: Optional[str] = Header(None)):
+    """Get entity statistics"""
+    if not x_session_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
+        )
+    
+    client = get_client()
+    
+    try:
+        result = client.query("""
+            SELECT 
+                e.id,
+                e.name,
+                e.type,
+                COUNT(DISTINCT c_sent.id) as sent_count,
+                COUNT(DISTINCT c_received.id) as received_count,
+                COUNT(DISTINCT c_sent.id) + COUNT(DISTINCT c_received.id) as total_correspondences,
+                (SELECT COUNT(*) FROM users WHERE entity_id = e.id) as users_count,
+                (SELECT COUNT(*) FROM correspondence_templates WHERE entity_id = e.id) as templates_count
+            FROM entities e
+            LEFT JOIN correspondences c_sent ON e.name = c_sent.from_entity
+            LEFT JOIN correspondences c_received ON e.name = c_received.received_by_entity
+            GROUP BY e.id, e.name, e.type
+            ORDER BY total_correspondences DESC
+        """)
+        
+        stats = []
+        for row in result.result_rows:
+            stats.append({
+                "id": row[0],
+                "name": row[1],
+                "type": row[2],
+                "sent_count": row[3],
+                "received_count": row[4],
+                "total_correspondences": row[5],
+                "users_count": row[6],
+                "templates_count": row[7]
+            })
+        
+        return stats
+        
+    except Exception as e:
+        print(f"Get entity stats error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch entity statistics"
+        )
+
+@router.get("/daily-activity")
+async def get_daily_activity(
+    x_session_token: Optional[str] = Header(None),
+    days: int = 30
+):
+    """Get daily activity statistics"""
+    if not x_session_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
+        )
+    
+    client = get_client()
+    
+    try:
+        result = client.query(f"""
+            SELECT 
+                toDate(created_at) as date,
+                COUNT(DISTINCT created_by) as active_users,
+                COUNT(*) as correspondences_created,
+                countIf(received_at IS NOT NULL AND toDate(received_at) = toDate(created_at)) as correspondences_viewed,
+                countIf(updated_at != created_at) as correspondences_updated,
+                (SELECT COUNT(*) FROM sessions WHERE toDate(created_at) = toDate(c.created_at)) as logins
+            FROM correspondences c
+            WHERE created_at >= today() - INTERVAL {days} DAY
+            GROUP BY date
+            ORDER BY date DESC
+            LIMIT {days}
+        """)
+        
+        activity = []
+        for row in result.result_rows:
+            activity.append({
+                "date": row[0],
+                "active_users": row[1],
+                "correspondences_created": row[2],
+                "correspondences_viewed": row[3],
+                "correspondences_updated": row[4],
+                "logins": row[5]
+            })
+        
+        return activity
+        
+    except Exception as e:
+        print(f"Get daily activity error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch daily activity"
+        )
