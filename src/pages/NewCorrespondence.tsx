@@ -482,7 +482,7 @@ const [isLocked, setIsLocked] = useState(false);
       console.log('Correspondence data being saved:', correspondenceData);
       console.log('Display type in data:', correspondenceData.display_type);
 
-      // Save to ClickHouse instead of Supabase
+      // Save correspondence to database
       const { clickhouseApi } = await import('@/lib/clickhouseClient');
       await clickhouseApi.createCorrespondence(correspondenceData);
 

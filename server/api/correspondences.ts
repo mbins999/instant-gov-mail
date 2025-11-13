@@ -35,7 +35,30 @@ export async function getCorrespondence(req: Request, res: Response) {
 
     const result = await clickhouse.query({
       query: `
-        SELECT *
+        SELECT 
+          id,
+          number,
+          type,
+          subject,
+          date,
+          from_entity,
+          received_by_entity,
+          greeting,
+          content,
+          responsible_person,
+          signature_url,
+          attachments,
+          notes,
+          received_by,
+          received_at,
+          created_by,
+          created_at,
+          updated_at,
+          archived,
+          status,
+          pdf_url,
+          external_doc_id,
+          external_connection_id
         FROM correspondences
         WHERE id = {id:String}
         LIMIT 1
@@ -50,17 +73,33 @@ export async function getCorrespondence(req: Request, res: Response) {
       return res.status(404).json({ error: 'Correspondence not found' });
     }
 
-    const correspondence = correspondences[0];
+    const c = correspondences[0];
     
     // Transform response to match expected format
     res.json({
-      ...correspondence,
-      from: correspondence.from_entity,
-      to: correspondence.received_by_entity,
-      attachments: correspondence.attachments || [],
-      archived: correspondence.archived === 1,
-      // Ensure signature_url is included
-      signature_url: correspondence.signature_url || '',
+      id: c.id,
+      number: c.number,
+      type: c.type,
+      subject: c.subject,
+      date: c.date,
+      from_entity: c.from_entity,
+      received_by_entity: c.received_by_entity,
+      greeting: c.greeting,
+      content: c.content,
+      responsible_person: c.responsible_person,
+      signature_url: c.signature_url || '',
+      attachments: c.attachments || [],
+      notes: c.notes,
+      received_by: c.received_by,
+      received_at: c.received_at,
+      created_by: c.created_by,
+      created_at: c.created_at,
+      updated_at: c.updated_at,
+      archived: c.archived === 1,
+      status: c.status,
+      pdf_url: c.pdf_url,
+      external_doc_id: c.external_doc_id,
+      external_connection_id: c.external_connection_id
     });
   } catch (error) {
     console.error('Get correspondence error:', error);
