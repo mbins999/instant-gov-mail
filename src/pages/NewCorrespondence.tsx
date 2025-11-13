@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Save, Loader2, Send, Scan } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { correspondenceApi } from '@/services/correspondenceApi';
 import { TemplateSelector } from '@/components/TemplateSelector';
 
@@ -19,9 +19,11 @@ interface Entity {
 
 export default function NewCorrespondence() {
   const { toast } = useToast();
-  const navigate = useNavigate();
+const navigate = useNavigate();
   const { id } = useParams();
   const isEditMode = !!id;
+  const location = useLocation();
+  const initialCorrespondence = (location.state as any) || null;
   const [loading, setLoading] = useState(false);
   const [fetchingData, setFetchingData] = useState(isEditMode);
   const [entities, setEntities] = useState<Entity[]>([]);
@@ -45,7 +47,54 @@ export default function NewCorrespondence() {
   const [userJobTitle, setUserJobTitle] = useState<string>('');
   const [userFullName, setUserFullName] = useState<string>('');
   const [isDraft, setIsDraft] = useState(false);
-  const [isLocked, setIsLocked] = useState(false);
+const [isLocked, setIsLocked] = useState(false);
+
+  // Prefill edit form from navigation state to avoid empty screen if API is slow
+  useEffect(() => {
+    if (isEditMode && initialCorrespondence) {
+      try {
+        const computeDateOnly = (raw: any) => {
+          try {
+            if (!raw) return new Date().toISOString().split('T')[0];
+            if (typeof raw === 'string') {
+              const justDate = raw.match(/^\d{4}-\d{2}-\d{2}$/);
+              if (justDate) return raw;
+              let s = raw.trim();
+              if (s.includes(' ') && !s.includes('T')) s = s.replace(' ', 'T');
+              const d1 = new Date(s);
+              if (!isNaN(d1.getTime())) return d1.toISOString().split('T')[0];
+            } else if (typeof raw === 'number') {
+              const dSec = new Date(raw * 1000);
+              if (!isNaN(dSec.getTime())) return dSec.toISOString().split('T')[0];
+              const dMs = new Date(raw);
+              if (!isNaN(dMs.getTime())) return dMs.toISOString().split('T')[0];
+            }
+            const d = new Date(raw);
+            if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+          } catch {}
+          return new Date().toISOString().split('T')[0];
+        };
+        const dateOnly = computeDateOnly(initialCorrespondence.date);
+        setFormData({
+          type: initialCorrespondence.type || 'outgoing',
+          number: initialCorrespondence.number || '',
+          date: dateOnly,
+          from: initialCorrespondence.from_entity || initialCorrespondence.from || '',
+          to: initialCorrespondence.received_by_entity || initialCorrespondence.to || '',
+          subject: initialCorrespondence.subject || '',
+          greeting: initialCorrespondence.greeting || 'السيد/',
+          content: initialCorrespondence.content || '',
+          responsiblePerson: initialCorrespondence.responsible_person || initialCorrespondence.responsiblePerson || '',
+          displayType: (initialCorrespondence.display_type || 'content') as 'content' | 'attachment_only',
+        });
+        setIsDraft((initialCorrespondence as any).status === 'draft');
+        setIsLocked(Boolean(initialCorrespondence.archived === true || ((initialCorrespondence as any).status && (initialCorrespondence as any).status !== 'draft')));
+        setExistingAttachments(Array.isArray(initialCorrespondence.attachments) ? initialCorrespondence.attachments : []);
+        if (initialCorrespondence.signature_url) setSignaturePreview(initialCorrespondence.signature_url);
+        setFetchingData(false);
+      } catch {}
+    }
+  }, [isEditMode, initialCorrespondence]);
 
   useEffect(() => {
     // تعيين جهة المستخدم تلقائياً كجهة مرسلة وتحميل التوقيع
